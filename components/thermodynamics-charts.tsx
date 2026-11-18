@@ -521,46 +521,71 @@ export function PureFluidPVTCharts({
             and percent deviations across fluids, temperatures, and pressures.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div
+            className="overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
+            role="region"
+            aria-label="Thermodynamics Pure-Fluid PVT Scenario Comparison Table"
+            tabIndex={0}
+          >
             <table className="w-full min-w-[640px] border-collapse text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold tracking-wider text-slate-600 uppercase">
-                  <th className="px-3 py-2">Scenario</th>
-                  <th className="px-3 py-2">Fluid</th>
-                  <th className="px-3 py-2">T (K)</th>
-                  <th className="px-3 py-2">P (bar)</th>
-                  <th className="px-3 py-2">Z_PR (-)</th>
-                  <th className="px-3 py-2">v_ideal (L/mol)</th>
-                  <th className="px-3 py-2">v_PR (L/mol)</th>
-                  <th className="px-3 py-2">Deviation (%)</th>
-                  <th className="px-3 py-2">Regime</th>
-                  <th className="px-2 py-2 text-right">Action</th>
+                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold tracking-tight text-slate-700">
+                  <th className="px-3 py-2 whitespace-nowrap">Scenario</th>
+                  <th className="px-3 py-2 whitespace-nowrap">Fluid</th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="T" /> (K)
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="P" /> (bar)
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="Z_{\mathrm{PR}}" /> (-)
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="v_{\mathrm{ideal}}" /> (L/mol)
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="v_{\mathrm{PR}}" /> (L/mol)
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">Deviation (%)</th>
+                  <th className="px-3 py-2 whitespace-nowrap">Regime</th>
+                  <th className="px-2 py-2 text-right whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {savedScenarios.map((sc) => (
                   <tr key={sc.id} className="hover:bg-slate-50/80">
-                    <td className="px-3 py-2 font-semibold text-slate-900">{sc.label}</td>
-                    <td className="px-3 py-2 font-mono text-slate-700">{sc.fluidCode}</td>
-                    <td className="px-3 py-2 font-mono">{sc.temperature_K.toFixed(1)}</td>
-                    <td className="px-3 py-2 font-mono">{sc.pressure_bar.toFixed(1)}</td>
-                    <td className="px-3 py-2 font-mono font-bold text-teal-700">
+                    <td className="px-3 py-2 font-semibold text-slate-900 whitespace-nowrap">
+                      {sc.label}
+                    </td>
+                    <td className="px-3 py-2 font-mono text-slate-700 whitespace-nowrap">
+                      {sc.fluidCode}
+                    </td>
+                    <td className="px-3 py-2 font-mono whitespace-nowrap">
+                      {sc.temperature_K.toFixed(1)}
+                    </td>
+                    <td className="px-3 py-2 font-mono whitespace-nowrap">
+                      {sc.pressure_bar.toFixed(1)}
+                    </td>
+                    <td className="px-3 py-2 font-mono font-bold text-teal-700 whitespace-nowrap">
                       {sc.Z_PR.toFixed(4)}
                     </td>
-                    <td className="px-3 py-2 font-mono">{sc.v_ideal_L_mol.toFixed(4)}</td>
-                    <td className="px-3 py-2 font-mono font-semibold text-slate-900">
+                    <td className="px-3 py-2 font-mono whitespace-nowrap">
+                      {sc.v_ideal_L_mol.toFixed(4)}
+                    </td>
+                    <td className="px-3 py-2 font-mono font-semibold text-slate-900 whitespace-nowrap">
                       {sc.v_PR_L_mol.toFixed(4)}
                     </td>
                     <td
-                      className={`px-3 py-2 font-mono font-semibold ${
+                      className={`px-3 py-2 font-mono font-semibold whitespace-nowrap ${
                         sc.deviationPercent < 0 ? 'text-teal-700' : 'text-amber-700'
                       }`}
                     >
                       {sc.deviationPercent >= 0 ? '+' : ''}
                       {sc.deviationPercent.toFixed(2)}%
                     </td>
-                    <td className="px-3 py-2 text-slate-600">{sc.regime}</td>
-                    <td className="px-2 py-2 text-right">
+                    <td className="px-3 py-2 text-slate-600 whitespace-nowrap">{sc.regime}</td>
+                    <td className="px-2 py-2 text-right whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => onRemoveScenario(sc.id)}
@@ -1034,39 +1059,70 @@ export function BinaryVLECharts({
             enrichment across mixtures.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div
+            className="overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
+            role="region"
+            aria-label="Thermodynamics Binary VLE Scenario Comparison Table"
+            tabIndex={0}
+          >
             <table className="w-full min-w-[640px] border-collapse text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold tracking-wider text-slate-600 uppercase">
-                  <th className="px-3 py-2">Scenario</th>
-                  <th className="px-3 py-2">x_A</th>
-                  <th className="px-3 py-2">P_A^sat (kPa)</th>
-                  <th className="px-3 py-2">P_B^sat (kPa)</th>
-                  <th className="px-3 py-2">α_AB</th>
-                  <th className="px-3 py-2">P_bubble (kPa)</th>
-                  <th className="px-3 py-2">P_dew (kPa)</th>
-                  <th className="px-3 py-2">y_A* (bubble)</th>
-                  <th className="px-3 py-2">Phase State @ P_sys</th>
-                  <th className="px-2 py-2 text-right">Action</th>
+                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold tracking-tight text-slate-700">
+                  <th className="px-3 py-2 whitespace-nowrap">Scenario</th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="x_A" />
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="P_A^{\mathrm{sat}}" /> (kPa)
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="P_B^{\mathrm{sat}}" /> (kPa)
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="\alpha_{AB}" />
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="P_{\mathrm{bubble}}" /> (kPa)
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="P_{\mathrm{dew}}" /> (kPa)
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    <MathInline latex="y_A^*" /> (bubble)
+                  </th>
+                  <th className="px-3 py-2 whitespace-nowrap">
+                    Phase State @ <MathInline latex="P_{\mathrm{sys}}" />
+                  </th>
+                  <th className="px-2 py-2 text-right whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {savedScenarios.map((sc) => (
                   <tr key={sc.id} className="hover:bg-slate-50/80">
-                    <td className="px-3 py-2 font-semibold text-slate-900">{sc.label}</td>
-                    <td className="px-3 py-2 font-mono">{sc.xA.toFixed(3)}</td>
-                    <td className="px-3 py-2 font-mono">{sc.psatA_kPa.toFixed(1)}</td>
-                    <td className="px-3 py-2 font-mono">{sc.psatB_kPa.toFixed(1)}</td>
-                    <td className="px-3 py-2 font-mono font-bold text-teal-700">
+                    <td className="px-3 py-2 font-semibold text-slate-900 whitespace-nowrap">
+                      {sc.label}
+                    </td>
+                    <td className="px-3 py-2 font-mono whitespace-nowrap">{sc.xA.toFixed(3)}</td>
+                    <td className="px-3 py-2 font-mono whitespace-nowrap">
+                      {sc.psatA_kPa.toFixed(1)}
+                    </td>
+                    <td className="px-3 py-2 font-mono whitespace-nowrap">
+                      {sc.psatB_kPa.toFixed(1)}
+                    </td>
+                    <td className="px-3 py-2 font-mono font-bold text-teal-700 whitespace-nowrap">
                       {sc.alphaAB.toFixed(2)}
                     </td>
-                    <td className="px-3 py-2 font-mono">{sc.bubbleP_kPa.toFixed(2)}</td>
-                    <td className="px-3 py-2 font-mono">{sc.dewP_kPa.toFixed(2)}</td>
-                    <td className="px-3 py-2 font-mono font-bold text-slate-900">
+                    <td className="px-3 py-2 font-mono whitespace-nowrap">
+                      {sc.bubbleP_kPa.toFixed(2)}
+                    </td>
+                    <td className="px-3 py-2 font-mono whitespace-nowrap">
+                      {sc.dewP_kPa.toFixed(2)}
+                    </td>
+                    <td className="px-3 py-2 font-mono font-bold text-slate-900 whitespace-nowrap">
                       {sc.yA_eq.toFixed(4)}
                     </td>
-                    <td className="px-3 py-2 text-slate-600">{sc.phaseState}</td>
-                    <td className="px-2 py-2 text-right">
+                    <td className="px-3 py-2 text-slate-600 whitespace-nowrap">{sc.phaseState}</td>
+                    <td className="px-2 py-2 text-right whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => onRemoveScenario(sc.id)}

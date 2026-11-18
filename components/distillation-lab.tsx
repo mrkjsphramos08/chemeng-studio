@@ -442,7 +442,7 @@ export function DistillationLab() {
 
       {/* Main 2-Zone Sandbox Layout: Controls Deck (Left 4 cols) + Stage & Dashboard (Right 8 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-4 min-w-0 space-y-4">
+        <div className="lg:col-span-4 min-w-0 space-y-4 lg:sticky lg:top-28 lg:self-start">
           {/* Quick-Select Feed Thermal Condition (q) Card */}
           <div
             className="bg-white border border-slate-200 rounded-xl p-4 space-y-2.5"

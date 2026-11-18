@@ -12,6 +12,7 @@ import {
 } from '@/lib/process-control';
 import { PROCESS_CONTROL_GUIDED_QUESTIONS } from '@/lib/labs-data';
 import { downloadSimulationCsv } from '@/lib/lab-download';
+import { formatSignedZero } from '@/lib/navigation';
 import {
   LabAssumptionsCard,
   LabGuidedInquiryCard,
@@ -315,14 +316,14 @@ export function ProcessControlLab() {
         {/* Main Two-Column Workspace: Left Controls (4 cols) + Right Dashboard, Schematic & Charts (8 cols) */}
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
           {/* LEFT COLUMN: Controls & Educational Presets */}
-          <div className="space-y-6 lg:col-span-4">
+          <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
             {/* Panel 1: Controller Mode & Tuning Parameters */}
             <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
               <div className="mb-3 flex items-center gap-2">
                 <Sliders className="h-4 w-4 text-teal-700" />
                 <div>
                   <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
-                    Step 1A · Controller Architecture
+                    01. Configure · User Inputs — Step 1A · Controller Architecture
                   </span>
                   <h2 className="text-sm font-bold text-slate-900">
                     Controller Mode &amp; PID Tuning
@@ -377,6 +378,7 @@ export function ProcessControlLab() {
                     <input
                       id="ctrl-kc"
                       type="range"
+                      aria-label="Controller Gain (Kc, %MV/%PV) slider"
                       min={0.1}
                       max={8.0}
                       step={0.1}
@@ -389,7 +391,7 @@ export function ProcessControlLab() {
                     />
                     <input
                       type="number"
-                      aria-label="Controller Gain Kc numeric input"
+                      aria-label="Controller Gain (Kc, %MV/%PV) numeric input"
                       min={0.05}
                       max={20}
                       step={0.1}
@@ -422,6 +424,7 @@ export function ProcessControlLab() {
                     <input
                       id="ctrl-ti"
                       type="range"
+                      aria-label="Integral Time (tau_I, s) slider"
                       min={1.0}
                       max={80.0}
                       step={0.5}
@@ -434,7 +437,7 @@ export function ProcessControlLab() {
                     />
                     <input
                       type="number"
-                      aria-label="Integral Time tau_I numeric input"
+                      aria-label="Integral Time (tau_I, s) numeric input"
                       min={0.5}
                       max={200}
                       step={0.5}
@@ -467,6 +470,7 @@ export function ProcessControlLab() {
                     <input
                       id="ctrl-td"
                       type="range"
+                      aria-label="Derivative Time (tau_D, s) slider"
                       min={0.0}
                       max={20.0}
                       step={0.25}
@@ -482,7 +486,7 @@ export function ProcessControlLab() {
                     />
                     <input
                       type="number"
-                      aria-label="Derivative Time tau_D numeric input"
+                      aria-label="Derivative Time (tau_D, s) numeric input"
                       min={0}
                       max={60}
                       step={0.25}
@@ -515,6 +519,7 @@ export function ProcessControlLab() {
                   <input
                     id="ctrl-alpha"
                     type="range"
+                    aria-label="Derivative Filter Factor (alpha_D, dimensionless) slider"
                     min={0.05}
                     max={0.5}
                     step={0.05}
@@ -552,6 +557,7 @@ export function ProcessControlLab() {
                       <input
                         id="ctrl-umin"
                         type="number"
+                        aria-label="Minimum Actuator Signal (U_min, %MV)"
                         min={-50}
                         max={90}
                         step={5}
@@ -575,6 +581,7 @@ export function ProcessControlLab() {
                       <input
                         id="ctrl-umax"
                         type="number"
+                        aria-label="Maximum Actuator Signal (U_max, %MV)"
                         min={10}
                         max={150}
                         step={5}
@@ -640,6 +647,7 @@ export function ProcessControlLab() {
                     <input
                       id="proc-kp"
                       type="range"
+                      aria-label="Process Gain (Kp, %PV/%MV) slider"
                       min={0.2}
                       max={5.0}
                       step={0.1}
@@ -651,7 +659,7 @@ export function ProcessControlLab() {
                     />
                     <input
                       type="number"
-                      aria-label="Process Gain Kp numeric input"
+                      aria-label="Process Gain (Kp, %PV/%MV) numeric input"
                       min={0.1}
                       max={10}
                       step={0.1}
@@ -681,6 +689,7 @@ export function ProcessControlLab() {
                     <input
                       id="proc-tau"
                       type="range"
+                      aria-label="Process Time Constant (tau, s) slider"
                       min={2.0}
                       max={80.0}
                       step={1.0}
@@ -695,7 +704,7 @@ export function ProcessControlLab() {
                     />
                     <input
                       type="number"
-                      aria-label="Process Time Constant tau numeric input"
+                      aria-label="Process Time Constant (tau, s) numeric input"
                       min={1}
                       max={200}
                       step={1}
@@ -728,6 +737,7 @@ export function ProcessControlLab() {
                     <input
                       id="proc-theta"
                       type="range"
+                      aria-label="Process Dead Time (theta, s) slider"
                       min={0.0}
                       max={30.0}
                       step={0.5}
@@ -739,7 +749,7 @@ export function ProcessControlLab() {
                     />
                     <input
                       type="number"
-                      aria-label="Process Dead Time theta numeric input"
+                      aria-label="Process Dead Time (theta, s) numeric input"
                       min={0}
                       max={100}
                       step={0.5}
@@ -764,6 +774,7 @@ export function ProcessControlLab() {
                     <input
                       id="proc-y0"
                       type="number"
+                      aria-label="Initial Process Output (Y_0, %PV)"
                       min={0}
                       max={100}
                       step={5}
@@ -784,6 +795,7 @@ export function ProcessControlLab() {
                     <input
                       id="proc-dur"
                       type="number"
+                      aria-label="Simulation Horizon (t_sim, s)"
                       min={20}
                       max={600}
                       step={10}
@@ -807,6 +819,7 @@ export function ProcessControlLab() {
                     <input
                       id="proc-dt"
                       type="number"
+                      aria-label="Simulation Time Step (dt, s)"
                       min={0.05}
                       max={1.0}
                       step={0.05}
@@ -852,6 +865,7 @@ export function ProcessControlLab() {
                     <input
                       id="exp-ysp"
                       type="range"
+                      aria-label="Setpoint Target (Y_sp, %PV) slider"
                       min={10}
                       max={95}
                       step={1}
@@ -883,6 +897,7 @@ export function ProcessControlLab() {
                     <input
                       id="exp-du"
                       type="range"
+                      aria-label="Open-Loop Input Step (delta u_OL, %MV) slider"
                       min={-30}
                       max={30}
                       step={1}
@@ -912,6 +927,7 @@ export function ProcessControlLab() {
                   <input
                     id="exp-dist"
                     type="range"
+                    aria-label="Load Disturbance Step (d, %MV) slider"
                     min={-25}
                     max={25}
                     step={1}
@@ -938,6 +954,7 @@ export function ProcessControlLab() {
                     <input
                       id="exp-tstep"
                       type="number"
+                      aria-label="Setpoint Step Time (t_step, s)"
                       min={0}
                       max={200}
                       step={1}
@@ -961,6 +978,7 @@ export function ProcessControlLab() {
                     <input
                       id="exp-tdist"
                       type="number"
+                      aria-label="Load Disturbance Step Time (t_dist, s)"
                       min={0}
                       max={400}
                       step={5}
@@ -986,7 +1004,7 @@ export function ProcessControlLab() {
                 </h2>
               </div>
 
-              <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+              <div className="space-y-2">
                 {PROCESS_CONTROL_PRESETS.map((preset) => {
                   const isSelected = activePresetId === preset.id;
                   return (
@@ -1070,10 +1088,10 @@ export function ProcessControlLab() {
 
               <LabMetricCard
                 label="Steady-State Error ($e_{\mathrm{ss}}$)"
-                value={`${results.metrics.steadyStateError_ess >= 0 ? '+' : ''}${results.metrics.steadyStateError_ess.toFixed(2)}%`}
+                value={`${formatSignedZero(results.metrics.steadyStateError_ess, 2, { positivePrefix: true })}%`}
                 subtext={
                   results.metrics.theoreticalProportionalOffset_ess !== null
-                    ? `Theoretical P offset: ${results.metrics.theoreticalProportionalOffset_ess.toFixed(2)}%`
+                    ? `Theoretical P offset: ${formatSignedZero(results.metrics.theoreticalProportionalOffset_ess, 2)}%`
                     : `Final Y = ${results.metrics.finalOutput_Y.toFixed(2)}% (Target ${results.metrics.finalTarget_Y.toFixed(1)}%)`
                 }
               />
@@ -1096,7 +1114,7 @@ export function ProcessControlLab() {
 
               <LabMetricCard
                 label="Delay Ratio & Loop Gain"
-                value={`θ/τ = ${results.controllabilityRatio_theta_over_tau.toFixed(2)}`}
+                value={`$\\theta / \\tau$ = ${results.controllabilityRatio_theta_over_tau.toFixed(2)}`}
                 subtext={`Loop gain $K_p K_c = ${results.loopGain_KpKc.toFixed(2)}$`}
               />
             </div>

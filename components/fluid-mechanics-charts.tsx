@@ -24,6 +24,7 @@ import {
   generateMoodySeries,
 } from '@/lib/fluid-mechanics';
 import { LabChartCard } from '@/components/lab-shared';
+import { truncateScenarioTickLabel } from '@/lib/navigation';
 import { Plus, RotateCcw, Trash2 } from 'lucide-react';
 
 export interface SavedFluidScenario {
@@ -73,6 +74,8 @@ export function FluidMechanicsCharts({
   const comparisonChartData = useMemo(() => {
     const items = savedScenarios.map((s) => ({
       name: s.label,
+      shortName: truncateScenarioTickLabel(s.label, 16),
+      fullName: s.label,
       deltaP_kPa: Number(s.frictionalPressureLoss_kPa.toFixed(2)),
       head_m: Number(s.requiredPumpHead_m.toFixed(2)),
       isLive: false,
@@ -81,6 +84,8 @@ export function FluidMechanicsCharts({
     if (results.isValid) {
       items.push({
         name: 'Current Live Run',
+        shortName: 'Current Live',
+        fullName: 'Current Live Run',
         deltaP_kPa: Number(results.frictionalPressureLoss_kPa.toFixed(2)),
         head_m: Number(results.requiredPumpHead_m.toFixed(2)),
         isLive: true,
@@ -543,12 +548,19 @@ export function FluidMechanicsCharts({
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={comparisonChartData}
-                margin={{ top: 10, right: 12, left: 0, bottom: 8 }}
+                margin={{ top: 10, right: 12, left: 0, bottom: 12 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#334155' }} />
+                <XAxis
+                  dataKey="shortName"
+                  interval={0}
+                  tick={{ fontSize: 10, fill: '#334155' }}
+                />
                 <YAxis unit=" kPa" tick={{ fontSize: 11, fill: '#475569' }} />
                 <Tooltip
+                  labelFormatter={(label, payload) =>
+                    payload?.[0]?.payload?.fullName ?? String(label)
+                  }
                   formatter={(value) => [
                     `${Number(value ?? 0).toFixed(2)} kPa`,
                     'Frictional ΔP',
@@ -573,51 +585,56 @@ export function FluidMechanicsCharts({
           </div>
 
           {/* Comparison Data Table */}
-          <div className="lg:col-span-8 min-w-0 overflow-x-auto">
+          <div
+            className="lg:col-span-8 min-w-0 overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
+            role="region"
+            aria-label="Fluid Mechanics Scenario Comparison Table"
+            tabIndex={0}
+          >
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-600 font-semibold">
-                  <th className="py-2 pr-3">Scenario</th>
-                  <th className="py-2 px-2 text-right">Q (L/s)</th>
-                  <th className="py-2 px-2 text-right">D (m)</th>
-                  <th className="py-2 px-2 text-right">Re</th>
-                  <th className="py-2 px-2 text-right">f_D</th>
-                  <th className="py-2 px-2 text-right">ΔP (kPa)</th>
-                  <th className="py-2 px-2 text-right">H (m)</th>
-                  <th className="py-2 px-2 text-right">Ps (kW)</th>
-                  <th className="py-2 pl-2 text-right">Actions</th>
+                  <th className="py-2 pr-3 whitespace-nowrap">Scenario</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">Q (L/s)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">D (m)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">Re</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">f_D</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">ΔP (kPa)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">H (m)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">Ps (kW)</th>
+                  <th className="py-2 pl-2 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono tabular-nums">
                 {savedScenarios.map((scenario) => (
                   <tr key={scenario.id} className="hover:bg-slate-50">
-                    <td className="py-2.5 pr-3 font-sans font-medium text-slate-900">
+                    <td className="py-2.5 pr-3 font-sans font-medium text-slate-900 whitespace-nowrap">
                       {scenario.label}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.inputs.flowRate_L_s.toFixed(1)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.inputs.diameter_m.toFixed(3)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {Math.round(scenario.reynoldsNumber).toLocaleString()}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.flowRegime === 'Zero Flow'
                         ? '—'
                         : scenario.darcyFrictionFactor.toFixed(4)}
                     </td>
-                    <td className="py-2.5 px-2 text-right font-semibold text-slate-900">
+                    <td className="py-2.5 px-2 text-right font-semibold text-slate-900 whitespace-nowrap">
                       {scenario.frictionalPressureLoss_kPa.toFixed(2)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.requiredPumpHead_m.toFixed(2)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.shaftPower_kW.toFixed(2)}
                     </td>
-                    <td className="py-2.5 pl-2 text-right font-sans">
+                    <td className="py-2.5 pl-2 text-right font-sans whitespace-nowrap">
                       <div className="inline-flex items-center gap-2">
                         <button
                           type="button"

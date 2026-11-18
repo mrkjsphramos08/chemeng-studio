@@ -256,7 +256,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                     <span className="text-[11px] font-mono uppercase tracking-wider text-teal-400">
                       Interactive Simulation Preview · Verified Solver Output
                     </span>
-                    <span className="text-[11px] font-mono text-slate-400">
+                    <span className="text-[11px] font-mono text-slate-400 whitespace-nowrap shrink-0">
                       {activePreview.code} / 06
                     </span>
                   </div>
@@ -361,7 +361,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
       {/* 2. FEATURED VIRTUAL LABORATORIES SECTION (All 6 Core Labs) */}
       <section
         id="featured-labs-section"
-        className="max-w-[1360px] mx-auto px-4 sm:px-6 space-y-8"
+        className="scroll-mt-32 max-w-[1360px] mx-auto px-4 sm:px-6 space-y-8"
       >
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
           <div className="space-y-2 max-w-2xl">
@@ -458,12 +458,15 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
       {/* 3. HOW ENTROLUME WORKS (4-STEP WORKFLOW) */}
       <section
         id="how-it-works-section"
-        className="bg-slate-900 text-white py-16 lg:py-20 border-y border-slate-800"
+        className="scroll-mt-32 bg-slate-900 text-white py-16 lg:py-20 border-y border-slate-800"
       >
         <div className="max-w-[1360px] mx-auto px-4 sm:px-6 space-y-12">
           <div className="max-w-3xl space-y-3">
-            <div className="text-xs font-semibold uppercase tracking-widest text-teal-400">
-              How Entrolume Works · Pedagogical Framework
+            <div className="flex items-center gap-3">
+              <EntrolumeLogo variant="dark" size="xs" decorative />
+              <span className="text-xs font-semibold uppercase tracking-widest text-teal-400">
+                · Pedagogical Framework
+              </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
               A Structured Four-Stage Engineering Inquiry Workflow
@@ -535,7 +538,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
       {/* 4. FOR STUDENTS & FOR EDUCATORS SECTION */}
       <section
         id="educators-section"
-        className="max-w-[1360px] mx-auto px-4 sm:px-6 space-y-10"
+        className="scroll-mt-32 max-w-[1360px] mx-auto px-4 sm:px-6 space-y-10"
       >
         <div className="max-w-3xl space-y-2">
           <div className="text-xs font-semibold uppercase tracking-widest text-teal-700">
@@ -669,7 +672,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
       {/* 5. FUTURE CAPABILITIES & PHASED ROADMAP */}
       <section
         id="roadmap-section"
-        className="max-w-[1360px] mx-auto px-4 sm:px-6 space-y-12"
+        className="scroll-mt-32 max-w-[1360px] mx-auto px-4 sm:px-6 space-y-12"
       >
         <div className="max-w-3xl space-y-2">
           <div className="text-xs font-semibold uppercase tracking-widest text-teal-700">
@@ -834,7 +837,11 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
       <footer className="max-w-[1360px] mx-auto px-4 sm:px-6 pt-12 border-t border-slate-200">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10">
           <div className="md:col-span-5 space-y-3">
-            <EntrolumeLogo variant="dark-ink" size="md" />
+            <EntrolumeLogo
+              variant="primary"
+              size="md"
+              ariaLabel="entrolume — Explore. Simulate. Understand."
+            />
             <p className="text-xs font-semibold uppercase tracking-widest text-teal-700">
               Explore. Simulate. Understand.
             </p>
@@ -902,10 +909,10 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
         <div className="pt-6 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>
             © {new Date().getFullYear()} Entrolume · Chemical Engineering Virtual
-            Laboratories (Phase 2.5 Release)
+            Laboratories (Phase 2.5.2 Release)
           </div>
           <div className="font-mono text-[11px] text-slate-500">
-            6 Verified Simulators · 73 Automated Tests · SI Standard
+            6 Verified Simulators · 85 Automated Tests · SI Standard
           </div>
         </div>
       </footer>

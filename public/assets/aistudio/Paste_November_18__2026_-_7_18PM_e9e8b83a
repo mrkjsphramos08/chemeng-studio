@@ -1,0 +1,1020 @@
+# ENTROLUME — Phase 2.5.1: Post-Deployment Quality Assurance, Bug Fixes & Responsive Refinement
+
+You are a principal frontend engineer, senior Next.js architect, scientific software engineer, accessibility specialist, and expert UI/UX quality assurance engineer.
+
+Continue developing the EXISTING Entrolume application.
+
+**THIS IS A TARGETED POST-DEPLOYMENT BUG-FIXING PHASE. DO NOT REBUILD OR REDESIGN THE APPLICATION.**
+
+An external audit of the deployed application has identified specific functional, layout, mathematical rendering, responsive design, chart, navigation, and accessibility issues.
+
+Your task is to systematically investigate, reproduce, fix, and verify those issues.
+
+## 1. PROJECT CONTEXT
+
+Entrolume is an interactive chemical engineering educational platform containing six functional virtual laboratories:
+
+1. Heat Exchanger
+2. Fluid Mechanics
+3. Chemical Reaction Engineering
+4. Distillation & Separation Processes
+5. Chemical Engineering Thermodynamics
+6. Process Dynamics & Control
+
+Technology stack:
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Recharts
+- KaTeX with HTML and MathML
+- Shared laboratory components
+- Independent scientific calculation engines
+- Interactive SVG diagrams
+- Scenario comparison tools
+- CSV export
+- Guided educational experiments
+
+The application has completed:
+
+- Phase 2.4 — Six Core Virtual Laboratories
+- Phase 2.5 — Entrolume Rebranding & Platform-wide UI/UX Overhaul
+
+Its previous development report recorded 73 passing automated tests before the Phase 2.5 changes.
+
+Establish the current baseline rather than assuming that the previous test count is still valid.
+
+### Deployment audited
+
+https://entorlume-staging.vercel.app/
+
+Note: The deployed hostname is spelled "entorlume" rather than "entrolume". Verify the deployed URL and project naming before proposing any changes. Do not rename deployment resources automatically.
+
+### Audit viewports
+
+- Desktop: 1440 × 900
+- Mobile: 390 × 844
+
+The audit found that the overall visual design, navy/teal palette, mathematical equation cards, and scientific simulation functionality are strong.
+
+**Preserve the current visual identity and engineering capabilities.**
+
+The goal is to eliminate the remaining problems that reduce usability, polish, accessibility, and functional consistency.
+
+---
+
+# PRIORITY 0 — ESTABLISH BASELINE AND REPRODUCE ISSUES
+
+Before modifying anything:
+
+1. Inspect the current repository.
+2. Identify the existing component structure.
+3. Review all audit findings below.
+4. Locate the affected files and relevant shared components.
+5. Run existing automated tests.
+6. Run TypeScript, production build, and lint checks.
+7. Reproduce reported bugs in the local application when possible.
+8. Record existing numerical outputs for representative presets in all six laboratories.
+
+Treat the file paths and suspected causes in this audit as investigation leads, not unquestionable proof.
+
+Confirm the actual causes before implementing fixes.
+
+Do not introduce a broad architectural rewrite to solve localized defects.
+
+---
+
+# PRIORITY 1 — CRITICAL FUNCTIONAL AND ROUTING FIXES
+
+## 1.1 Fix raw and uppercased LaTeX in parameter group headings
+
+Affected laboratories:
+
+- Chemical Reaction Engineering
+- Distillation & Separation Processes
+- Potentially other laboratories using shared parameter groups
+
+Observed incorrect headings include:
+
+- `VLE VOLATILITY ($\ALPHA$) & OPERATING REFLUX ($R$)`
+- `$A \RIGHTARROW B$`
+
+Suspected file:
+
+`components/lab-shared/lab-parameter-panel.tsx`
+
+The audit identified plain-text rendering of `group.title` inside an uppercase-styled container.
+
+Required actions:
+
+1. Inspect how group titles are rendered.
+2. Use the existing MathText or appropriate shared KaTeX component.
+3. Ensure inline `$...$` expressions are parsed correctly.
+4. Remove uppercase transformations that corrupt or visually distort mathematical expressions.
+5. Use normal case or title case for group headings.
+6. Preserve readable headings and mathematical notation.
+
+Do not blindly uppercase strings containing LaTeX commands.
+
+Verify all six laboratories for similar defects.
+
+### Acceptance criteria
+
+- No raw LaTeX delimiters visible.
+- No corrupted LaTeX commands.
+- All intended mathematical symbols render correctly.
+- No KaTeX errors.
+- Existing parameter controls remain functional.
+
+## 1.2 Fix sticky parameter sidebar behavior
+
+Affected laboratories:
+
+- Heat Exchanger
+- Fluid Mechanics
+- Reaction Engineering
+- Distillation
+- Other laboratories with similar layouts
+
+Observed issue:
+
+On desktop, scrolling through tall laboratories causes the left parameter sidebar to disappear, leaving a blank column.
+
+Suspected files:
+
+- `components/lab-shared/lab-parameter-panel.tsx`
+- `components/chemeng-studio-shell.tsx`
+
+The audit identified:
+
+- `lg:sticky lg:top-28`
+- A parent wrapper using `overflow-x-hidden`
+
+Investigate whether the ancestor overflow is disabling sticky positioning.
+
+Preferred targeted solution:
+
+- Replace inappropriate `overflow-x-hidden` with `overflow-x-clip` where it restores sticky positioning and prevents horizontal overflow.
+
+However, verify actual sticky behavior after the change.
+
+Important requirements:
+
+- The parameter sidebar should remain usable while scrolling.
+- Tall parameter panels must remain accessible.
+- Sticky elements must not overlap the navigation bar.
+- Avoid creating nested scroll traps.
+- Sticky behavior may be disabled on mobile where a normal document flow is preferable.
+
+### Acceptance criteria
+
+Verify the sidebar on desktop in every affected laboratory, including when the parameter panel is taller than the available viewport.
+
+## 1.3 Fix browser navigation and URL synchronization
+
+Observed issue:
+
+Switching among Overview, Laboratories Directory, and Labs 01–06 keeps the URL at `/` in the audited deployment.
+
+This breaks:
+
+- Browser Back
+- Browser Forward
+- Deep linking
+- Copying a laboratory-specific URL
+- Refreshing an active laboratory view
+
+Suspected files:
+
+- `components/chemeng-studio-shell.tsx`
+- `components/navbar.tsx`
+- `app/page.tsx`
+
+Implement URL-driven navigation using the existing Next.js architecture.
+
+Use the simplest appropriate routing approach:
+
+- Existing query-based routes such as `/?view=heat-exchanger`
+- Or actual Next.js routes if the existing architecture already supports them appropriately
+
+Prefer preserving the established query-based route convention rather than introducing an unnecessary routing migration.
+
+Required behavior:
+
+1. Clicking a navigation link updates the URL.
+2. Browser Back restores the previous view.
+3. Browser Forward restores the next view.
+4. Refreshing the page preserves the selected laboratory.
+5. Direct navigation to laboratory URLs works.
+6. Navigation remains compatible with Next.js server/client rendering.
+7. No hydration mismatches are introduced.
+
+Use semantic links (`<a>` or Next.js `<Link>`) where appropriate.
+
+Use `aria-current="page"` for the active navigation link.
+
+Avoid duplicate history entries or history-update loops.
+
+### Acceptance criteria
+
+Test direct links, refreshes, Back, and Forward across all six laboratories and the directory.
+
+## 1.4 Fix sticky-header anchor offsets
+
+Affected sections include:
+
+- `#how-it-works-section`
+- `#educators-section`
+- `#roadmap-section`
+
+Observed issue:
+
+Clicking anchor navigation places section headings behind the sticky header.
+
+Apply a suitable scroll offset using Tailwind utilities or CSS.
+
+Possible approach:
+
+`scroll-mt-32`
+
+Alternatively:
+
+`scroll-margin-top: 8rem`
+
+Choose the value according to the actual navigation height at each viewport.
+
+Verify the final position on both desktop and mobile.
+
+---
+
+# PRIORITY 2 — RESPONSIVE CHARTS, DIAGRAMS, AND DATA TABLES
+
+## 2.1 Fix concatenated chart footers and captions
+
+Affected laboratories:
+
+- Chemical Reaction Engineering
+- Distillation & Separation Processes
+
+Observed examples:
+
+`77.69%CSTR(τ): 60.00%`
+
+`mol/m³Total V: 1.50 m³`
+
+`Teal bar = Current live operating pointIncludes partial reboiler (1 stage)`
+
+Suspected files:
+
+- `components/reaction-engineering-charts.tsx`
+- `components/distillation-charts.tsx`
+
+Inspect how footer text and numeric values are composed.
+
+Use explicit layout spacing through flexbox, grid, or gap utilities.
+
+Do not rely on adjacent inline text nodes to create visually separated information.
+
+Requirements:
+
+- Clear visual separation between values.
+- Correct mathematical typography.
+- Consistent spacing.
+- Responsive wrapping.
+- Proper units.
+
+Inspect similar chart footers across all six laboratories.
+
+## 2.2 Improve mobile scenario comparison tables
+
+Affected:
+
+- Distillation Laboratory
+- Shared scenario comparison components
+
+Observed issue:
+
+On a 390px mobile viewport, numerical values become compressed and wrap across multiple lines.
+
+Some trailing columns are clipped.
+
+Required improvements:
+
+1. Prevent inappropriate wrapping inside numeric cells.
+2. Keep engineering quantities legible.
+3. Provide an accessible way to inspect all columns.
+4. Use responsive tables or a stacked-card representation on narrow screens.
+5. Preserve every data field.
+6. Preserve scenario load, comparison, and delete actions.
+
+Possible techniques:
+
+- `whitespace-nowrap` for numerical values.
+- Keyboard-focusable horizontal table regions.
+- `role="region"` with an accessible name.
+- Responsive card layouts for narrow containers.
+- Container queries where genuinely useful.
+
+Do not implement an excessively complicated table framework for this issue.
+
+Avoid creating inaccessible nested scrolling.
+
+### Acceptance criteria
+
+A mobile user can inspect every scenario value without clipped numbers or unreadable multi-line fractions.
+
+## 2.3 Fix McCabe–Thiele stage-stepper layout
+
+Affected:
+
+Distillation Laboratory
+
+Observed issue:
+
+Previous and Next stage controls wrap onto separate rows, reducing usability.
+
+Keep navigation controls together using an appropriate flex layout.
+
+Possible approach:
+
+- A nonwrapping `inline-flex` control group.
+- Appropriate spacing.
+- `shrink-0` where needed.
+
+Ensure the controls remain fully visible and operable on mobile.
+
+Preserve the existing stage-stepping behavior and scientific coordinates.
+
+## 2.4 Fix Distillation chart axis clipping
+
+Observed issue:
+
+The McCabe–Thiele Y-axis label becomes clipped on mobile.
+
+Possible solution:
+
+- Adjust chart margins.
+- Improve axis label position.
+- Use shorter, scientifically correct text where necessary.
+- Use a readable surrounding HTML label if SVG space is insufficient.
+
+Do not remove axis labels.
+
+Verify both X and Y axes at desktop and mobile sizes.
+
+## 2.5 Fix Distillation comparison X-axis labels
+
+Observed issue:
+
+Long scenario labels collide, especially on mobile.
+
+Example:
+
+`Baseline (α=2.5, R=2.0, q=1.0)Current Live Run`
+
+Implement readable tick labels using one or more of:
+
+- Short scenario names.
+- Multiline tick labels.
+- Angled labels.
+- Responsive labels.
+- More appropriate chart margins.
+
+Preserve full scenario details in tooltips or the comparison table.
+
+## 2.6 Improve mathematical equation overflow
+
+Affected:
+
+Distillation Laboratory
+
+Observed issue:
+
+Equation (4.3), involving the minimum stage calculation, produces a prominent internal horizontal scrollbar.
+
+Improve responsive mathematical typography without compromising correctness.
+
+Possible approaches:
+
+- Slightly reduce display-equation font size on small screens.
+- Apply carefully scoped responsive KaTeX styles.
+- Improve equation container padding.
+- Support line breaks for long equations.
+- Allow local horizontal scrolling only when genuinely necessary.
+
+Do not shrink equations to an unreadable size.
+
+Do not modify the mathematical meaning.
+
+## 2.7 Fix Process Control feedback diagram on mobile
+
+Affected:
+
+Process Dynamics & Control Laboratory
+
+Observed issue:
+
+The feedback-control SVG extends beyond the mobile viewport and hides part of the loop.
+
+Suspected file:
+
+`components/process-control-schematic.tsx`
+
+Implement appropriate responsiveness using:
+
+- SVG `viewBox`
+- Responsive container dimensions
+- `w-full`
+- `h-auto`
+- Suitable diagram proportions
+
+If the complete diagram cannot remain legible at 390px, provide an accessible, clearly indicated local pan/scroll solution or a mobile-specific layout.
+
+Do not simply scale down all diagram text until it becomes unreadable.
+
+Preserve every feedback connection, controller label, actuator element, and disturbance path.
+
+## 2.8 Fix Heat Exchanger chart labels
+
+Affected:
+
+Heat Exchanger Laboratory
+
+Observed issues:
+
+- Sensitivity chart Y-axis title overlaps multiline tick labels.
+- Scenario comparison bar chart omits the middle X-axis label.
+
+Possible fixes:
+
+- Increase Y-axis margins.
+- Adjust title offsets.
+- Improve tick formatting.
+- Use `interval={0}` on appropriate Recharts axes.
+- Provide sufficient label space.
+
+Verify that showing every tick does not create new overlap on mobile.
+
+Maintain correct scientific axes and plotted results.
+
+---
+
+# PRIORITY 3 — TYPOGRAPHY, INPUTS, AND ACCESSIBILITY
+
+## 3.1 Prevent parameter units from being truncated
+
+Affected:
+
+Shared laboratory parameter controls.
+
+Suspected file:
+
+`components/lab-shared/lab-parameter-panel.tsx`
+
+The audit identified:
+
+- `w-16 truncate`
+- `truncate max-w-[160px]`
+
+Observed truncated content includes:
+
+- `dimensio...`
+- `liquid f...`
+- Incomplete physical ordering constraints
+- Truncated q-line explanations
+
+Required improvements:
+
+1. Keep units readable.
+2. Avoid fixed-width truncation of important engineering information.
+3. Use responsive layouts.
+4. Place longer helper descriptions on a separate full-width line.
+5. Preserve mathematical symbols and constraints.
+
+Use concise SI notation where appropriate.
+
+Do not remove scientific context merely to fit the layout.
+
+## 3.2 Fix mathematical symbol wrapping
+
+Observed issues:
+
+- Directory cards split mathematical symbols and surrounding parentheses.
+- Hero KPI labels wrap awkwardly.
+- Lab identifiers split across lines.
+- Very small scientific numbers break mid-value.
+
+Examples:
+
+- Capacity Ratio with separated parentheses.
+- `LAB 01 / 06` split awkwardly.
+- `1.0e-17` split across lines.
+
+Use targeted `whitespace-nowrap` or equivalent formatting for indivisible mathematical and numeric tokens.
+
+Use `text-wrap: balance` selectively for short headings.
+
+Do not apply balancing globally.
+
+## 3.3 Eliminate negative-zero display
+
+Affected:
+
+Process Control Laboratory
+
+Observed:
+
+`-0.00%`
+
+Normalize insignificant floating-point negative zero at the presentation layer.
+
+Use an appropriate display tolerance based on the precision of the rendered value.
+
+For example, a value formatted to two decimal places should not display a negative zero.
+
+Do not alter the underlying scientific values or calculation engine.
+
+## 3.4 Fix theta/tau mathematical rendering
+
+Affected:
+
+Process Control Laboratory
+
+Observed:
+
+A ratio intended to display theta divided by tau appears as uppercase or plain monospaced text resembling `0/T`.
+
+Use the existing KaTeX components.
+
+For example:
+
+`<MathInline latex="\theta / \tau" />`
+
+Ensure the symbol renders correctly in result cards and relevant headings.
+
+Do not rely on CSS uppercase transformations for scientific notation.
+
+## 3.5 Improve mobile laboratory switcher
+
+Affected:
+
+`components/navbar.tsx`
+
+Observed issues:
+
+- Prominent native horizontal scrollbar.
+- Missing or undefined `no-scrollbar` utility.
+- Active laboratory chip may remain outside the visible area.
+
+Requirements:
+
+1. Keep the laboratory switcher in one horizontal row.
+2. Make it touch-scrollable.
+3. Ensure the active laboratory is visible.
+4. Preserve keyboard accessibility.
+5. Provide a visual indication that more laboratories exist off-screen.
+
+Possible solutions:
+
+- Appropriate horizontal overflow.
+- Subtle edge fades.
+- Scroll the active item into view.
+- Hide the scrollbar only if scrollability remains discoverable.
+
+Use a browser-supported `scrollIntoView` approach and avoid unintentionally scrolling the entire page.
+
+Do not rely on unsupported options without appropriate fallback behavior.
+
+## 3.6 Standardize form-control accent colors
+
+Affected:
+
+Process Control Laboratory and other native inputs.
+
+Observed:
+
+Checkboxes display browser-default blue rather than Entrolume teal.
+
+Extend appropriate accent-color styling to:
+
+- Checkboxes
+- Radio buttons
+- Range inputs
+
+Use the existing design token:
+
+`var(--entrolume-teal)`
+
+Preserve native accessibility and focus indicators.
+
+Avoid rebuilding native inputs as custom controls merely to change their color.
+
+## 3.7 Fix accessible mathematical form labels
+
+Observed:
+
+Some screen-reader labels omit variables rendered through KaTeX.
+
+Example:
+
+`Controller Gain ( )`
+
+Required:
+
+- Ensure all interactive inputs have meaningful accessible names.
+- Provide plain-text mathematical symbol fallbacks.
+- Avoid relying exclusively on visually rendered KaTeX for input labels.
+- Include meaningful variable names and units.
+
+Examples of accessible names:
+
+- Controller proportional gain, Kc
+- Integral time, Ti, seconds
+- Relative volatility, alpha
+- Process dead time, theta, seconds
+
+Use `aria-label`, `aria-labelledby`, and descriptive text appropriately.
+
+Avoid duplicate or contradictory accessible names.
+
+## 3.8 Remove problematic nested scrolling
+
+Affected:
+
+Process Control Benchmark Scenarios and other potentially constrained panels.
+
+Observed:
+
+Nested scroll containers make mobile interaction difficult.
+
+Remove unnecessary fixed-height scrolling on mobile.
+
+Allow normal page flow where appropriate.
+
+Retain constrained scrolling only where it improves desktop usability.
+
+Ensure the user can reach every scenario and control through normal touch and keyboard interaction.
+
+## 3.9 Unify parameter panels across Labs 05 and 06
+
+Affected:
+
+- Thermodynamics
+- Process Dynamics & Control
+
+The audit identified layout differences compared with the shared `LabParameterPanel`.
+
+Review whether these laboratories can adopt the shared parameter-control patterns more consistently.
+
+Goals:
+
+- Consistent labels
+- Consistent units
+- Consistent spacing
+- Consistent sliders
+- Consistent validation feedback
+- Consistent responsive layouts
+
+Do not force scientifically different parameter groups into inappropriate abstractions.
+
+Preserve all existing controls.
+
+---
+
+# PRIORITY 4 — CROSS-LABORATORY DESIGN CONSISTENCY
+
+After correcting the individual bugs, perform a targeted visual consistency pass across all six laboratories.
+
+Review:
+
+- Parameter panels
+- KPI cards
+- Scientific charts
+- Equations
+- Scenario tables
+- Educational instructions
+- Tabs and navigation
+- Warnings
+- Export controls
+- Reset actions
+- Guided inquiry sections
+
+The design should feel coherent throughout Entrolume.
+
+Preserve the approved:
+
+- Navy and teal palette
+- Typography hierarchy
+- Scientific visualizations
+- KaTeX mathematical rendering
+- Laboratory structure
+- Existing branding
+
+Do not perform another visual redesign.
+
+Improve only inconsistencies and usability issues justified by the audit.
+
+---
+
+# PRIORITY 5 — FUNCTIONAL REGRESSION PROTECTION
+
+The redesign and bug fixes must not modify or degrade scientific computations.
+
+Preserve:
+
+- Heat exchanger effectiveness–NTU solver
+- Fluid mechanics Darcy–Weisbach and Colebrook–White calculations
+- Reaction Engineering Batch/CSTR/PFR models
+- Distillation McCabe–Thiele solver
+- Thermodynamics Peng–Robinson and ideal VLE models
+- Process Dynamics & Control FOPDT/PID numerical simulation
+
+Do not modify solver algorithms unless a separate independently confirmed scientific defect requires an isolated correction.
+
+For unchanged inputs, expected outputs must remain unchanged within established numerical tolerances.
+
+Verify that:
+
+- Sliders update results.
+- Numerical inputs function.
+- Presets work.
+- Charts reflect calculations.
+- Scenario snapshots work.
+- Saved scenarios restore correctly.
+- Reset controls work.
+- CSV export remains functional.
+- Guided inquiry actions work.
+- Mathematical equations render correctly.
+- Scientific warnings remain accurate.
+
+Preserve the original numerical output values where no scientific correction is necessary.
+
+---
+
+# PRIORITY 6 — TESTING AND VERIFICATION
+
+After implementing the fixes, execute comprehensive checks.
+
+## A. Automated tests
+
+Run all existing tests.
+
+The previously reported baseline included 73 engineering and mathematical-rendering tests.
+
+Confirm the actual current count.
+
+Add targeted regression tests for:
+
+- Mathematical title rendering.
+- URL-driven navigation.
+- Browser history behavior.
+- Navigation active states.
+- Parameter-label formatting where testable.
+- Negative-zero display formatting.
+- Scenario/table formatting where appropriate.
+- Other reproduced defects suitable for automated testing.
+
+Do not claim tests passed unless executed.
+
+## B. Build and code quality
+
+Run:
+
+- TypeScript checks
+- Production build
+- ESLint
+
+Fix introduced errors and warnings.
+
+## C. Desktop browser checks
+
+Viewport:
+
+1440 × 900
+
+Verify:
+
+- Landing page
+- Laboratories directory
+- All six laboratories
+- Sticky sidebars during long scrolling
+- URL navigation and browser history
+- Mathematical notation
+- Scenario comparisons
+- Chart labels
+- Correct scientific values
+
+## D. Tablet browser checks
+
+Viewport:
+
+768px wide
+
+Verify the main layout, navigation, charts, parameter panels, and tables.
+
+## E. Mobile browser checks
+
+Viewport:
+
+390 × 844
+
+Verify:
+
+- No page-level horizontal overflow.
+- No clipped scientific diagrams.
+- No broken equation layout.
+- No chart-axis overlap.
+- No unreadable data tables.
+- No truncated essential units.
+- No inaccessible input controls.
+- No nested scrolling traps.
+- Correct active laboratory navigation.
+- Correct back/forward navigation.
+- Working scenario controls.
+
+## F. Browser console and network checks
+
+Check for:
+
+- JavaScript errors
+- React hydration errors
+- Failed network requests
+- KaTeX rendering errors
+- Broken routes
+- Missing assets
+- Unhandled exceptions
+
+## G. Visual regression checks
+
+Capture representative before/after screenshots where supported.
+
+Compare actual UI behavior rather than relying only on successful compilation.
+
+Confirm fixes at the exact components and viewport sizes identified in the audit.
+
+Do not claim a layout bug is resolved without checking the affected screen.
+
+---
+
+# PRIORITY 7 — UPDATE DEVELOPMENT DOCUMENTATION
+
+Update the README with:
+
+- Phase 2.5.1 improvements.
+- Navigation and routing behavior.
+- Relevant accessibility improvements.
+- Test and verification commands.
+- Known remaining limitations.
+
+Update the application roadmap only as necessary.
+
+The revised sequence is:
+
+- Phase 2.5 — Rebranding & Platform-wide UI/UX Overhaul: Completed
+- Phase 2.5.1 — Post-Deployment QA and Refinement: Current
+- Phase 3 — Gemini AI Engineering Tutor: Planned
+- Phase 4 — Machine Learning Workspace: Planned
+- Phase 5 — Academic SaaS Features: Planned
+
+Do not mark Phase 2.5.1 complete until verification has been performed.
+
+---
+
+# STRICT SCOPE CONTROL
+
+## DO
+
+- Fix the audit findings.
+- Correct URL navigation.
+- Fix sticky sidebar behavior.
+- Fix LaTeX rendering in headings.
+- Improve chart labels and captions.
+- Improve responsive scientific diagrams.
+- Improve mobile scenario tables.
+- Fix truncated scientific notation and units.
+- Standardize form controls.
+- Improve accessible labels.
+- Remove problematic nested scrolling.
+- Preserve engineering functionality.
+- Run comprehensive regression testing.
+
+## DO NOT
+
+- Rebuild the application.
+- Perform another full redesign.
+- Replace Next.js, Tailwind, Recharts, or KaTeX.
+- Rewrite scientific calculation engines.
+- Remove existing laboratory features.
+- Introduce new laboratories.
+- Implement Gemini AI tutoring.
+- Implement Machine Learning.
+- Add authentication or payments.
+- Change GitHub repository configuration without explicit authorization.
+- Change the Vercel project or deployment domain automatically.
+- Introduce unnecessary libraries.
+- Hide critical information merely to improve visual appearance.
+
+---
+
+# IMPLEMENTATION ORDER
+
+Follow this order:
+
+1. Inspect the repository and reproduce reported problems.
+2. Establish passing test/build baseline.
+3. Fix raw LaTeX and mathematical headings.
+4. Fix sticky parameter sidebars.
+5. Implement reliable URL navigation and history synchronization.
+6. Fix header anchor offsets.
+7. Fix concatenated chart text.
+8. Fix mobile charts and diagrams.
+9. Fix scenario comparison tables.
+10. Improve units and helper text.
+11. Fix negative zero and mathematical symbol formatting.
+12. Improve the mobile laboratory switcher.
+13. Standardize native form-control styling.
+14. Fix accessible input names.
+15. Remove problematic nested scrolling.
+16. Review Labs 05–06 shared parameter layout consistency.
+17. Perform targeted cross-laboratory UI consistency checks.
+18. Run all automated tests.
+19. Run production build and lint.
+20. Run desktop, tablet, and mobile browser verification.
+21. Fix remaining regressions.
+22. Update documentation.
+23. Produce a final verification report.
+
+Make reasonable technical decisions independently.
+
+Avoid unnecessary approval loops.
+
+If execution limits prevent completing all items, prioritize functional navigation, mathematical correctness of rendered content, sticky sidebar usability, and serious mobile layout problems before cosmetic improvements.
+
+---
+
+# EXPECTED COMPLETION REPORT
+
+Provide a structured completion report with the following sections:
+
+1. **Baseline Verification**
+   - Existing test, build, and lint results.
+
+2. **Confirmed Audit Findings**
+   - Which reported problems were reproduced.
+   - Which suspected causes were confirmed.
+   - Which findings could not be reproduced.
+
+3. **Implemented Fixes**
+   - Exact changes.
+   - Relevant files.
+   - Explanation of fixes.
+
+4. **Navigation and Routing**
+   - Deep-link behavior.
+   - Browser Back/Forward verification.
+   - Sticky-header anchor behavior.
+
+5. **Scientific UI Improvements**
+   - KaTeX formatting.
+   - Chart labels.
+   - Equations.
+   - Units.
+   - Scientific diagrams.
+
+6. **Responsive Fixes**
+   - Desktop, tablet, and mobile outcomes.
+
+7. **Accessibility Improvements**
+   - Form labels.
+   - Keyboard navigation.
+   - Scroll regions.
+   - Mathematical accessibility.
+
+8. **Engineering Regression Verification**
+   - Confirmation that existing scientific calculation behavior is preserved.
+   - Numerical reference comparisons.
+
+9. **Automated Tests**
+   - Test counts.
+   - Passing and failing results.
+   - Newly added regression tests.
+
+10. **Build and Lint**
+    - Actual execution results.
+
+11. **Browser Verification**
+    - Viewports tested.
+    - Console and network results.
+    - Remaining visual defects.
+
+12. **Remaining Limitations**
+    - Unresolved problems and relevant risks.
+
+13. **Phase 3 Readiness**
+    - Whether Entrolume is ready to begin Gemini AI Engineering Tutor development.
+
+Distinguish verified fixes from assumptions and untested functionality.
+
+Do not claim complete accessibility, scientific validation, or production readiness solely because automated tests pass.
+
+**Begin Entrolume Phase 2.5.1 — Post-Deployment Quality Assurance, Bug Fixes & Responsive Refinement now.**

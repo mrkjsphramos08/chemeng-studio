@@ -29,7 +29,7 @@ export function LabMetricCard({
       <div
         className={`font-mono font-bold tracking-tight mt-1.5 tabular-nums ${valueClassName}`}
       >
-        {value}
+        <MathText text={value} />
       </div>
       <div className="text-[11px] font-mono text-slate-500 mt-1 leading-normal">
         <MathText text={subtext} />
@@ -100,7 +100,11 @@ export function LabChartCard({
 
       {children}
 
-      {footer && <div className="pt-2 border-t border-slate-100">{footer}</div>}
+      {footer && (
+        <div className="pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 text-xs text-slate-600 font-mono tabular-nums">
+          {footer}
+        </div>
+      )}
     </div>
   );
 }

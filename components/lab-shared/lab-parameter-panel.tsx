@@ -66,7 +66,7 @@ export function LabParameterPanel<T extends object>({
   };
 
   return (
-    <div className="lg:col-span-4 min-w-0 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-5 lg:sticky lg:top-28">
+    <div className="lg:col-span-4 min-w-0 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-5 lg:sticky lg:top-28 lg:self-start">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 gap-2">
         <div>
           <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-teal-700">
@@ -108,10 +108,10 @@ export function LabParameterPanel<T extends object>({
                 className="w-full flex items-center justify-between text-left gap-2 cursor-pointer"
                 aria-expanded={!isCollapsed}
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                  {group.title}
+                <span className="text-xs font-bold tracking-wide text-slate-700">
+                  <MathText text={group.title} />
                 </span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-400">
+                <span className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-400 shrink-0 whitespace-nowrap">
                   <span>{groupControls.length} params</span>
                   {isCollapsed ? (
                     <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
@@ -128,6 +128,7 @@ export function LabParameterPanel<T extends object>({
                       (values as Record<string, unknown>)[ctrl.key] ?? 0
                     );
                     const effectiveHelp = ctrl.helpText ?? ctrl.helperText;
+                    const plainLabel = ctrl.label.replace(/\$[^$]*\$/g, '').trim();
                     return (
                       <div
                         key={ctrl.key}
@@ -153,6 +154,7 @@ export function LabParameterPanel<T extends object>({
                             <input
                               id={`input-${ctrl.key}`}
                               type="number"
+                              aria-label={`${plainLabel} (${ctrl.symbol}, ${ctrl.unit}) numeric input`}
                               min={ctrl.inputMin}
                               max={ctrl.inputMax}
                               step={ctrl.inputStep ?? ctrl.step}
@@ -161,7 +163,7 @@ export function LabParameterPanel<T extends object>({
                               className="w-20 px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
                               data-testid={`number-${ctrl.key}`}
                             />
-                            <span className="text-[11px] text-slate-500 w-16 truncate">
+                            <span className="text-[11px] text-slate-500 shrink-0 whitespace-nowrap">
                               {ctrl.unitLatex ? (
                                 <MathInline latex={ctrl.unitLatex} />
                               ) : (
@@ -173,7 +175,7 @@ export function LabParameterPanel<T extends object>({
 
                         <input
                           type="range"
-                          aria-label={`${ctrl.label} (${ctrl.symbol}) slider`}
+                          aria-label={`${plainLabel} (${ctrl.symbol}, ${ctrl.unit}) slider`}
                           min={ctrl.min}
                           max={ctrl.max}
                           step={ctrl.step}
@@ -185,13 +187,13 @@ export function LabParameterPanel<T extends object>({
 
                         <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tabular-nums">
                           <span>Min: {ctrl.min}</span>
-                          {effectiveHelp && (
-                            <span className="font-sans text-slate-500 truncate max-w-[160px]">
-                              <MathText text={effectiveHelp} />
-                            </span>
-                          )}
                           <span>Max: {ctrl.max}</span>
                         </div>
+                        {effectiveHelp && (
+                          <div className="text-[11px] font-sans text-slate-500 leading-snug pt-0.5 border-t border-slate-100">
+                            <MathText text={effectiveHelp} />
+                          </div>
+                        )}
                       </div>
                     );
                   })}

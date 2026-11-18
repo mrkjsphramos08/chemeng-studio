@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Flame,
   Waves,
@@ -90,8 +90,28 @@ const LAB_SWITCHER_ITEMS: {
 
 export function Navbar({ activeView, onSelectView }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const stripContainerRef = useRef<HTMLDivElement | null>(null);
+  const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const isLabActive = LAB_SWITCHER_ITEMS.some((lab) => lab.id === activeView);
+
+  // Auto-scroll the 6-lab switcher strip so the active lab chip is visible on mobile/tablet
+  useEffect(() => {
+    const container = stripContainerRef.current;
+    const activeChip = chipRefs.current[activeView];
+    if (!container || !activeChip) return;
+
+    const chipLeft = activeChip.offsetLeft;
+    const chipWidth = activeChip.offsetWidth;
+    const containerWidth = container.clientWidth;
+    if (container.scrollWidth > containerWidth) {
+      const targetScroll = Math.max(
+        0,
+        chipLeft - containerWidth / 2 + chipWidth / 2
+      );
+      container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+    }
+  }, [activeView]);
 
   const handleNav = (view: ActiveView, sectionId?: string) => {
     setMobileMenuOpen(false);
@@ -106,11 +126,16 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
         <button
           type="button"
           onClick={() => handleNav('overview')}
-          className="flex items-center gap-2.5 text-left group focus:outline-none shrink-0 cursor-pointer"
+          className="flex items-center gap-2.5 text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 rounded-lg shrink-0 cursor-pointer"
           data-testid="nav-brand"
           aria-label="Entrolume Home — Explore. Simulate. Understand."
         >
-          <EntrolumeLogo variant="dark-ink" size="md" />
+          <EntrolumeLogo
+            variant="primary"
+            size="md"
+            decorative
+            className="[&_svg]:h-[26px] [&_svg]:w-[133px] sm:[&_svg]:h-[30px] sm:[&_svg]:w-[153px]"
+          />
         </button>
 
         {/* Zone 2: Primary Platform Navigation (5 single-line links) */}
@@ -121,6 +146,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           <button
             type="button"
             onClick={() => handleNav('overview')}
+            aria-current={activeView === 'overview' ? 'page' : undefined}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
               activeView === 'overview'
                 ? 'bg-slate-900 text-white'
@@ -134,6 +160,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           <button
             type="button"
             onClick={() => handleNav('directory')}
+            aria-current={activeView === 'directory' ? 'page' : undefined}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
               activeView === 'directory'
                 ? 'bg-slate-900 text-white'
@@ -209,8 +236,13 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
       </div>
 
       {/* Secondary 6-Laboratory Quick-Switcher Strip */}
-      <div className="bg-slate-50/90 border-t border-slate-200/80">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      <div className="relative bg-slate-50/90 border-t border-slate-200/80">
+        <div
+          ref={stripContainerRef}
+          role="navigation"
+          aria-label="Virtual Laboratories Switcher"
+          className="max-w-[1360px] mx-auto px-4 sm:px-6 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar"
+        >
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap mr-1.5 hidden lg:inline">
             Virtual Labs:
           </span>
@@ -220,9 +252,13 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
             return (
               <button
                 key={item.id}
+                ref={(el) => {
+                  chipRefs.current[item.id] = el;
+                }}
                 type="button"
                 onClick={() => handleNav(item.id)}
                 data-testid={item.testId}
+                aria-current={isSelected ? 'page' : undefined}
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer ${
                   isSelected
                     ? 'bg-teal-700 text-white font-semibold shadow-2xs'
@@ -242,6 +278,15 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
             );
           })}
         </div>
+        {/* Subtle horizontal scroll fade cues on mobile */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-slate-50 to-transparent md:hidden"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-slate-50 to-transparent md:hidden"
+        />
       </div>
 
       {/* Mobile Navigation Drawer */}
@@ -251,12 +296,14 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           data-testid="nav-mobile-drawer"
         >
           <div className="space-y-1">
-            <div className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Entrolume Platform
+            <div className="px-2 pb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <EntrolumeLogo variant="icon-only" size="xs" decorative />
+              <span>Entrolume Platform</span>
             </div>
             <button
               type="button"
               onClick={() => handleNav('overview')}
+              aria-current={activeView === 'overview' ? 'page' : undefined}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium ${
                 activeView === 'overview'
                   ? 'bg-slate-900 text-white'
@@ -268,6 +315,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
             <button
               type="button"
               onClick={() => handleNav('directory')}
+              aria-current={activeView === 'directory' ? 'page' : undefined}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium ${
                 activeView === 'directory'
                   ? 'bg-slate-900 text-white'
@@ -312,6 +360,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
                     key={item.id}
                     type="button"
                     onClick={() => handleNav(item.id)}
+                    aria-current={isSelected ? 'page' : undefined}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-left ${
                       isSelected
                         ? 'bg-teal-700 text-white font-semibold'

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 262 262" fill="none" role="img" aria-labelledby="entrolume-favicon-title">
+  <title id="entrolume-favicon-title">Entrolume</title>
+  <!-- Centered inside a square 262x262 viewBox (dy = +10) for crisp 16x16, 24x24, 32x32, and 48x48 favicon rendering -->
+  <g transform="translate(0, 10)">
+    <path d="M 1 103.5 V 74 C 1 31 36 0 82 0 H 261 V 25 C 261 36.9 251.4 46.5 239.5 46.5 H 130 C 96 46.5 64 103.5 25 103.5 H 1 Z" fill="#0F172A" />
+    <path d="M 1 118 H 25 C 66 118 96 91 130 91 H 261 V 126.5 C 261 138.4 251.4 148 239.5 148 H 130 C 96 148 66 131.5 25 131.5 H 1 Z" fill="#0D9488" />
+    <path d="M 1 146 H 25 C 64 146 96 192 130 192 H 247 C 254.7 192 261 198.3 261 206 V 220 C 261 231.9 251.4 241.5 239.5 241.5 H 82 C 36 241.5 1 210.5 1 168 V 146 Z" fill="#0F172A" />
+  </g>
+</svg>

@@ -21,6 +21,7 @@ import {
   generateSensitivitySeries,
 } from '@/lib/heat-exchanger';
 import { MathInline } from '@/components/lab-shared';
+import { truncateScenarioTickLabel } from '@/lib/navigation';
 import { Plus, Trash2, RotateCcw } from 'lucide-react';
 
 export interface SavedScenario {
@@ -102,6 +103,8 @@ export function HeatExchangerCharts({
   const comparisonChartData = useMemo(() => {
     const items = savedScenarios.map((s) => ({
       name: s.label,
+      shortName: truncateScenarioTickLabel(s.label, 16),
+      fullName: s.label,
       Q_kW: Number(s.Q_kW.toFixed(1)),
       effectiveness_pct: Number(s.effectiveness_pct.toFixed(1)),
       Th_out: Number(s.Th_out.toFixed(1)),
@@ -112,6 +115,8 @@ export function HeatExchangerCharts({
     if (results.isValid) {
       items.push({
         name: 'Current Live Run',
+        shortName: 'Current Live',
+        fullName: 'Current Live Run',
         Q_kW: Number(results.Q_kW.toFixed(1)),
         effectiveness_pct: Number(results.effectiveness_pct.toFixed(1)),
         Th_out: Number(results.Th_out.toFixed(1)),
@@ -332,7 +337,7 @@ export function HeatExchangerCharts({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={sensitivityData}
-              margin={{ top: 12, right: 24, left: 4, bottom: 12 }}
+              margin={{ top: 12, right: 20, left: 12, bottom: 16 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
               <XAxis
@@ -350,12 +355,13 @@ export function HeatExchangerCharts({
               />
               <YAxis
                 yAxisId="left"
-                unit=" kW"
+                width={54}
                 tick={{ fontSize: 11, fill: '#0F172A' }}
                 label={{
-                  value: 'Heat Transfer Rate Q (kW)',
+                  value: 'Heat Duty Q (kW)',
                   angle: -90,
                   position: 'insideLeft',
+                  offset: 4,
                   fontSize: 11,
                   fill: '#0F172A',
                 }}
@@ -363,6 +369,7 @@ export function HeatExchangerCharts({
               <YAxis
                 yAxisId="right"
                 orientation="right"
+                width={50}
                 domain={[0, 100]}
                 unit="%"
                 tick={{ fontSize: 11, fill: '#0D9488' }}
@@ -370,6 +377,7 @@ export function HeatExchangerCharts({
                   value: 'Effectiveness ε (%)',
                   angle: 90,
                   position: 'insideRight',
+                  offset: 4,
                   fontSize: 11,
                   fill: '#0D9488',
                 }}
@@ -486,18 +494,22 @@ export function HeatExchangerCharts({
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={comparisonChartData}
-                margin={{ top: 10, right: 12, left: 0, bottom: 8 }}
+                margin={{ top: 10, right: 12, left: 0, bottom: 12 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
                 <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 11, fill: '#334155' }}
+                  dataKey="shortName"
+                  interval={0}
+                  tick={{ fontSize: 10, fill: '#334155' }}
                 />
                 <YAxis
                   unit=" kW"
                   tick={{ fontSize: 11, fill: '#475569' }}
                 />
                 <Tooltip
+                  labelFormatter={(label, payload) =>
+                    payload?.[0]?.payload?.fullName ?? String(label)
+                  }
                   formatter={(value, name) => [
                     name === 'Q_kW' ? `${Number(value ?? 0)} kW` : `${Number(value ?? 0)}%`,
                     name === 'Q_kW' ? 'Heat Transfer Rate (Q)' : 'Effectiveness (ε)',
@@ -522,42 +534,47 @@ export function HeatExchangerCharts({
           </div>
 
           {/* Comparison Data Table */}
-          <div className="lg:col-span-7 min-w-0 overflow-x-auto">
+          <div
+            className="lg:col-span-7 min-w-0 overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
+            role="region"
+            aria-label="Heat Exchanger Scenario Comparison Table"
+            tabIndex={0}
+          >
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-600 font-semibold">
-                  <th className="py-2 pr-3">Scenario</th>
-                  <th className="py-2 px-2 text-right">A (m²)</th>
-                  <th className="py-2 px-2 text-right">mh / mc (kg/s)</th>
-                  <th className="py-2 px-2 text-right">NTU</th>
-                  <th className="py-2 px-2 text-right">ε (%)</th>
-                  <th className="py-2 px-2 text-right">Q (kW)</th>
-                  <th className="py-2 px-2 text-right">Th,out / Tc,out (°C)</th>
-                  <th className="py-2 pl-2 text-right">Actions</th>
+                  <th className="py-2 pr-3 whitespace-nowrap">Scenario</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">A (m²)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">mh / mc (kg/s)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">NTU</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">ε (%)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">Q (kW)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">Th,out / Tc,out (°C)</th>
+                  <th className="py-2 pl-2 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono tabular-nums">
                 {savedScenarios.map((scenario) => (
                   <tr key={scenario.id} className="hover:bg-slate-50">
-                    <td className="py-2.5 pr-3 font-sans font-medium text-slate-900">
+                    <td className="py-2.5 pr-3 font-sans font-medium text-slate-900 whitespace-nowrap">
                       {scenario.label}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.inputs.A.toFixed(1)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.inputs.mh.toFixed(1)} / {scenario.inputs.mc.toFixed(1)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.NTU.toFixed(2)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.effectiveness_pct.toFixed(1)}%
                     </td>
-                    <td className="py-2.5 px-2 text-right font-semibold text-slate-900">
+                    <td className="py-2.5 px-2 text-right font-semibold text-slate-900 whitespace-nowrap">
                       {scenario.Q_kW.toFixed(1)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.Th_out.toFixed(1)} / {scenario.Tc_out.toFixed(1)}
                     </td>
                     <td className="py-2.5 pl-2 text-right font-sans">

@@ -510,13 +510,13 @@ export function ThermodynamicsLab() {
             />
 
             {/* Main Grid: Left Controls (4 cols) + Right Dashboard & Visualizations (8 cols) */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
               {/* Left Column: Fluid Selector, Presets, and SI Parameter Controls */}
-              <div className="space-y-5 lg:col-span-4">
+              <div className="space-y-5 lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
                 {/* Pure Reference Fluid Selector Card */}
                 <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
                   <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
-                    Verified Reference Fluids (NIST)
+                    01. Configure · User Inputs — Verified Reference Fluids (NIST)
                   </span>
                   <h3 className="mt-0.5 text-sm font-bold text-slate-900">
                     Select Pure Chemical Species
@@ -641,7 +641,7 @@ export function ThermodynamicsLab() {
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div>
                       <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
-                        Operating State Controls
+                        01. Configure · Operating State Controls
                       </span>
                       <h3 className="text-sm font-bold text-slate-900">
                         Temperature, Pressure &amp; Root Branch
@@ -672,6 +672,7 @@ export function ThermodynamicsLab() {
                     <input
                       id="pvt-temp-slider"
                       type="range"
+                      aria-label="Absolute Temperature (T, K) slider"
                       min={120}
                       max={600}
                       step={1}
@@ -707,6 +708,7 @@ export function ThermodynamicsLab() {
                     <input
                       id="pvt-pressure-slider"
                       type="range"
+                      aria-label="Absolute Pressure (P, bar) slider"
                       min={1}
                       max={300}
                       step={0.5}
@@ -742,6 +744,7 @@ export function ThermodynamicsLab() {
                     <input
                       id="pvt-moles-slider"
                       type="range"
+                      aria-label="Molar Amount (n, mol) slider"
                       min={0.5}
                       max={10}
                       step={0.5}
@@ -809,7 +812,7 @@ export function ThermodynamicsLab() {
               {/* Right Column: KPI Metrics, Schematic, and 4 Interactive Charts */}
               <div className="space-y-5 lg:col-span-8">
                 {/* KPI Cards Grid */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   <LabMetricCard
                     label="Compressibility Factor ($Z = Pv/RT$)"
                     value={pvtResults.compressibilityFactor_Z.toFixed(4)}
@@ -1107,9 +1110,9 @@ export function ThermodynamicsLab() {
             />
 
             {/* Main Grid: Left Controls (4 cols) + Right Dashboard & Visualizations (8 cols) */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
               {/* Left Column: VLE Presets & Parameter Sliders */}
-              <div className="space-y-5 lg:col-span-4">
+              <div className="space-y-5 lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
                 {/* Binary VLE Presets Card */}
                 <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
                   <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
@@ -1154,7 +1157,7 @@ export function ThermodynamicsLab() {
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div>
                       <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
-                        Mixture &amp; Saturation Pressures
+                        01. Configure · Mixture &amp; Saturation Pressures
                       </span>
                       <h3 className="text-sm font-bold text-slate-900">
                         Hypothetical Ideal Components A &amp; B
@@ -1179,12 +1182,13 @@ export function ThermodynamicsLab() {
                         Liquid / Feed Mole Fraction <MathInline latex="x_A" />
                       </label>
                       <span className="font-mono font-bold text-teal-800">
-                        x_A = {vleInputs.liquidMoleFraction_xA.toFixed(2)} (x_B = {(1 - vleInputs.liquidMoleFraction_xA).toFixed(2)})
+                        <MathInline latex="x_A" /> = {vleInputs.liquidMoleFraction_xA.toFixed(2)} (<MathInline latex="x_B" /> = {(1 - vleInputs.liquidMoleFraction_xA).toFixed(2)})
                       </span>
                     </div>
                     <input
                       id="vle-xa-slider"
                       type="range"
+                      aria-label="Liquid Mole Fraction (x_A, mol/mol) slider"
                       min={0}
                       max={1}
                       step={0.01}
@@ -1213,6 +1217,7 @@ export function ThermodynamicsLab() {
                     <input
                       id="vle-psata-slider"
                       type="range"
+                      aria-label="Pure A Saturation Pressure (P_A^sat, kPa) slider"
                       min={20}
                       max={250}
                       step={1}
@@ -1241,6 +1246,7 @@ export function ThermodynamicsLab() {
                     <input
                       id="vle-psatb-slider"
                       type="range"
+                      aria-label="Pure B Saturation Pressure (P_B^sat, kPa) slider"
                       min={15}
                       max={200}
                       step={1}
@@ -1269,6 +1275,7 @@ export function ThermodynamicsLab() {
                     <input
                       id="vle-psys-slider"
                       type="range"
+                      aria-label="Cell Operating Pressure (P_sys, kPa) slider"
                       min={15}
                       max={250}
                       step={0.5}
@@ -1303,7 +1310,7 @@ export function ThermodynamicsLab() {
               {/* Right Column: VLE KPIs, Cell Schematic, and Interactive P-x-y Charts */}
               <div className="space-y-5 lg:col-span-8">
                 {/* KPI Cards Grid */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   <LabMetricCard
                     label="Bubble-Point Pressure ($P_{\mathrm{bubble}}$)"
                     value={`${vleResults.bubblePressure_kPa.toFixed(2)} kPa`}

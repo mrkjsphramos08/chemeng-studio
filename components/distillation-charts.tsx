@@ -24,6 +24,7 @@ import {
   generateRelativeVolatilityComparisonSeries,
 } from '@/lib/distillation';
 import { LabChartCard, MathInline } from '@/components/lab-shared';
+import { truncateScenarioTickLabel } from '@/lib/navigation';
 import {
   AlertTriangle,
   ChevronLeft,
@@ -112,6 +113,8 @@ export function DistillationCharts({
       .filter((s) => s.fractionalTheoreticalStages !== null)
       .map((s) => ({
         name: s.label,
+        shortName: truncateScenarioTickLabel(s.label, 16),
+        fullName: s.label,
         fractionalStages: Number((s.fractionalTheoreticalStages ?? 0).toFixed(2)),
         refluxRatio: Number(s.inputs.refluxRatio_R.toFixed(2)),
         isLive: false,
@@ -123,6 +126,8 @@ export function DistillationCharts({
     ) {
       rows.push({
         name: 'Current Live Run',
+        shortName: 'Current Live',
+        fullName: 'Current Live Run',
         fractionalStages: Number(
           results.stageCalculation.fractionalTheoreticalStages.toFixed(2)
         ),
@@ -250,41 +255,46 @@ export function DistillationCharts({
               >
                 Stage 1
               </button>
-              <button
-                type="button"
-                data-testid="stage-step-prev-btn"
-                onClick={() => {
-                  const next = Math.max(1, activeStageLimit - 1);
-                  setVisibleStageLimit(next);
-                  setInspectedStageNumber(next);
-                }}
-                disabled={activeStageLimit <= 1}
-                aria-label="Previous equilibrium stage"
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-white text-slate-800 border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-45 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-teal-700"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-                Prev
-              </button>
-              <span className="px-2.5 py-1 text-xs font-mono font-semibold text-slate-900 tabular-nums whitespace-nowrap">
-                {visibleStageLimit === null
-                  ? `All ${totalStages} Stages`
-                  : `Stage ${activeStageLimit} / ${totalStages}`}
-              </span>
-              <button
-                type="button"
-                data-testid="stage-step-next-btn"
-                onClick={() => {
-                  const next = Math.min(totalStages, activeStageLimit + 1);
-                  setVisibleStageLimit(next);
-                  setInspectedStageNumber(next);
-                }}
-                disabled={activeStageLimit >= totalStages && visibleStageLimit !== null}
-                aria-label="Next equilibrium stage"
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-white text-slate-800 border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-45 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-teal-700"
-              >
-                Next
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+
+              {/* Indivisible Prev / Counter / Next sub-group so buttons never split across rows on mobile */}
+              <div className="inline-flex items-center gap-1 shrink-0 bg-white/70 rounded-md px-0.5">
+                <button
+                  type="button"
+                  data-testid="stage-step-prev-btn"
+                  onClick={() => {
+                    const next = Math.max(1, activeStageLimit - 1);
+                    setVisibleStageLimit(next);
+                    setInspectedStageNumber(next);
+                  }}
+                  disabled={activeStageLimit <= 1}
+                  aria-label="Previous equilibrium stage"
+                  className="inline-flex items-center gap-0.5 px-2 py-1.5 text-xs font-semibold bg-white text-slate-800 border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-45 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-teal-700"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  Prev
+                </button>
+                <span className="px-2 py-1 text-xs font-mono font-semibold text-slate-900 tabular-nums whitespace-nowrap">
+                  {visibleStageLimit === null
+                    ? `All ${totalStages}`
+                    : `${activeStageLimit} / ${totalStages}`}
+                </span>
+                <button
+                  type="button"
+                  data-testid="stage-step-next-btn"
+                  onClick={() => {
+                    const next = Math.min(totalStages, activeStageLimit + 1);
+                    setVisibleStageLimit(next);
+                    setInspectedStageNumber(next);
+                  }}
+                  disabled={activeStageLimit >= totalStages && visibleStageLimit !== null}
+                  aria-label="Next equilibrium stage"
+                  className="inline-flex items-center gap-0.5 px-2 py-1.5 text-xs font-semibold bg-white text-slate-800 border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-45 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-teal-700"
+                >
+                  Next
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
               <button
                 type="button"
                 data-testid="stage-step-all-btn"
@@ -322,10 +332,10 @@ export function DistillationCharts({
         )}
 
         {/* Precision Interactive SVG McCabe-Thiele x-y Plot */}
-        <div className="w-full overflow-x-auto" data-testid="mccabe-thiele-svg-container">
+        <div className="w-full" data-testid="mccabe-thiele-svg-container">
           <svg
             viewBox="0 0 680 545"
-            className="w-full h-auto min-w-[540px]"
+            className="w-full h-auto"
             role="img"
             aria-label="McCabe-Thiele x-y equilibrium diagram showing VLE curve, y=x diagonal, rectifying operating line, stripping operating line, feed q-line, and equilibrium stages"
           >
@@ -730,7 +740,7 @@ export function DistillationCharts({
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={volatilitySeries}
-                margin={{ top: 10, right: 16, left: 0, bottom: 20 }}
+                margin={{ top: 10, right: 16, left: 8, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis
@@ -747,12 +757,14 @@ export function DistillationCharts({
                   }}
                 />
                 <YAxis
+                  width={52}
                   domain={[0, 1]}
                   tick={{ fontSize: 11, fill: '#475569' }}
                   label={{
                     value: 'Vapor Mole Fraction y*',
                     angle: -90,
                     position: 'insideLeft',
+                    offset: 4,
                     style: { textAnchor: 'middle', fontSize: 11, fill: '#475569' },
                   }}
                 />
@@ -842,7 +854,7 @@ export function DistillationCharts({
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={refluxVsStagesSeries}
-                margin={{ top: 10, right: 16, left: 0, bottom: 20 }}
+                margin={{ top: 10, right: 16, left: 8, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis
@@ -859,11 +871,13 @@ export function DistillationCharts({
                   }}
                 />
                 <YAxis
+                  width={50}
                   tick={{ fontSize: 11, fill: '#475569' }}
                   label={{
                     value: 'Theoretical Stages N',
                     angle: -90,
                     position: 'insideLeft',
+                    offset: 4,
                     style: { textAnchor: 'middle', fontSize: 11, fill: '#475569' },
                   }}
                 />
@@ -934,7 +948,7 @@ export function DistillationCharts({
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={productFlowSeries}
-                margin={{ top: 10, right: 16, left: 0, bottom: 20 }}
+                margin={{ top: 10, right: 16, left: 8, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis
@@ -952,12 +966,14 @@ export function DistillationCharts({
                   }}
                 />
                 <YAxis
+                  width={52}
                   domain={[0, inputs.feedFlow_kmol_h]}
                   tick={{ fontSize: 11, fill: '#475569' }}
                   label={{
                     value: 'Flow Rate (kmol/h)',
                     angle: -90,
                     position: 'insideLeft',
+                    offset: 4,
                     style: { textAnchor: 'middle', fontSize: 11, fill: '#475569' },
                   }}
                 />
@@ -1016,24 +1032,29 @@ export function DistillationCharts({
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={scenarioComparisonBars}
-                margin={{ top: 10, right: 16, left: 0, bottom: 20 }}
+                margin={{ top: 10, right: 16, left: 8, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                 <XAxis
-                  dataKey="name"
+                  dataKey="shortName"
                   interval={0}
                   tick={{ fontSize: 10, fill: '#475569' }}
                 />
                 <YAxis
+                  width={50}
                   tick={{ fontSize: 11, fill: '#475569' }}
                   label={{
                     value: 'Fractional Stages N',
                     angle: -90,
                     position: 'insideLeft',
+                    offset: 4,
                     style: { textAnchor: 'middle', fontSize: 11, fill: '#475569' },
                   }}
                 />
                 <Tooltip
+                  labelFormatter={(label, payload) =>
+                    payload?.[0]?.payload?.fullName ?? String(label)
+                  }
                   formatter={(val) => [`${Number(val ?? 0).toFixed(2)} stages`, 'Theoretical Stages']}
                 />
                 <Bar dataKey="fractionalStages" radius={[6, 6, 0, 0]} maxBarSize={54}>
@@ -1101,54 +1122,171 @@ export function DistillationCharts({
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile Stacked Scenario Cards (< 640px) — Zero Cramped Multi-Line Cells */}
+        <div className="sm:hidden space-y-3" data-testid="distillation-scenario-mobile-cards">
+          {savedScenarios.map((s) => (
+            <div
+              key={`mob-${s.id}`}
+              className="rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 space-y-2.5 text-xs"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold text-slate-900">{s.label}</span>
+                <div className="inline-flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => onLoadScenario(s.inputs)}
+                    className="px-2.5 py-1 text-[11px] font-semibold text-teal-800 bg-teal-50 border border-teal-200 rounded-md hover:bg-teal-100"
+                  >
+                    Load
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onRemoveScenario(s.id)}
+                    aria-label={`Remove ${s.label}`}
+                    className="p-1 text-slate-500 hover:text-rose-700"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 font-mono text-[11px] tabular-nums">
+                <div className="bg-white rounded-lg p-2 border border-slate-200/80">
+                  <div className="text-[10px] font-sans text-slate-500">α &amp; Feed q</div>
+                  <div className="font-semibold text-slate-900 whitespace-nowrap">
+                    α = {s.inputs.relativeVolatility_alpha.toFixed(2)} · q ={' '}
+                    {s.inputs.feedQuality_q.toFixed(2)}
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-2 border border-slate-200/80">
+                  <div className="text-[10px] font-sans text-slate-500">Reflux R (Rmin)</div>
+                  <div className="font-semibold text-slate-900 whitespace-nowrap">
+                    {s.inputs.refluxRatio_R.toFixed(2)} (
+                    {s.minimumReflux_Rmin !== null ? s.minimumReflux_Rmin.toFixed(2) : '—'})
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-2 border border-slate-200/80">
+                  <div className="text-[10px] font-sans text-slate-500">zF → xD / xB</div>
+                  <div className="font-semibold text-slate-900 whitespace-nowrap">
+                    {s.inputs.feedComposition_zF.toFixed(2)} →{' '}
+                    {s.inputs.distillateComposition_xD.toFixed(2)} /{' '}
+                    {s.inputs.bottomsComposition_xB.toFixed(2)}
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-2 border border-slate-200/80">
+                  <div className="text-[10px] font-sans text-slate-500">Stages N (Feed NF)</div>
+                  <div className="font-semibold text-teal-800 whitespace-nowrap">
+                    {s.totalTheoreticalStages !== null && s.fractionalTheoreticalStages !== null
+                      ? `${s.totalTheoreticalStages} (${s.fractionalTheoreticalStages.toFixed(2)}) · NF=${s.feedStageNumber ?? '—'}`
+                      : 'Pinched'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Current Live Run Mobile Card */}
+          <div className="rounded-xl border-2 border-teal-600/70 bg-teal-50/40 p-3.5 space-y-2.5 text-xs">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-bold text-teal-950">Current Live Run</span>
+              <span className="px-2 py-0.5 rounded bg-teal-700 text-white text-[10px] font-semibold">
+                Active
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 font-mono text-[11px] tabular-nums">
+              <div className="bg-white rounded-lg p-2 border border-teal-200/80">
+                <div className="text-[10px] font-sans text-slate-500">α &amp; Feed q</div>
+                <div className="font-semibold text-slate-900 whitespace-nowrap">
+                  α = {inputs.relativeVolatility_alpha.toFixed(2)} · q ={' '}
+                  {inputs.feedQuality_q.toFixed(2)}
+                </div>
+              </div>
+              <div className="bg-white rounded-lg p-2 border border-teal-200/80">
+                <div className="text-[10px] font-sans text-slate-500">Reflux R (Rmin)</div>
+                <div className="font-semibold text-slate-900 whitespace-nowrap">
+                  {inputs.refluxRatio_R.toFixed(2)} (
+                  {results.minimumReflux.minimumRefluxRatio_Rmin !== null
+                    ? results.minimumReflux.minimumRefluxRatio_Rmin.toFixed(2)
+                    : '—'}
+                  )
+                </div>
+              </div>
+              <div className="bg-white rounded-lg p-2 border border-teal-200/80">
+                <div className="text-[10px] font-sans text-slate-500">zF → xD / xB</div>
+                <div className="font-semibold text-slate-900 whitespace-nowrap">
+                  {inputs.feedComposition_zF.toFixed(2)} →{' '}
+                  {inputs.distillateComposition_xD.toFixed(2)} /{' '}
+                  {inputs.bottomsComposition_xB.toFixed(2)}
+                </div>
+              </div>
+              <div className="bg-white rounded-lg p-2 border border-teal-200/80">
+                <div className="text-[10px] font-sans text-slate-500">Stages N (Feed NF)</div>
+                <div className="font-semibold text-teal-900 whitespace-nowrap">
+                  {results.stageCalculation.totalTheoreticalStages !== null &&
+                  results.stageCalculation.fractionalTheoreticalStages !== null
+                    ? `${results.stageCalculation.totalTheoreticalStages} (${results.stageCalculation.fractionalTheoreticalStages.toFixed(2)}) · NF=${results.stageCalculation.feedStageNumber ?? '—'}`
+                    : 'Pinched'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tablet & Desktop Full Comparison Table */}
+        <div
+          className="hidden sm:block overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
+          role="region"
+          aria-label="Distillation Scenario Comparison Table"
+          tabIndex={0}
+        >
           <table className="w-full text-left border-collapse text-xs font-mono tabular-nums">
             <thead>
               <tr className="border-b border-slate-200 text-slate-600 font-sans">
-                <th className="py-2.5 px-3 font-semibold">Scenario</th>
-                <th className="py-2.5 px-2 font-semibold">α</th>
-                <th className="py-2.5 px-2 font-semibold">q</th>
-                <th className="py-2.5 px-2 font-semibold">R (Rmin)</th>
-                <th className="py-2.5 px-2 font-semibold">zF → xD / xB</th>
-                <th className="py-2.5 px-2 font-semibold">D / B (kmol/h)</th>
-                <th className="py-2.5 px-2 font-semibold">Stages N (Frac)</th>
-                <th className="py-2.5 px-2 font-semibold">Feed NF</th>
-                <th className="py-2.5 px-2 font-semibold text-right">Actions</th>
+                <th className="py-2.5 px-3 font-semibold whitespace-nowrap">Scenario</th>
+                <th className="py-2.5 px-2 font-semibold whitespace-nowrap">α</th>
+                <th className="py-2.5 px-2 font-semibold whitespace-nowrap">q</th>
+                <th className="py-2.5 px-2 font-semibold whitespace-nowrap">R (Rmin)</th>
+                <th className="py-2.5 px-2 font-semibold whitespace-nowrap">zF → xD / xB</th>
+                <th className="py-2.5 px-2 font-semibold whitespace-nowrap">D / B (kmol/h)</th>
+                <th className="py-2.5 px-2 font-semibold whitespace-nowrap">Stages N (Frac)</th>
+                <th className="py-2.5 px-2 font-semibold whitespace-nowrap">Feed NF</th>
+                <th className="py-2.5 px-2 font-semibold text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {savedScenarios.map((s) => (
                 <tr key={s.id} className="hover:bg-slate-50/80">
-                  <td className="py-2.5 px-3 font-sans font-medium text-slate-900">{s.label}</td>
-                  <td className="py-2.5 px-2 text-slate-700">
+                  <td className="py-2.5 px-3 font-sans font-medium text-slate-900 whitespace-nowrap">
+                    {s.label}
+                  </td>
+                  <td className="py-2.5 px-2 text-slate-700 whitespace-nowrap">
                     {s.inputs.relativeVolatility_alpha.toFixed(2)}
                   </td>
-                  <td className="py-2.5 px-2 text-slate-700">
+                  <td className="py-2.5 px-2 text-slate-700 whitespace-nowrap">
                     {s.inputs.feedQuality_q.toFixed(2)}
                   </td>
-                  <td className="py-2.5 px-2 text-slate-800">
+                  <td className="py-2.5 px-2 text-slate-800 whitespace-nowrap">
                     {s.inputs.refluxRatio_R.toFixed(2)}{' '}
                     <span className="text-slate-500">
                       ({s.minimumReflux_Rmin !== null ? s.minimumReflux_Rmin.toFixed(2) : '—'})
                     </span>
                   </td>
-                  <td className="py-2.5 px-2 text-slate-700">
+                  <td className="py-2.5 px-2 text-slate-700 whitespace-nowrap">
                     {s.inputs.feedComposition_zF.toFixed(2)} →{' '}
                     {s.inputs.distillateComposition_xD.toFixed(2)} /{' '}
                     {s.inputs.bottomsComposition_xB.toFixed(2)}
                   </td>
-                  <td className="py-2.5 px-2 text-slate-700">
+                  <td className="py-2.5 px-2 text-slate-700 whitespace-nowrap">
                     {s.distillateFlow_kmol_h.toFixed(1)} / {s.bottomsFlow_kmol_h.toFixed(1)}
                   </td>
-                  <td className="py-2.5 px-2 font-semibold text-teal-800">
+                  <td className="py-2.5 px-2 font-semibold text-teal-800 whitespace-nowrap">
                     {s.totalTheoreticalStages !== null && s.fractionalTheoreticalStages !== null
                       ? `${s.totalTheoreticalStages} (${s.fractionalTheoreticalStages.toFixed(2)})`
                       : 'Pinched'}
                   </td>
-                  <td className="py-2.5 px-2 text-slate-800">
+                  <td className="py-2.5 px-2 text-slate-800 whitespace-nowrap">
                     {s.feedStageNumber !== null ? `Stage ${s.feedStageNumber}` : '—'}
                   </td>
-                  <td className="py-2.5 px-2 text-right">
+                  <td className="py-2.5 px-2 text-right whitespace-nowrap">
                     <div className="inline-flex items-center gap-1.5 font-sans">
                       <button
                         type="button"
@@ -1172,12 +1310,16 @@ export function DistillationCharts({
 
               {/* Current Live Run Row */}
               <tr className="bg-teal-50/40 font-semibold">
-                <td className="py-2.5 px-3 font-sans text-teal-950">Current Live Run</td>
-                <td className="py-2.5 px-2 text-slate-900">
+                <td className="py-2.5 px-3 font-sans text-teal-950 whitespace-nowrap">
+                  Current Live Run
+                </td>
+                <td className="py-2.5 px-2 text-slate-900 whitespace-nowrap">
                   {inputs.relativeVolatility_alpha.toFixed(2)}
                 </td>
-                <td className="py-2.5 px-2 text-slate-900">{inputs.feedQuality_q.toFixed(2)}</td>
-                <td className="py-2.5 px-2 text-slate-900">
+                <td className="py-2.5 px-2 text-slate-900 whitespace-nowrap">
+                  {inputs.feedQuality_q.toFixed(2)}
+                </td>
+                <td className="py-2.5 px-2 text-slate-900 whitespace-nowrap">
                   {inputs.refluxRatio_R.toFixed(2)}{' '}
                   <span className="text-slate-600 font-normal">
                     (
@@ -1187,27 +1329,27 @@ export function DistillationCharts({
                     )
                   </span>
                 </td>
-                <td className="py-2.5 px-2 text-slate-900">
+                <td className="py-2.5 px-2 text-slate-900 whitespace-nowrap">
                   {inputs.feedComposition_zF.toFixed(2)} →{' '}
                   {inputs.distillateComposition_xD.toFixed(2)} /{' '}
                   {inputs.bottomsComposition_xB.toFixed(2)}
                 </td>
-                <td className="py-2.5 px-2 text-slate-900">
+                <td className="py-2.5 px-2 text-slate-900 whitespace-nowrap">
                   {results.materialBalance.distillateFlow_kmol_h.toFixed(1)} /{' '}
                   {results.materialBalance.bottomsFlow_kmol_h.toFixed(1)}
                 </td>
-                <td className="py-2.5 px-2 text-teal-900">
+                <td className="py-2.5 px-2 text-teal-900 whitespace-nowrap">
                   {results.stageCalculation.totalTheoreticalStages !== null &&
                   results.stageCalculation.fractionalTheoreticalStages !== null
                     ? `${results.stageCalculation.totalTheoreticalStages} (${results.stageCalculation.fractionalTheoreticalStages.toFixed(2)})`
                     : 'Pinched'}
                 </td>
-                <td className="py-2.5 px-2 text-slate-900">
+                <td className="py-2.5 px-2 text-slate-900 whitespace-nowrap">
                   {results.stageCalculation.feedStageNumber !== null
                     ? `Stage ${results.stageCalculation.feedStageNumber}`
                     : '—'}
                 </td>
-                <td className="py-2.5 px-2 text-right font-sans text-[11px] text-teal-800">
+                <td className="py-2.5 px-2 text-right font-sans text-[11px] text-teal-800 whitespace-nowrap">
                   Active
                 </td>
               </tr>

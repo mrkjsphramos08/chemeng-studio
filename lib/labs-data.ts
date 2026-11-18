@@ -2374,13 +2374,37 @@ export const DEVELOPMENT_ROADMAP: RoadmapPhaseItem[] = [
   {
     phase: 'Phase 2.5',
     title: 'Entrolume Rebranding & UI/UX Overhaul',
-    status: 'Current Phase',
+    status: 'Implemented',
     summary:
-      'Active milestone: rebranded the platform as Entrolume with a unified design system, 3-zone navigation architecture, subject-categorized directory, and standardized Configure → Simulate → Analyze → Reflect workflows across all six laboratories.',
+      'Rebranded the platform as Entrolume with a unified design system, 3-zone navigation architecture, subject-categorized directory, and standardized Configure → Simulate → Analyze → Reflect workflows across all six laboratories.',
     items: [
       'Entrolume vector brand identity, tagline ("Explore. Simulate. Understand."), and semantic design tokens',
       'Streamlined 3-zone top navigation bar paired with a 1-click 6-laboratory switcher strip',
       'Standardized student orientation guides, collapsible parameter decks, and WCAG AA accessibility across all 6 labs',
+    ],
+  },
+  {
+    phase: 'Phase 2.5.1',
+    title: 'Post-Deployment QA & Responsive Refinement',
+    status: 'Implemented',
+    summary:
+      'Resolved post-deployment staging audit findings across URL synchronization, sticky desktop parameter panels, KaTeX heading/footer typography, responsive charts/schematics, and mobile comparison layouts.',
+    items: [
+      'Full URL query synchronization (?view=...) with browser Back/Forward history and sticky scroll-margin offsets',
+      'Restored desktop sticky parameter panels (overflow-x-clip) and KaTeX rendering in collapsible parameter group headers',
+      'Responsive McCabe–Thiele & FOPDT mobile schematics, non-overlapping chart axes, and stacked mobile comparison cards',
+    ],
+  },
+  {
+    phase: 'Phase 2.5.2',
+    title: 'Official Logo Integration & Brand Asset Implementation',
+    status: 'Current Phase',
+    summary:
+      'Active milestone: reconstructed the approved Entrolume geometric E-mark and lowercase wordmark into production vector SVG assets, coordinated light/dark/icon/monochrome variants, and square favicon.',
+    items: [
+      'Production SVG vector suite: entrolume-logo.svg, entrolume-logo-dark.svg, entrolume-icon.svg, entrolume-monochrome.svg, and favicon.svg',
+      'Centralized EntrolumeLogo component supporting primary, dark, icon-only, and monochrome variants with accessible semantics',
+      'Integrated across desktop/mobile navigation, dark pedagogical section, footer, and OpenGraph/favicon browser metadata',
     ],
   },
   {

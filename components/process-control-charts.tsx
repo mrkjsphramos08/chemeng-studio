@@ -20,6 +20,7 @@ import {
   SensitivitySweepResult,
 } from '@/lib/process-control';
 import { MathInline } from '@/components/lab-shared/math';
+import { formatSignedZero } from '@/lib/navigation';
 import { RotateCcw, Trash2 } from 'lucide-react';
 
 export interface SavedControlScenario {
@@ -509,7 +510,7 @@ export function ProcessControlCharts({
               <div className="flex flex-wrap gap-3 font-mono text-xs text-slate-700">
                 <span>
                   P Offset:{' '}
-                  <strong>{modeComparison.pMetrics.steadyStateError_ess.toFixed(2)}%</strong>
+                  <strong>{formatSignedZero(modeComparison.pMetrics.steadyStateError_ess, 2)}%</strong>
                 </span>
                 <span>
                   PI IAE: <strong>{modeComparison.piMetrics.iae.toFixed(1)}</strong>
@@ -735,25 +736,30 @@ export function ProcessControlCharts({
             </button>
           </div>
 
-          <div className="overflow-x-auto">
+          <div
+            className="overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
+            role="region"
+            aria-label="Process Control Scenario Comparison Table"
+            tabIndex={0}
+          >
             <table className="w-full min-w-[780px] border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-slate-700">
-                  <th className="px-3 py-2.5 font-semibold">Scenario</th>
-                  <th className="px-3 py-2.5 font-semibold">Mode</th>
-                  <th className="px-3 py-2.5 font-semibold">
+                  <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Scenario</th>
+                  <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Mode</th>
+                  <th className="px-3 py-2.5 font-semibold whitespace-nowrap">
                     Plant (<MathInline latex="K_p, \tau, \theta" />)
                   </th>
-                  <th className="px-3 py-2.5 font-semibold">
+                  <th className="px-3 py-2.5 font-semibold whitespace-nowrap">
                     Tuning (<MathInline latex="K_c, \tau_I, \tau_D" />)
                   </th>
-                  <th className="px-3 py-2.5 font-semibold">Overshoot</th>
-                  <th className="px-3 py-2.5 font-semibold">Settling (2%)</th>
-                  <th className="px-3 py-2.5 font-semibold">
+                  <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Overshoot</th>
+                  <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Settling (2%)</th>
+                  <th className="px-3 py-2.5 font-semibold whitespace-nowrap">
                     Offset <MathInline latex="e_{\mathrm{ss}}" />
                   </th>
-                  <th className="px-3 py-2.5 font-semibold">IAE</th>
-                  <th className="px-3 py-2.5 font-semibold">Actions</th>
+                  <th className="px-3 py-2.5 font-semibold whitespace-nowrap">IAE</th>
+                  <th className="px-3 py-2.5 font-semibold whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -762,17 +768,17 @@ export function ProcessControlCharts({
                   const inp = sc.inputs;
                   return (
                     <tr key={sc.id} className="hover:bg-slate-50/80">
-                      <td className="px-3 py-2.5 font-semibold text-slate-900">
+                      <td className="px-3 py-2.5 font-semibold text-slate-900 whitespace-nowrap">
                         {sc.label}
                       </td>
-                      <td className="px-3 py-2.5 font-mono font-semibold text-teal-800">
+                      <td className="px-3 py-2.5 font-mono font-semibold text-teal-800 whitespace-nowrap">
                         {inp.controllerMode}
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-slate-700">
+                      <td className="px-3 py-2.5 font-mono text-slate-700 whitespace-nowrap">
                         {inp.processGain_Kp.toFixed(2)} / {inp.timeConstant_tau_s.toFixed(0)}s /{' '}
                         {inp.deadTime_theta_s.toFixed(1)}s
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-slate-700">
+                      <td className="px-3 py-2.5 font-mono text-slate-700 whitespace-nowrap">
                         {inp.controllerMode === 'open-loop'
                           ? `Δu = ${inp.openLoopStep_du.toFixed(1)}%`
                           : `${inp.controllerGain_Kc.toFixed(2)} / ${
@@ -785,23 +791,23 @@ export function ProcessControlCharts({
                                 : '—'
                             }`}
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-slate-700">
+                      <td className="px-3 py-2.5 font-mono text-slate-700 whitespace-nowrap">
                         {m.overshootPercent !== null
                           ? `${m.overshootPercent.toFixed(1)}%`
                           : '—'}
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-slate-700">
+                      <td className="px-3 py-2.5 font-mono text-slate-700 whitespace-nowrap">
                         {m.settlingTime_2pct_s !== null
                           ? `${m.settlingTime_2pct_s.toFixed(1)} s`
                           : 'Unsettled'}
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-slate-700">
-                        {m.steadyStateError_ess.toFixed(2)}%
+                      <td className="px-3 py-2.5 font-mono text-slate-700 whitespace-nowrap">
+                        {formatSignedZero(m.steadyStateError_ess, 2)}%
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-slate-700">
+                      <td className="px-3 py-2.5 font-mono text-slate-700 whitespace-nowrap">
                         {m.iae.toFixed(1)}
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-3 py-2.5 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"

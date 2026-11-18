@@ -25,6 +25,7 @@ import {
   generateTargetConversionSizingSeries,
 } from '@/lib/reaction-engineering';
 import { LabChartCard, MathInline } from '@/components/lab-shared';
+import { truncateScenarioTickLabel } from '@/lib/navigation';
 import { Info, Plus, RotateCcw, Trash2 } from 'lucide-react';
 
 export interface SavedReactionScenario {
@@ -115,12 +116,16 @@ export function ReactionEngineeringCharts({
   const savedComparisonBarData = useMemo(() => {
     const rows = savedScenarios.map((s) => ({
       name: s.label,
+      shortName: truncateScenarioTickLabel(s.label, 16),
+      fullName: s.label,
       conversion_pct: Number(s.conversion_pct.toFixed(2)),
       isLive: false,
     }));
     if (results.isValid) {
       rows.push({
         name: 'Current Live Run',
+        shortName: 'Current Live',
+        fullName: 'Current Live Run',
         conversion_pct: Number(results.activeReactor.conversion_pct.toFixed(2)),
         isLive: true,
       });
@@ -159,8 +164,13 @@ export function ReactionEngineeringCharts({
             rightMeta={`$C_A(${inputs.batchTime_s.toFixed(1)}\\text{ s})$ = ${active.outletConcentration_mol_m3.toFixed(1)} mol/m³`}
             footer={
               <>
-                <span>Initial CA0: {inputs.initialConcentration_mol_m3.toFixed(1)} mol/m³</span>
-                <span>Rate k: {inputs.rateConstant_per_s.toFixed(4)} s⁻¹</span>
+                <span>
+                  Initial <MathInline latex="C_{A,0}" />:{' '}
+                  {inputs.initialConcentration_mol_m3.toFixed(1)} mol/m³
+                </span>
+                <span>
+                  Rate <MathInline latex="k" />: {inputs.rateConstant_per_s.toFixed(4)} s⁻¹
+                </span>
               </>
             }
           >
@@ -241,7 +251,7 @@ export function ReactionEngineeringCharts({
             footer={
               <>
                 <span>
-                  Target t_req ({inputs.targetConversion_pct}%):{' '}
+                  Target <MathInline latex="t_{\mathrm{req}}" /> ({inputs.targetConversion_pct}%):{' '}
                   {results.targetDesign.isTargetAchievable &&
                   results.targetDesign.requiredBatchTime_s !== null
                     ? `${results.targetDesign.requiredBatchTime_s.toFixed(1)} s`
@@ -329,8 +339,14 @@ export function ReactionEngineeringCharts({
           }
           footer={
             <>
-              <span>PFR(τ): {results.pfrAtBatchTime.conversion_pct.toFixed(2)}%</span>
-              <span>CSTR(τ): {results.cstrAtBatchTime.conversion_pct.toFixed(2)}%</span>
+              <span>
+                <MathInline latex="X_{\mathrm{PFR}}(\tau)" />:{' '}
+                {results.pfrAtBatchTime.conversion_pct.toFixed(2)}%
+              </span>
+              <span>
+                <MathInline latex="X_{\mathrm{CSTR}}(\tau)" />:{' '}
+                {results.cstrAtBatchTime.conversion_pct.toFixed(2)}%
+              </span>
             </>
           }
         >
@@ -416,8 +432,13 @@ export function ReactionEngineeringCharts({
             rightMeta={`$C_{A,\\mathrm{out}}$ = ${active.outletConcentration_mol_m3.toFixed(1)} mol/m³`}
             footer={
               <>
-                <span>Inlet CA0: {inputs.initialConcentration_mol_m3.toFixed(1)} mol/m³</span>
-                <span>Total V: {inputs.reactorVolume_m3.toFixed(2)} m³</span>
+                <span>
+                  Inlet <MathInline latex="C_{A,0}" />:{' '}
+                  {inputs.initialConcentration_mol_m3.toFixed(1)} mol/m³
+                </span>
+                <span>
+                  Total <MathInline latex="V" />: {inputs.reactorVolume_m3.toFixed(2)} m³
+                </span>
               </>
             }
           >
@@ -643,13 +664,13 @@ export function ReactionEngineeringCharts({
           footer={
             <>
               <span>
-                V_req,PFR:{' '}
+                <MathInline latex="V_{\mathrm{req,PFR}}" />:{' '}
                 {results.targetDesign.requiredVolumePFR_m3 !== null
                   ? `${results.targetDesign.requiredVolumePFR_m3.toFixed(2)} m³`
                   : 'Unbounded'}
               </span>
               <span>
-                V_req,CSTR:{' '}
+                <MathInline latex="V_{\mathrm{req,CSTR}}" />:{' '}
                 {results.targetDesign.requiredVolumeCSTR_m3 !== null
                   ? `${results.targetDesign.requiredVolumeCSTR_m3.toFixed(2)} m³`
                   : 'Unbounded'}
@@ -805,12 +826,19 @@ export function ReactionEngineeringCharts({
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={savedComparisonBarData}
-                margin={{ top: 10, right: 12, left: 0, bottom: 8 }}
+                margin={{ top: 10, right: 12, left: 0, bottom: 12 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#334155' }} />
+                <XAxis
+                  dataKey="shortName"
+                  interval={0}
+                  tick={{ fontSize: 10, fill: '#334155' }}
+                />
                 <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: '#475569' }} />
                 <Tooltip
+                  labelFormatter={(label, payload) =>
+                    payload?.[0]?.payload?.fullName ?? String(label)
+                  }
                   formatter={(value) => [
                     `${Number(value ?? 0).toFixed(2)} %`,
                     'Conversion X',
@@ -835,48 +863,53 @@ export function ReactionEngineeringCharts({
           </div>
 
           {/* Comparison Table */}
-          <div className="lg:col-span-8 min-w-0 overflow-x-auto">
+          <div
+            className="lg:col-span-8 min-w-0 overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
+            role="region"
+            aria-label="Reaction Engineering Scenario Comparison Table"
+            tabIndex={0}
+          >
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-600 font-semibold">
-                  <th className="py-2 pr-3">Scenario</th>
-                  <th className="py-2 px-2">Reactor</th>
-                  <th className="py-2 px-2 text-right">k (s⁻¹)</th>
-                  <th className="py-2 px-2 text-right">t or τ (s)</th>
-                  <th className="py-2 px-2 text-right">X (%)</th>
-                  <th className="py-2 px-2 text-right">CA (mol/m³)</th>
-                  <th className="py-2 px-2 text-right">V_CSTR / V_PFR</th>
-                  <th className="py-2 pl-2 text-right">Actions</th>
+                  <th className="py-2 pr-3 whitespace-nowrap">Scenario</th>
+                  <th className="py-2 px-2 whitespace-nowrap">Reactor</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">k (s⁻¹)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">t or τ (s)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">X (%)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">CA (mol/m³)</th>
+                  <th className="py-2 px-2 text-right whitespace-nowrap">V_CSTR / V_PFR</th>
+                  <th className="py-2 pl-2 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono tabular-nums">
                 {savedScenarios.map((scenario) => (
                   <tr key={scenario.id} className="hover:bg-slate-50">
-                    <td className="py-2.5 pr-3 font-sans font-medium text-slate-900">
+                    <td className="py-2.5 pr-3 font-sans font-medium text-slate-900 whitespace-nowrap">
                       {scenario.label}
                     </td>
-                    <td className="py-2.5 px-2 font-sans font-semibold text-slate-700 uppercase">
+                    <td className="py-2.5 px-2 font-sans font-semibold text-slate-700 uppercase whitespace-nowrap">
                       {scenario.reactorType}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.inputs.rateConstant_per_s.toFixed(3)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.characteristicTime_s.toFixed(1)}
                     </td>
-                    <td className="py-2.5 px-2 text-right font-semibold text-slate-900">
+                    <td className="py-2.5 px-2 text-right font-semibold text-slate-900 whitespace-nowrap">
                       {scenario.conversion_pct.toFixed(2)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.outletConcentration_mol_m3.toFixed(1)}
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700">
+                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
                       {scenario.requiredVolumeCSTR_m3 !== null &&
                       scenario.requiredVolumePFR_m3 !== null
                         ? `${scenario.requiredVolumeCSTR_m3.toFixed(2)} / ${scenario.requiredVolumePFR_m3.toFixed(2)}`
                         : '—'}
                     </td>
-                    <td className="py-2.5 pl-2 text-right font-sans">
+                    <td className="py-2.5 pl-2 text-right font-sans whitespace-nowrap">
                       <div className="inline-flex items-center gap-2">
                         <button
                           type="button"
@@ -900,29 +933,31 @@ export function ReactionEngineeringCharts({
 
                 {/* Live Row */}
                 <tr className="bg-teal-50/60 font-semibold text-teal-950">
-                  <td className="py-2.5 pr-3 font-sans font-semibold text-teal-900">
+                  <td className="py-2.5 pr-3 font-sans font-semibold text-teal-900 whitespace-nowrap">
                     Current Live Run
                   </td>
-                  <td className="py-2.5 px-2 font-sans uppercase">{inputs.reactorType}</td>
-                  <td className="py-2.5 px-2 text-right">
+                  <td className="py-2.5 px-2 font-sans uppercase whitespace-nowrap">
+                    {inputs.reactorType}
+                  </td>
+                  <td className="py-2.5 px-2 text-right whitespace-nowrap">
                     {inputs.rateConstant_per_s.toFixed(3)}
                   </td>
-                  <td className="py-2.5 px-2 text-right">
+                  <td className="py-2.5 px-2 text-right whitespace-nowrap">
                     {active.characteristicTime_s.toFixed(1)}
                   </td>
-                  <td className="py-2.5 px-2 text-right text-teal-800">
+                  <td className="py-2.5 px-2 text-right text-teal-800 whitespace-nowrap">
                     {active.conversion_pct.toFixed(2)}
                   </td>
-                  <td className="py-2.5 px-2 text-right">
+                  <td className="py-2.5 px-2 text-right whitespace-nowrap">
                     {active.outletConcentration_mol_m3.toFixed(1)}
                   </td>
-                  <td className="py-2.5 px-2 text-right">
+                  <td className="py-2.5 px-2 text-right whitespace-nowrap">
                     {results.targetDesign.requiredVolumeCSTR_m3 !== null &&
                     results.targetDesign.requiredVolumePFR_m3 !== null
                       ? `${results.targetDesign.requiredVolumeCSTR_m3.toFixed(2)} / ${results.targetDesign.requiredVolumePFR_m3.toFixed(2)}`
                       : 'Unbounded'}
                   </td>
-                  <td className="py-2.5 pl-2 text-right font-sans text-xs text-teal-700">
+                  <td className="py-2.5 pl-2 text-right font-sans text-xs text-teal-700 whitespace-nowrap">
                     Active
                   </td>
                 </tr>

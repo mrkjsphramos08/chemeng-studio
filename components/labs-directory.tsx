@@ -212,11 +212,11 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
                     <div className="w-11 h-11 rounded-xl bg-teal-50/90 border border-teal-200/80 flex items-center justify-center shrink-0">
                       {getModuleIcon(module.iconName)}
                     </div>
-                    <div className="text-right">
-                      <div className="text-xs font-mono font-semibold text-teal-800">
+                    <div className="text-right shrink-0">
+                      <div className="text-xs font-mono font-semibold text-teal-800 whitespace-nowrap">
                         LAB 0{labNumber} · Available Now
                       </div>
-                      <div className="text-[11px] font-mono text-slate-500 mt-0.5">
+                      <div className="text-[11px] font-mono text-slate-500 mt-0.5 whitespace-nowrap">
                         {module.level} · {module.duration}
                       </div>
                     </div>

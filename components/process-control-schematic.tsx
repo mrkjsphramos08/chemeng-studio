@@ -3,6 +3,7 @@
 import React from 'react';
 import { ProcessControlResults } from '@/lib/process-control';
 import { MathInline } from '@/components/lab-shared/math';
+import { formatSignedZero } from '@/lib/navigation';
 
 interface ProcessControlSchematicProps {
   results: ProcessControlResults;
@@ -62,7 +63,109 @@ export function ProcessControlSchematic({ results }: ProcessControlSchematicProp
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-950 p-3">
+      {/* Mobile Signal-Flow Architecture (< 640px) — 100% Visible Without Horizontal Clipping */}
+      <div
+        className="sm:hidden rounded-xl border border-slate-800 bg-slate-950 p-3.5 text-xs text-slate-100 space-y-2.5"
+        data-testid="process-control-mobile-schematic"
+      >
+        {/* Step 1: Setpoint & Comparator */}
+        <div className="rounded-lg border border-sky-500/40 bg-slate-900/90 p-2.5 flex items-center justify-between gap-2">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-sky-400">
+              1. {isOpenLoop ? 'Baseline Reference' : 'Setpoint & Comparator'}
+            </div>
+            <div className="font-mono text-[11px] text-slate-200 mt-0.5">
+              {isOpenLoop
+                ? `Y0 = ${inputs.initialOutput_Y0.toFixed(1)}% (Open Loop)`
+                : `r(t): ${inputs.initialOutput_Y0.toFixed(0)}% → ${inputs.setpointTarget_Ysp.toFixed(0)}%`}
+            </div>
+          </div>
+          <div className="text-right font-mono text-[11px] shrink-0">
+            <div className="text-teal-300 font-semibold">e(t) = r − Y</div>
+            <div className="text-slate-300">
+              {isOpenLoop ? 'Open' : `${formatSignedZero(lastPt.error_e, 2)}%`}
+            </div>
+          </div>
+        </div>
+
+        {/* Step 2: Controller Block Gc(s) */}
+        <div className="rounded-lg border border-teal-500/50 bg-slate-900/90 p-2.5 flex items-center justify-between gap-2">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+              2. {isOpenLoop ? 'Manual Step Generator' : `Controller Gc(s) (${inputs.controllerMode})`}
+            </div>
+            <div className="font-mono text-[11px] font-semibold text-white mt-0.5">
+              {controllerFormulaLabel}
+            </div>
+          </div>
+          <div className="text-right font-mono text-[11px] shrink-0">
+            <div className="text-slate-400">u_cmd</div>
+            <div className="text-sky-300 font-semibold">
+              {lastPt.unconstrainedCommand_Ucmd.toFixed(1)}%
+            </div>
+          </div>
+        </div>
+
+        {/* Step 3: Actuator Saturation + Load Disturbance */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-lg border border-slate-700 bg-slate-900/90 p-2.5">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
+              3A. Actuator Limits
+            </div>
+            <div className="font-mono text-[11px] text-white mt-0.5">
+              [{inputs.actuatorMin_Umin.toFixed(0)}%, {inputs.actuatorMax_Umax.toFixed(0)}%]
+            </div>
+            <div className="font-mono text-[10px] text-emerald-300 mt-0.5">
+              {metrics.saturationDuration_s > 0
+                ? `Sat: ${metrics.saturationDuration_s.toFixed(1)} s`
+                : 'Linear Range'}
+            </div>
+          </div>
+          <div className="rounded-lg border border-slate-700 bg-slate-900/90 p-2.5">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
+              3B. Load Disturbance d(t)
+            </div>
+            <div className="font-mono text-[11px] text-white mt-0.5">
+              {Math.abs(inputs.disturbanceMagnitude_d) > 1e-4
+                ? `Δd = ${inputs.disturbanceMagnitude_d >= 0 ? '+' : ''}${inputs.disturbanceMagnitude_d.toFixed(1)}%`
+                : 'd(t) = 0.0% (None)'}
+            </div>
+            <div className="font-mono text-[10px] text-slate-400 mt-0.5">
+              @ t = {inputs.disturbanceTime_s.toFixed(0)} s
+            </div>
+          </div>
+        </div>
+
+        {/* Step 4: FOPDT Process Plant Gp(s) & Controlled Output Y(t) */}
+        <div className="rounded-lg border border-sky-500/50 bg-slate-900/90 p-2.5 flex items-center justify-between gap-2">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-sky-300">
+              4. FOPDT Process Gp(s) = Kp·exp(−θs)/(τs+1)
+            </div>
+            <div className="font-mono text-[11px] text-slate-200 mt-0.5">
+              Kp={inputs.processGain_Kp.toFixed(2)}, τ={inputs.timeConstant_tau_s.toFixed(1)}s, θ=
+              {inputs.deadTime_theta_s.toFixed(1)}s
+            </div>
+          </div>
+          <div className="text-right font-mono shrink-0">
+            <div className="text-[10px] text-sky-300 font-bold">Output Y(t)</div>
+            <div className="text-sm font-bold text-white">{metrics.finalOutput_Y.toFixed(2)}%</div>
+          </div>
+        </div>
+
+        {/* Step 5: Feedback Loop Return Path */}
+        <div className="rounded-lg border border-teal-500/30 bg-slate-900/60 px-3 py-2 flex items-center justify-between gap-2 font-mono text-[11px]">
+          <span className="text-teal-300 font-semibold">
+            {isOpenLoop ? 'Feedback Switch: OPEN' : '↺ Unity Feedback: Ym(t) = Y(t) → Comparator'}
+          </span>
+          <span className="text-slate-300 shrink-0">
+            Peak {metrics.peakOutput_Y.toFixed(1)}%
+          </span>
+        </div>
+      </div>
+
+      {/* Tablet & Desktop Full SVG Block Diagram (>= 640px) */}
+      <div className="hidden sm:block overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-950 p-3">
         <svg
           viewBox="0 0 820 250"
           className="h-auto w-full min-w-[660px]"
@@ -212,7 +315,7 @@ export function ProcessControlSchematic({ results }: ProcessControlSchematicProp
               e(t) = r − Y
             </text>
             <text x="166" y="128" textAnchor="middle" fill="#cbd5e1" fontSize="9" fontFamily="monospace">
-              {isOpenLoop ? 'Open' : `${lastPt.error_e.toFixed(2)}%`}
+              {isOpenLoop ? 'Open' : `${formatSignedZero(lastPt.error_e, 2)}%`}
             </text>
           </g>
 

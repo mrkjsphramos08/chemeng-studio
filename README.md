@@ -6,19 +6,21 @@ Designed for university chemical engineering curricula, Entrolume follows a **si
 
 ---
 
-## Implemented Capabilities (Phases 1 through 2.5)
+## Implemented Capabilities (Phases 1 through 2.5.2)
 
-- **Entrolume Brand Identity & Design System (`components/entrolume-logo.tsx`, `app/globals.css`, `app/icon.svg`)**:
-  - Custom scalable vector SVG logo and wordmark representing unit-operation geometry, thermodynamic/transport state trajectories, and conceptual illumination ("lume").
-  - Semantic design tokens (`--entrolume-navy`, `--entrolume-teal`, `--entrolume-bg`), WCAG 2.2 AA contrast, visible keyboard focus rings, and tabular numeral typography.
-- **Streamlined 3-Zone Navigation & Subject-Categorized Directory (`components/navbar.tsx`, `components/landing-sections.tsx`, `components/labs-directory.tsx`)**:
-  - 3-zone top bar paired with a 1-click 6-laboratory quick-switcher strip and mobile navigation drawer.
+- **Entrolume Official Brand Identity & Vector Asset Suite (`components/branding/entrolume-logo.tsx`, `public/branding/*.svg`, `public/favicon.svg`, `app/icon.svg`)**:
+  - Approved geometric E-shaped symbol (three horizontal elements with Midnight Navy `#0F172A` upper/lower bars, refined Teal `#0D9488` middle bar, and smooth streamlined negative space) paired with the clean lowercase `entrolume` geometric wordmark.
+  - Coordinated production SVG assets (`entrolume-logo.svg`, `entrolume-logo-dark.svg`, `entrolume-icon.svg`, `entrolume-monochrome.svg`, and `favicon.svg`) and centralized `<EntrolumeLogo />` component supporting `primary`, `dark`, `icon-only`, and `monochrome` variants.
+  - Semantic design tokens (`--entrolume-navy`, `--entrolume-teal`, `--entrolume-bg`), WCAG 2.2 AA contrast, visible keyboard focus rings, standardized `--entrolume-teal` form control accents, and tabular numeral typography.
+- **Streamlined 3-Zone Navigation, URL History Sync & Subject-Categorized Directory (`components/navbar.tsx`, `lib/navigation.ts`, `components/landing-sections.tsx`, `components/labs-directory.tsx`)**:
+  - 3-zone top bar paired with a 1-click 6-laboratory quick-switcher strip (with active-chip auto-scroll and `aria-current="page"`) and mobile navigation drawer.
+  - Full URL query synchronization (`/?view=...`, `pushState`, and `popstate` browser Back/Forward support) and `scroll-mt-32` anchor offset alignment.
   - Interactive 6-laboratory scientific preview card in the Landing Hero, 4-step pedagogical workflow (*Configure, Simulate, Analyze, Reflect*), dedicated *For Students* and *For Educators* sections, and discipline-filtered Virtual Laboratories Directory.
 - **Centralized KaTeX Mathematical Typography & Accessibility (`lib/katex-render.ts` & `components/lab-shared/math/*`)**:
-  - Textbook-quality mathematical equation rendering across all laboratories, directory cards, and guided derivations using KaTeX `output: 'htmlAndMathml'` (`trust: false`, `throwOnError: false`), providing both semantic `<math>` MathML for assistive technologies and `.katex-html` (`aria-hidden="true"`) for visual typography.
+  - Textbook-quality mathematical equation rendering across all laboratories, parameter group headers, chart footers, directory cards, and guided derivations using KaTeX `output: 'htmlAndMathml'` (`trust: false`, `throwOnError: false`), providing both semantic `<math>` MathML for assistive technologies and `.katex-html` (`aria-hidden="true"`) for visual typography.
 - **Standardized Virtual Laboratory Framework (`components/lab-shared/*` & `lib/lab-download.ts`)**:
   - Reusable workspace header (`LabWorkspaceHeader`) with Entrolume branding, explicit **User Inputs vs. Calculated Simulation Outputs vs. Model Assumptions** orientation legend, collapsible learning objectives, scenario presets, snapshot button, and **Export CSV** download.
-  - Collapsible parameter control groups (`LabParameterPanel<T>`), validation/advisory alert banners (`LabValidationAlerts`), standardized KPI and chart cards (`LabMetricCard`, `LabChartCard`), and educational cards (`LabAssumptionsCard`, `LabTheoryDisclosureCard`, `LabGuidedInquiryCard`).
+  - Sticky desktop parameter control decks (`LabParameterPanel<T>`), validation/advisory alert banners (`LabValidationAlerts`), standardized KPI and chart cards (`LabMetricCard`, `LabChartCard`), and educational cards (`LabAssumptionsCard`, `LabTheoryDisclosureCard`, `LabGuidedInquiryCard`).
 - **Countercurrent Heat Exchanger Virtual Laboratory (`/?view=heat-exchanger` or `/?view=lab`)**:
   - **Independent SI Calculation Engine (`lib/heat-exchanger.ts`)**: Pure TypeScript $\varepsilon\text{–NTU}$ solver decoupled from React UI components.
   - **4-Step Student Workflow**: Presets, live schematic, axial profiles, sensitivity curves, multi-scenario comparisons, CSV export, 3 guided inquiry questions with self-checks, and progressive derivation disclosure.
@@ -30,13 +32,13 @@ Designed for university chemical engineering curricula, Entrolume follows a **si
   - **Visualizations & Workflow**: Reactor-specific SVG schematics, reactor-filtered SI parameter controls, 6-card results dashboard, Batch $C_A(t)$ & $X(t)$ curves, CSTR vs. PFR $X(\tau)$, PFR $C_A(V)$, reactor performance BarChart, $V_{\text{req}}$ vs. $X_{\text{target}}$ sizing curves, 7 presets, scenario comparison table, CSV export, and 6 guided inquiry questions.
 - **Distillation & Separation Processes Virtual Laboratory (`/?view=distillation`)**:
   - **Independent Calculation Engine (`lib/distillation.ts`)**: Pure TypeScript binary fractional distillation solver using the McCabe–Thiele method under Constant Molar Overflow (CMO) and constant relative volatility ($\alpha > 1$).
-  - **Visualizations & Workflow**: Centerpiece interactive McCabe–Thiele $x\text{–}y$ diagram with a **Step Through Stages** controller and stage inspector, dynamic SVG distillation column schematic, 9-card results dashboard, VLE relative-volatility comparison chart, Theoretical Stages vs. Reflux Ratio curve, Product Flows vs. Feed Composition chart, 8 presets, scenario comparison table, CSV export, and 7 guided inquiry questions.
+  - **Visualizations & Workflow**: Centerpiece interactive McCabe–Thiele $x\text{–}y$ diagram with a **Step Through Stages** controller and stage inspector, dynamic SVG distillation column schematic, 9-card results dashboard, VLE relative-volatility comparison chart, Theoretical Stages vs. Reflux Ratio curve, Product Flows vs. Feed Composition chart, 8 presets, responsive scenario comparison table + mobile cards, CSV export, and 7 guided inquiry questions.
 - **Chemical Engineering Thermodynamics Virtual Laboratory (`/?view=thermodynamics`)**:
   - **Independent Calculation Engine (`lib/thermodynamics.ts`)**: Pure TypeScript solver for **Module A: Pure-Fluid PVT & Peng–Robinson Equation of State** (verified NIST critical constants $T_c, P_c, \omega$ for $\mathrm{CO_2}, \mathrm{N_2}, \mathrm{CH_4}, \mathrm{C_2H_6}$, analytical + Newton-refined cubic $Z$ roots, $Z > B$ physical covolume filtering, subcritical 3-root vapor/liquid branch classification) and **Module B: Ideal Binary Vapor–Liquid Equilibrium** (Raoult's & Dalton's laws, partial pressures $p_A, p_B$, bubble-point $P_{\mathrm{bubble}}(x_A)$, dew-point $P_{\mathrm{dew}}(y_A)$, relative volatility $\alpha_{AB}$, and constant-pressure two-phase tie-lines).
   - **Visualizations & Workflow**: Dual-tab workspace (**Real-Gas PVT** and **Binary Phase Equilibrium**), interactive piston-cylinder compression schematic and isothermal VLE cell schematic, 4 PVT charts ($Z$ vs. $P$, $v$ vs. $P$, $P\text{–}v$ isotherms, ideal-gas deviation $\%$), 3 VLE charts ($P\text{–}x\text{–}y$ phase diagram, $y_A$ vs. $x_A$ curve, partial pressures), 10 presets (5 per module), scenario comparison tables, CSV export, and 10 guided inquiry exercises (5 per module).
 - **Process Dynamics & Control Virtual Laboratory (`/?view=process-control`)**:
   - **Independent Calculation Engine (`lib/process-control.ts`)**: Pure TypeScript SISO First-Order-Plus-Dead-Time (FOPDT) dynamic simulation engine ($\tau \frac{dy}{dt} + y = K_p[u(t-\theta) + d(t)]$) with exact zero-order-hold exponential integration, fractional dead-time linear interpolation, analytical open-loop step reference, ISA standard parallel P/PI/PID controllers with filtered derivative-on-measurement ($-dY/dt$ to prevent derivative kick), actuator saturation $[U_{\min}, U_{\max}]$, conditional integration anti-windup clamping, and rigorous performance metrics ($t_r$, $Y_{\mathrm{peak}}$, $\%$ overshoot, $\pm 2\%$ settling time $t_s$, $e_{\mathrm{ss}}$, $\mathrm{IAE}$, $\mathrm{ITAE}$, actuator Total Variation $\mathrm{TV}_u$).
-  - **Visualizations & Workflow**: Interactive SISO feedback block diagram (`ProcessControlSchematic`), 8 KPI metric cards, 5-tab visualization suite ($Y(t)$ vs. $r(t)$ with analytical open-loop reference, $u_{\mathrm{cmd}}(t)$ vs. $U_{\mathrm{act}}(t)$ with saturation bounds, $e(t)$ & P/I/D term breakdown, P vs. PI vs. PID mode comparison, and $0.5\times/1.0\times/2.0\times$ sensitivity sweep for $K_c, \tau_I, \tau_D, \tau, \theta$), 10 verified presets, scenario comparison table, CSV export, and 10 guided inquiry exercises.
+  - **Visualizations & Workflow**: Interactive SISO feedback block diagram (`ProcessControlSchematic` with dedicated responsive mobile signal-flow architecture), 8 KPI metric cards, 5-tab visualization suite ($Y(t)$ vs. $r(t)$ with analytical open-loop reference, $u_{\mathrm{cmd}}(t)$ vs. $U_{\mathrm{act}}(t)$ with saturation bounds, $e(t)$ & P/I/D term breakdown, P vs. PI vs. PID mode comparison, and $0.5\times/1.0\times/2.0\times$ sensitivity sweep for $K_c, \tau_I, \tau_D, \tau, \theta$), 10 verified presets, scenario comparison table, CSV export, and 10 guided inquiry exercises.
 
 ---
 
@@ -77,13 +79,13 @@ Models **steady-state continuous binary fractional distillation** of a hypotheti
 ### 5. Chemical Engineering Thermodynamics (Peng–Robinson EOS & Ideal Binary VLE)
 
 1. **Pure-Fluid PVT & Peng–Robinson EOS (Module A)**:
-   - Ideal gas reference: $PV = nRT$, $Pv_{\mathrm{ideal}} = RT$, $Z = \frac{Pv}{RT}$.
-   - Peng–Robinson EOS: $P = \frac{RT}{v - b} - \frac{a\alpha}{v(v + b) + b(v - b)}$ with $a = 0.45724\frac{R^2 T_c^2}{P_c}$, $b = 0.07780\frac{R T_c}{P_c}$, $\alpha = [1 + \kappa(1 - \sqrt{T_r})]^2$, and $\kappa = 0.37464 + 1.54226\omega - 0.26992\omega^2$.
-   - Dimensionless cubic in $Z$: $Z^3 - (1-B)Z^2 + (A - 3B^2 - 2B)Z - (AB - B^2 - B^3) = 0$ where $A = \frac{a\alpha P}{R^2 T^2}$ and $B = \frac{bP}{RT}$. Rejects nonphysical roots $Z \le B$ ($v \le b$) and distinguishes vapor-like ($Z_{\max}$) and liquid-like ($Z_{\min}$) roots when 3 real roots occur at $T < T_c$ (equal-fugacity phase equilibrium is outside Phase 2.3 scope).
-   - Reference fluids use published NIST Chemistry WebBook constants ($\mathrm{CO_2}, \mathrm{N_2}, \mathrm{CH_4}, \mathrm{C_2H_6}$).
+    - Ideal gas reference: $PV = nRT$, $Pv_{\mathrm{ideal}} = RT$, $Z = \frac{Pv}{RT}$.
+    - Peng–Robinson EOS: $P = \frac{RT}{v - b} - \frac{a\alpha}{v(v + b) + b(v - b)}$ with $a = 0.45724\frac{R^2 T_c^2}{P_c}$, $b = 0.07780\frac{R T_c}{P_c}$, $\alpha = [1 + \kappa(1 - \sqrt{T_r})]^2$, and $\kappa = 0.37464 + 1.54226\omega - 0.26992\omega^2$.
+    - Dimensionless cubic in $Z$: $Z^3 - (1-B)Z^2 + (A - 3B^2 - 2B)Z - (AB - B^2 - B^3) = 0$ where $A = \frac{a\alpha P}{R^2 T^2}$ and $B = \frac{bP}{RT}$. Rejects nonphysical roots $Z \le B$ ($v \le b$) and distinguishes vapor-like ($Z_{\max}$) and liquid-like ($Z_{\min}$) roots when 3 real roots occur at $T < T_c$ (equal-fugacity phase equilibrium is outside Phase 2.3 scope).
+    - Reference fluids use published NIST Chemistry WebBook constants ($\mathrm{CO_2}, \mathrm{N_2}, \mathrm{CH_4}, \mathrm{C_2H_6}$).
 2. **Ideal Binary Vapor–Liquid Equilibrium (Module B)**:
-   - Models two hypothetical ideal volatile components $A$ and $B$ at constant temperature using Raoult's Law ($p_i = x_i P_i^{\mathrm{sat}}$) and Dalton's Law ($p_i = y_i P$).
-   - Bubble-point pressure $P_{\mathrm{bubble}}(x_A) = x_A P_A^{\mathrm{sat}} + (1 - x_A)P_B^{\mathrm{sat}}$, equilibrium vapor $y_A = \frac{x_A P_A^{\mathrm{sat}}}{P_{\mathrm{bubble}}}$, and dew-point pressure $\frac{1}{P_{\mathrm{dew}}(y_A)} = \frac{y_A}{P_A^{\mathrm{sat}}} + \frac{1 - y_A}{P_B^{\mathrm{sat}}}$.
+    - Models two hypothetical ideal volatile components $A$ and $B$ at constant temperature using Raoult's Law ($p_i = x_i P_i^{\mathrm{sat}}$) and Dalton's Law ($p_i = y_i P$).
+    - Bubble-point pressure $P_{\mathrm{bubble}}(x_A) = x_A P_A^{\mathrm{sat}} + (1 - x_A)P_B^{\mathrm{sat}}$, equilibrium vapor $y_A = \frac{x_A P_A^{\mathrm{sat}}}{P_{\mathrm{bubble}}}$, and dew-point pressure $\frac{1}{P_{\mathrm{dew}}(y_A)} = \frac{y_A}{P_A^{\mathrm{sat}}} + \frac{1 - y_A}{P_B^{\mathrm{sat}}}$.
 
 ### 6. Process Dynamics & Control (SISO FOPDT & PID Feedback Control)
 
@@ -104,7 +106,13 @@ Models a **single-input, single-output (SISO) linear time-invariant First-Order-
 
 ## Project Structure
 
-- `app/`: Next.js App Router entry (`page.tsx`, `layout.tsx`, `globals.css`).
+- `app/`: Next.js App Router entry (`page.tsx`, `layout.tsx`, `globals.css`, `icon.svg`).
+- `public/`:
+  - `favicon.svg`: Square optimized Entrolume geometric E-mark favicon (`262×262` viewBox).
+  - `branding/entrolume-logo.svg`: Primary horizontal vector logo (`#0F172A` & `#0D9488`).
+  - `branding/entrolume-logo-dark.svg`: Dark-background horizontal vector logo (`#FFFFFF` & `#0D9488`).
+  - `branding/entrolume-icon.svg`: Icon-only geometric E-mark (`#0F172A` & `#0D9488`).
+  - `branding/entrolume-monochrome.svg`: Single-color monochrome horizontal vector logo (`#0F172A`).
 - `lib/`:
   - `heat-exchanger.ts` & `heat-exchanger.test.ts`: $\varepsilon\text{–NTU}$ solver and automated unit tests.
   - `fluid-mechanics.ts` & `fluid-mechanics.test.ts`: Pipe hydraulics / Colebrook–White solver and automated unit tests.
@@ -113,9 +121,11 @@ Models a **single-input, single-output (SISO) linear time-invariant First-Order-
   - `thermodynamics.ts` & `thermodynamics.test.ts`: Peng–Robinson EOS & Raoult–Dalton Binary VLE solver and automated unit tests.
   - `process-control.ts` & `process-control.test.ts`: SISO FOPDT & P/PI/PID dynamic feedback control solver and automated unit tests.
   - `katex-render.ts` & `katex-render.test.ts`: Centralized KaTeX HTML + MathML rendering utilities and equation validation tests.
+  - `navigation.ts` & `navigation.test.ts`: Platform view routing, URL query synchronization, negative-zero formatting, chart label utilities, and brand asset verification tests.
   - `lab-download.ts`: Client-side CSV export utility (`downloadSimulationCsv`).
   - `labs-data.ts`: Curriculum metadata for all 6 laboratory modules, guided exploration questions, and roadmap milestones.
 - `components/`:
+  - `branding/entrolume-logo.tsx` & `entrolume-logo.tsx`: Centralized vector logo component (`primary`, `dark`, `icon-only`, `monochrome`).
   - `lab-shared/`: Reusable laboratory UI framework (`LabWorkspaceHeader`, `LabValidationAlerts`, `LabParameterPanel`, `LabMetricCard`, `LabChartCard`, `LabAssumptionsCard`, `LabTheoryDisclosureCard`, `LabGuidedInquiryCard`, `math/`).
   - `chemeng-studio-shell.tsx`, `navbar.tsx`, `landing-sections.tsx`, `labs-directory.tsx`.
   - `heat-exchanger-lab.tsx`, `heat-exchanger-schematic.tsx`, `heat-exchanger-charts.tsx`, `learning-panel.tsx`.
@@ -130,8 +140,8 @@ Models a **single-input, single-output (SISO) linear time-invariant First-Order-
 ## Verification Commands
 
 ```bash
-# Run automated engineering calculation & KaTeX MathML tests across all 6 laboratories (73 tests)
-npx --yes tsx --test lib/heat-exchanger.test.ts lib/fluid-mechanics.test.ts lib/reaction-engineering.test.ts lib/distillation.test.ts lib/katex-render.test.ts lib/thermodynamics.test.ts lib/process-control.test.ts
+# Run automated engineering calculation, KaTeX MathML, navigation, and brand asset regression tests (85 tests)
+npx --yes tsx --test lib/heat-exchanger.test.ts lib/fluid-mechanics.test.ts lib/reaction-engineering.test.ts lib/distillation.test.ts lib/katex-render.test.ts lib/thermodynamics.test.ts lib/process-control.test.ts lib/navigation.test.ts
 
 # Lint TypeScript & Next.js rules
 npm run lint
@@ -151,13 +161,14 @@ npm run build
 5. **Phase 2.2 — Distillation and Separation Processes** *(Implemented)*
 6. **Phase 2.2.1 — Platform-wide Mathematical Typography & Equation Rendering Upgrade** *(Implemented)*
 7. **Phase 2.3 — Chemical Engineering Thermodynamics Virtual Laboratory** *(Implemented)*
-8. **Phase 2.4 — Process Dynamics & Control Virtual Laboratory** *(Current Phase)*
-   - Dynamic SISO FOPDT process simulation ($\tau, K_p, \theta$), open-loop and closed-loop P/PI/PID controller modes, filtered derivative-on-measurement, actuator saturation $[U_{\min}, U_{\max}]$, conditional anti-windup clamping, and transient performance analysis.
-9. **Phase 2.5 — Platform-wide UI/UX Overhaul** *(Planned — Next Phase)*
-   - Comprehensive visual, navigation, interactive diagram, and instructional refinement across all six core laboratories prior to AI features.
-10. **Phase 3 — Gemini AI Engineering Tutor** *(Planned)*
+8. **Phase 2.4 — Process Dynamics & Control Virtual Laboratory** *(Implemented)*
+9. **Phase 2.5 — Entrolume Rebranding & Platform-wide UI/UX Overhaul** *(Implemented)*
+10. **Phase 2.5.1 — Post-Deployment QA & Responsive Refinement** *(Implemented)*
+11. **Phase 2.5.2 — Official Logo Integration & Brand Asset Implementation** *(Current Phase)*
+    - Reconstructed the approved Entrolume geometric E-mark and lowercase wordmark into production vector SVG assets (`public/branding/*.svg`, `public/favicon.svg`, `app/icon.svg`) and integrated the centralized `<EntrolumeLogo />` component across desktop/mobile navigation, dark pedagogical section, footer, and browser metadata.
+12. **Phase 3 — Gemini AI Engineering Tutor** *(Planned — Next Phase)*
     - Context-aware AI tutoring grounded directly in verified simulation states and calculation engines.
-11. **Phase 4 — Machine Learning Workspace** *(Planned)*
+13. **Phase 4 — Machine Learning Workspace** *(Planned)*
     - Engineering dataset upload, regression modeling, evaluation, and comparison with first-principles conservation models.
-12. **Phase 5 — Academic SaaS Features** *(Planned)*
+14. **Phase 5 — Academic SaaS Features** *(Planned)*
     - Student accounts, instructor dashboards, course assignments, experiment submissions, and institutional subscriptions.
