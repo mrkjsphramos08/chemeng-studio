@@ -1,0 +1,6 @@
+{
+  "name": "ChemEng Studio",
+  "description": "Interactive chemical engineering learning platform and virtual laboratory workspace featuring a countercurrent heat exchanger simulator using the effectiveness-NTU method.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
