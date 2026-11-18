@@ -13,6 +13,7 @@ import {
   Users,
 } from 'lucide-react';
 import { DEVELOPMENT_ROADMAP, RoadmapPhaseItem } from '@/lib/labs-data';
+import { MathInline } from '@/components/lab-shared/math';
 import type { ActiveView } from '@/components/navbar';
 import type { AvailableLabId } from '@/components/labs-directory';
 
@@ -44,8 +45,9 @@ export function HeroSection({ onOpenLab, onExploreDirectory }: LandingSectionsPr
               <p className="text-base sm:text-lg text-slate-700 leading-relaxed max-w-2xl">
                 ChemEng Studio helps chemical engineering students understand engineering principles
                 through interactive virtual laboratories and scientifically grounded simulations.
-                Explore heat transfer, pipe hydraulics, and ideal reactor kinetics in real time to
-                build deep physical intuition for chemical process design.
+                Explore heat transfer, pipe hydraulics, ideal reactor kinetics, McCabe–Thiele
+                binary distillation, Peng–Robinson / Raoult–Dalton thermodynamics, and FOPDT
+                process dynamics &amp; PID control in real time.
               </p>
             </div>
 
@@ -53,18 +55,18 @@ export function HeroSection({ onOpenLab, onExploreDirectory }: LandingSectionsPr
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => onOpenLab('reaction-engineering')}
+                  onClick={() => onOpenLab('process-control')}
                   className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-[#0F172A] rounded-lg hover:bg-teal-800 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                 >
-                  Open Reaction Eng. Lab
+                  Open Process Control Lab
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => onOpenLab('fluid-mechanics')}
+                  onClick={() => onOpenLab('thermodynamics')}
                   className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-teal-950 bg-teal-50 border border-teal-300 rounded-lg hover:bg-teal-100 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                 >
-                  Open Fluid Mechanics Lab
+                  Open Thermodynamics Lab
                 </button>
                 <button
                   type="button"
@@ -76,7 +78,7 @@ export function HeroSection({ onOpenLab, onExploreDirectory }: LandingSectionsPr
               </div>
 
               <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600">
-                <span>3 Active Simulators (Heat Transfer, Fluid Mechanics &amp; Reaction Eng.)</span>
+                <span>6 Active Simulators (Heat Transfer, Fluid Mechanics, Reaction Eng., Distillation, Thermodynamics &amp; Process Control)</span>
                 <span aria-hidden="true">·</span>
                 <span>Zero Fabricated Data</span>
                 <span aria-hidden="true">·</span>
@@ -89,74 +91,79 @@ export function HeroSection({ onOpenLab, onExploreDirectory }: LandingSectionsPr
           <div className="lg:col-span-5 bg-[#0F172A] text-white rounded-xl p-6 flex flex-col justify-between border border-slate-800">
             <div>
               <div className="flex items-center justify-between text-xs text-slate-300 pb-4 border-b border-slate-800">
-                <span>Featured New Module · Phase 2.1</span>
-                <span className="font-mono text-teal-400">3 Live Laboratories</span>
+                <span>Featured New Module · Phase 2.4</span>
+                <span className="font-mono text-teal-400">6 Live Laboratories</span>
               </div>
 
               <h2 className="text-lg font-semibold text-white mt-4">
-                Chemical Reaction Engineering: Batch, CSTR &amp; PFR
+                Process Dynamics &amp; Control: FOPDT Dynamics &amp; PID Feedback Loops
               </h2>
               <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                Compare isothermal first-order conversion X(τ), spatial PFR concentration CA(V),
-                and target reactor sizing alongside Heat Exchanger &amp; Fluid Mechanics labs.
+                Analyze first-order-plus-dead-time (<MathInline latex="\tau \frac{dy}{dt} + y = K_p u(t - \theta)" />
+                ) responses, <MathInline latex="\mathrm{P/PI/PID}" /> tuning, actuator saturation{' '}
+                <MathInline latex="[U_{\min}, U_{\max}]" />, and anti-windup protection.
               </p>
 
-              {/* Compact SVG Conversion vs Residence Time Preview */}
+              {/* Compact SVG Preview */}
               <div className="mt-5 bg-slate-900/90 border border-slate-800 rounded-lg p-4">
                 <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-2">
-                  <span>First-Order A → B · X(τ) Comparison</span>
-                  <span>Da = k·τ = 1.50</span>
+                  <span>
+                    FOPDT Closed-Loop <MathInline latex="Y(t)" /> vs. Setpoint <MathInline latex="r(t)" />
+                  </span>
+                  <span>
+                    <MathInline latex="K_p = 1.5, \; \tau = 20\,\mathrm{s}, \; \theta = 4\,\mathrm{s}" />
+                  </span>
                 </div>
                 <svg
                   viewBox="0 0 360 110"
                   className="w-full h-auto"
                   role="img"
-                  aria-label="Preview comparing Ideal PFR and Ideal CSTR conversion against residence time"
+                  aria-label="Preview of closed-loop PID process response tracking a setpoint step with dead time"
                 >
-                  <line x1="30" y1="15" x2="330" y2="15" stroke="#1E293B" strokeWidth="1" />
-                  <line x1="30" y1="55" x2="330" y2="55" stroke="#1E293B" strokeWidth="1" />
+                  <line x1="30" y1="25" x2="330" y2="25" stroke="#1E293B" strokeWidth="1" />
+                  <line x1="30" y1="60" x2="330" y2="60" stroke="#1E293B" strokeWidth="1" />
                   <line x1="30" y1="95" x2="330" y2="95" stroke="#1E293B" strokeWidth="1" />
-                  {/* PFR / Batch 1 - exp(-ktau) */}
-                  <path
-                    d="M 30 95 Q 115 32, 330 18"
-                    fill="none"
-                    stroke="#14B8A6"
-                    strokeWidth="2.5"
-                  />
-                  {/* CSTR ktau/(1+ktau) */}
-                  <path
-                    d="M 30 95 Q 130 50, 330 34"
+                  {/* Setpoint Step r(t) */}
+                  <polyline
+                    points="30,85 75,85 75,32 330,32"
                     fill="none"
                     stroke="#94A3B8"
-                    strokeWidth="2"
-                    strokeDasharray="5 3"
+                    strokeWidth="1.6"
+                    strokeDasharray="4 3"
                   />
-                  <circle cx="170" cy="36" r="4" fill="#14B8A6" stroke="#FFFFFF" strokeWidth="1.5" />
-                  <circle cx="170" cy="52" r="4" fill="#F43F5E" stroke="#FFFFFF" strokeWidth="1.5" />
-                  <text x="195" y="29" className="text-[9px] fill-teal-300 font-mono">
-                    PFR / Batch: 77.7%
-                  </text>
-                  <text x="195" y="64" className="text-[9px] fill-slate-300 font-mono">
-                    Ideal CSTR: 60.0%
+                  {/* PID Response Y(t) */}
+                  <path
+                    d="M 30 85 L 95 85 C 125 85, 145 18, 175 24 C 200 29, 220 35, 250 32 L 330 32"
+                    fill="none"
+                    stroke="#14B8A6"
+                    strokeWidth="2.4"
+                  />
+                  <circle cx="170" cy="23" r="3.5" fill="#14B8A6" stroke="#FFFFFF" strokeWidth="1.3" />
+                  <text x="180" y="21" className="text-[9px] fill-teal-300 font-mono">
+                    Zero Steady-State Offset (e_ss = 0)
                   </text>
                 </svg>
                 <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 mt-2">
-                  <span>80% Target: V_CSTR = 4.00 m³ vs V_PFR = 1.61 m³</span>
-                  <span className="text-teal-400">2.49× ratio</span>
+                  <span>
+                    <MathInline latex="u(t) = u_{\mathrm{bias}} + K_c\left[e + \frac{1}{\tau_I}\int e\,dt - \tau_D\frac{dY_f}{dt}\right]" />
+                  </span>
+                  <span className="text-teal-400">
+                    <MathInline latex="e_{\mathrm{ss}} \to 0" />
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="mt-6 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
               <div className="text-xs text-slate-300">
-                Ready for interactive experimentation
+                All 6 core chemical engineering laboratories live
               </div>
               <button
                 type="button"
-                onClick={() => onOpenLab('reaction-engineering')}
+                onClick={() => onOpenLab('process-control')}
                 className="px-3.5 py-2 text-xs font-semibold text-slate-950 bg-teal-400 rounded-lg hover:bg-teal-300 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
               >
-                Launch Reaction Lab →
+                Launch Process Control Lab →
               </button>
             </div>
           </div>
@@ -380,6 +387,27 @@ export function StudentsAndEducatorsSection({
             >
               Reaction Engineering Lab →
             </button>
+            <button
+              type="button"
+              onClick={() => onOpenLab('distillation')}
+              className="text-xs font-semibold text-teal-800 hover:text-teal-950 underline underline-offset-4"
+            >
+              Distillation Lab →
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenLab('thermodynamics')}
+              className="text-xs font-semibold text-teal-800 hover:text-teal-950 underline underline-offset-4"
+            >
+              Thermodynamics Lab →
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenLab('process-control')}
+              className="text-xs font-semibold text-teal-800 hover:text-teal-950 underline underline-offset-4"
+            >
+              Process Control Lab →
+            </button>
           </div>
         </div>
 
@@ -395,17 +423,18 @@ export function StudentsAndEducatorsSection({
             </h3>
             <p className="text-sm text-slate-600 leading-relaxed">
               Project interactive schematics directly in the classroom to demonstrate countercurrent
-              temperature crosses, laminar-to-turbulent friction transitions, and pump power scaling
-              in seconds. Assign the built-in Guided Inquiry Questions for pre-lab preparation.
+              temperature crosses, laminar-to-turbulent friction transitions, CSTR vs. PFR sizing,
+              McCabe–Thiele pinch points, and PID integral windup in seconds. Assign the built-in
+              Guided Inquiry Questions for pre-lab preparation.
             </p>
             <ul className="space-y-2 text-xs text-slate-700 pt-1">
               <li>· Explicitly documented physical assumptions across every simulator</li>
-              <li>· Ready-to-use industrial presets (water, glycerin, smooth vs. rough pipes, oil cooler)</li>
+              <li>· Ready-to-use industrial presets across all 6 active core laboratories</li>
               <li>· Planned Phase 5 milestone: Instructor dashboards, course cohorts, and lab assignments</li>
             </ul>
           </div>
           <div className="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-600">
-            Designed for Fluid Mechanics, Heat &amp; Mass Transfer, Transport Phenomena, and Unit Operations curricula
+            Designed for Fluid Mechanics, Heat &amp; Mass Transfer, Reaction Engineering, Separations, Thermodynamics, and Process Control curricula
           </div>
         </div>
       </div>
@@ -424,8 +453,8 @@ export function Footer({
         <div className="space-y-1">
           <div className="font-bold text-slate-900 text-sm">ChemEng Studio</div>
           <p>
-            Interactive Chemical Engineering Learning &amp; Virtual Laboratory Platform · Phase 2.1
-            Chemical Reaction Engineering Release
+            Interactive Chemical Engineering Learning &amp; Virtual Laboratory Platform · Phase 2.4
+            Process Dynamics &amp; Control Virtual Laboratory Release
           </p>
         </div>
 
@@ -464,6 +493,27 @@ export function Footer({
             className="hover:text-slate-900 transition-colors font-semibold text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
           >
             Reaction Eng. Lab
+          </button>
+          <button
+            type="button"
+            onClick={() => onSelectView('distillation')}
+            className="hover:text-slate-900 transition-colors font-semibold text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+          >
+            Distillation Lab
+          </button>
+          <button
+            type="button"
+            onClick={() => onSelectView('thermodynamics')}
+            className="hover:text-slate-900 transition-colors font-semibold text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+          >
+            Thermodynamics Lab
+          </button>
+          <button
+            type="button"
+            onClick={() => onSelectView('process-control')}
+            className="hover:text-slate-900 transition-colors font-semibold text-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+          >
+            Process Control Lab
           </button>
           <button
             type="button"

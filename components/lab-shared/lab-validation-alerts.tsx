@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { AlertTriangle, Info } from 'lucide-react';
+import { MathText } from '@/components/lab-shared/math';
 
 export interface LabValidationMessage {
   severity: 'error' | 'warning';
@@ -37,7 +38,9 @@ export function LabValidationAlerts({
             <div className="font-semibold text-sm">Validation Error — Simulation Paused</div>
             <ul className="list-disc list-inside space-y-0.5">
               {errorIssues.map((issue, idx) => (
-                <li key={idx}>{issue.message}</li>
+                <li key={idx}>
+                  <MathText text={issue.message} />
+                </li>
               ))}
             </ul>
           </div>
@@ -52,9 +55,13 @@ export function LabValidationAlerts({
         >
           <Info className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
           <div className="space-y-1 text-xs leading-relaxed">
-            <div className="font-semibold text-sm">{warningTitle}</div>
+            <div className="font-semibold text-sm">
+              <MathText text={warningTitle} />
+            </div>
             {warningIssues.map((warn, idx) => (
-              <p key={idx}>{warn.message}</p>
+              <p key={idx}>
+                <MathText text={warn.message} />
+              </p>
             ))}
           </div>
         </div>

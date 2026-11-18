@@ -20,6 +20,7 @@ import {
   LabTheoryDisclosureCard,
   LabValidationAlerts,
   LabWorkspaceHeader,
+  MathInline,
 } from '@/components/lab-shared';
 import { ReactionEngineeringSchematic } from './reaction-engineering-schematic';
 import {
@@ -29,7 +30,7 @@ import {
 import { CheckCircle2, Info } from 'lucide-react';
 
 const REACTION_CONTROL_GROUPS: LabControlGroup[] = [
-  { id: 'kinetics', title: 'Reaction Kinetics (A → B, First-Order)' },
+  { id: 'kinetics', title: 'Reaction Kinetics ($A \\rightarrow B$, First-Order)' },
   { id: 'batch-op', title: 'Batch Vessel & Reaction Time' },
   { id: 'continuous-op', title: 'Continuous Reactor Sizing & Flow' },
   { id: 'design-target', title: 'Target Conversion Design Goal' },
@@ -47,7 +48,9 @@ const ALL_REACTION_CONTROLS: LabSliderControlConfig<
     key: 'initialConcentration_mol_m3',
     label: 'Initial Concentration',
     symbol: 'CA0',
+    symbolLatex: 'C_{A,0}',
     unit: 'mol/m³',
+    unitLatex: '\\mathrm{mol/m^3}',
     min: 100,
     max: 3000,
     step: 50,
@@ -60,7 +63,9 @@ const ALL_REACTION_CONTROLS: LabSliderControlConfig<
     key: 'rateConstant_per_s',
     label: 'Rate Constant',
     symbol: 'k',
+    symbolLatex: 'k',
     unit: 's⁻¹',
+    unitLatex: '\\mathrm{s^{-1}}',
     min: 0,
     max: 0.2,
     step: 0.002,
@@ -68,13 +73,15 @@ const ALL_REACTION_CONTROLS: LabSliderControlConfig<
     inputMax: 10,
     inputStep: 'any',
     group: 'kinetics',
-    helperText: 'Irreversible first-order kinetics: −rA = k · CA (isothermal)',
+    helperText: 'Irreversible first-order kinetics: $-r_A = k C_A$ (isothermal)',
   },
   {
     key: 'batchTime_s',
     label: 'Batch Reaction Time',
     symbol: 't',
+    symbolLatex: 't',
     unit: 's',
+    unitLatex: '\\mathrm{s}',
     min: 0,
     max: 300,
     step: 5,
@@ -88,7 +95,9 @@ const ALL_REACTION_CONTROLS: LabSliderControlConfig<
     key: 'reactorVolume_m3',
     label: 'Reactor Volume',
     symbol: 'V',
+    symbolLatex: 'V',
     unit: 'm³',
+    unitLatex: '\\mathrm{m^3}',
     min: 0,
     max: 10,
     step: 0.1,
@@ -101,7 +110,9 @@ const ALL_REACTION_CONTROLS: LabSliderControlConfig<
     key: 'volumetricFlowRate_m3_s',
     label: 'Volumetric Flow Rate',
     symbol: 'q',
+    symbolLatex: 'q',
     unit: 'm³/s',
+    unitLatex: '\\mathrm{m^3/s}',
     min: 0.002,
     max: 0.1,
     step: 0.002,
@@ -114,6 +125,7 @@ const ALL_REACTION_CONTROLS: LabSliderControlConfig<
     key: 'targetConversion_pct',
     label: 'Target Conversion',
     symbol: 'X_target',
+    symbolLatex: 'X_{\\mathrm{target}}',
     unit: '%',
     min: 5,
     max: 100,
@@ -122,41 +134,41 @@ const ALL_REACTION_CONTROLS: LabSliderControlConfig<
     inputMax: 100,
     inputStep: 'any',
     group: 'design-target',
-    helperText: '100% conversion is an asymptotic limit requiring infinite t or V',
+    helperText: '$100\\%$ conversion is an asymptotic limit requiring infinite $t$ or $V$',
   },
 ];
 
 const REACTION_LEARNING_OBJECTIVES = [
   {
     title: '1. Kinetics & Material Balances:',
-    detail: 'Connect −rA = k·CA to Batch, CSTR, and PFR design equations in consistent SI units.',
+    detail: 'Connect $-r_A = k C_A$ to Batch, CSTR, and PFR design equations in consistent SI units.',
   },
   {
     title: '2. Reactor Efficiency (PFR vs. CSTR):',
-    detail: 'See why PFR outperforms CSTR at equal V/q for positive-order reactions.',
+    detail: 'See why PFR outperforms CSTR at equal $\\tau = V/q$ for positive-order reactions.',
   },
   {
     title: '3. Target Conversion Sizing:',
-    detail: 'Quantify how required CSTR volume explodes relative to PFR as X_target approaches 100%.',
+    detail: 'Quantify how required CSTR volume explodes relative to PFR as $X_{\\mathrm{target}} \\rightarrow 100\\%$.',
   },
   {
     title: '4. Reaction vs. Residence Time:',
-    detail: 'Distinguish batch reaction time t (excluding turnaround) from continuous space time τ = V/q.',
+    detail: 'Distinguish batch reaction time $t$ (excluding turnaround) from continuous space time $\\tau = V/q$.',
   },
 ];
 
 const REACTION_WORKFLOW_STEPS = [
   {
     title: 'Step 1 — Configure',
-    detail: 'Choose Batch, Ideal CSTR, or Ideal PFR and adjust kinetics, reactor size/flow, and target X.',
+    detail: 'Choose Batch, Ideal CSTR, or Ideal PFR and adjust kinetics, reactor size/flow, and target $X$.',
   },
   {
     title: 'Step 2 — Simulate',
-    detail: 'Inspect CA, conversion X, rate −rA, characteristic time (t or τ), and target sizing V_req or t_req.',
+    detail: 'Inspect $C_A$, conversion $X$, rate $-r_A$, characteristic time ($t$ or $\\tau$), and target sizing $V_{\\mathrm{req}}$ or $t_{\\mathrm{req}}$.',
   },
   {
     title: 'Step 3 — Analyze',
-    detail: 'Explore conversion vs. τ, PFR CA(V) or Batch CA(t), CSTR/PFR volume sizing, and saved runs.',
+    detail: 'Explore conversion vs. $\\tau$, PFR $C_A(V)$ or Batch $C_A(t)$, CSTR/PFR volume sizing, and saved runs.',
   },
   {
     title: 'Step 4 — Reflect',
@@ -167,15 +179,15 @@ const REACTION_WORKFLOW_STEPS = [
 const REACTION_MODEL_ASSUMPTIONS = [
   {
     label: '1. Single irreversible reaction',
-    detail: 'A → B only; no reverse equilibrium or side reactions',
+    detail: '$A \\rightarrow B$ only; no reverse equilibrium or side reactions',
   },
   {
     label: '2. First-order kinetics',
-    detail: 'Rate law −rA = k · CA with constant k at fixed T',
+    detail: 'Rate law $-r_A = k C_A$ with constant $k$ at fixed $T$',
   },
   {
     label: '3. Isothermal & constant density',
-    detail: 'No energy balance, ΔT, or volumetric expansion (ε_A = 0)',
+    detail: 'No energy balance, $\\Delta T$, or volumetric expansion ($\\varepsilon_A = 0$)',
   },
   {
     label: '4. Single liquid phase',
@@ -187,11 +199,11 @@ const REACTION_MODEL_ASSUMPTIONS = [
   },
   {
     label: '6. Batch cycle scope',
-    detail: 'Batch time t excludes filling, emptying & turnaround',
+    detail: 'Batch time $t$ excludes filling, emptying & turnaround',
   },
   {
     label: '7. Asymptotic 100% limit',
-    detail: 'Exact X = 100% is unreachable in finite time or volume',
+    detail: 'Exact $X = 100\\%$ is unreachable in finite time or volume',
   },
 ];
 
@@ -426,7 +438,7 @@ export function ReactionEngineeringLab() {
           'SI Units Standard',
         ]}
         title="Chemical Reaction Engineering Virtual Laboratory"
-        description="Investigate isothermal, constant-density, first-order reaction kinetics (A → B) across Batch, Ideal CSTR, and Ideal PFR systems. Compare conversion, residence time, spatial concentration, and target reactor sizing."
+        description="Investigate isothermal, constant-density, first-order reaction kinetics ($A \rightarrow B$) across Batch, Ideal CSTR, and Ideal PFR systems. Compare conversion $X$, residence time $\tau$, spatial concentration $C_A$, and target reactor sizing."
         presets={REACTION_ENGINEERING_PRESETS}
         selectedPresetId={selectedPresetId}
         onSelectPreset={handleSelectPreset}
@@ -515,7 +527,9 @@ export function ReactionEngineeringLab() {
                     )}
                     {active.label}
                   </span>
-                  <span>Da = {active.damkohlerNumber.toFixed(2)}</span>
+                  <span>
+                    <MathInline latex="\mathrm{Da}" /> = {active.damkohlerNumber.toFixed(2)}
+                  </span>
                 </div>
               ) : null
             }
@@ -529,7 +543,7 @@ export function ReactionEngineeringLab() {
             data-testid="reaction-results-dashboard"
           >
             <LabMetricCard
-              label="Outlet / Final Concentration (CA)"
+              label="Outlet / Final Concentration ($C_A$)"
               value={
                 results.isValid
                   ? `${active.outletConcentration_mol_m3.toFixed(2)} mol/m³`
@@ -537,13 +551,13 @@ export function ReactionEngineeringLab() {
               }
               subtext={
                 results.isValid
-                  ? `Feed CA0 = ${inputs.initialConcentration_mol_m3.toFixed(1)} mol/m³`
+                  ? `Feed $C_{A,0} = ${inputs.initialConcentration_mol_m3.toFixed(1)}\\,\\mathrm{mol/m^3}$`
                   : '—'
               }
               testId="metric-concentration"
             />
             <LabMetricCard
-              label="Fractional Conversion (X)"
+              label="Fractional Conversion ($X$)"
               value={results.isValid ? `${active.conversion_pct.toFixed(2)}%` : '—'}
               subtext={
                 results.isValid
@@ -554,7 +568,7 @@ export function ReactionEngineeringLab() {
               valueClassName="text-2xl text-teal-800"
             />
             <LabMetricCard
-              label="Reaction Rate (−rA)"
+              label="Reaction Rate ($-r_A$)"
               value={
                 results.isValid
                   ? `${active.reactionRate_mol_m3_s.toFixed(3)} mol/(m³·s)`
@@ -562,7 +576,7 @@ export function ReactionEngineeringLab() {
               }
               subtext={
                 results.isValid
-                  ? `−rA = k·CA (initial −rA0 = ${(inputs.rateConstant_per_s * inputs.initialConcentration_mol_m3).toFixed(2)})`
+                  ? `$-r_A = k C_A$ (initial $-r_{A,0} = ${(inputs.rateConstant_per_s * inputs.initialConcentration_mol_m3).toFixed(2)}$)`
                   : '—'
               }
               testId="metric-reaction-rate"
@@ -570,8 +584,8 @@ export function ReactionEngineeringLab() {
             <LabMetricCard
               label={
                 inputs.reactorType === 'batch'
-                  ? 'Batch Reaction Time (t)'
-                  : 'Continuous Residence Time (τ)'
+                  ? 'Batch Reaction Time ($t$)'
+                  : 'Continuous Residence Time ($\\tau$)'
               }
               value={
                 results.isValid
@@ -581,12 +595,12 @@ export function ReactionEngineeringLab() {
               subtext={
                 inputs.reactorType === 'batch'
                   ? 'Reaction hold only (excludes turnaround)'
-                  : `τ = V / q · Damköhler Da = ${active.damkohlerNumber.toFixed(2)}`
+                  : `$\\tau = V / q$ · Damköhler $\\mathrm{Da} = ${active.damkohlerNumber.toFixed(2)}$`
               }
               testId="metric-characteristic-time"
             />
             <LabMetricCard
-              label="Active Reactor Volume (V)"
+              label="Active Reactor Volume ($V$)"
               value={
                 results.isValid ? `${inputs.reactorVolume_m3.toFixed(2)} m³` : '—'
               }
@@ -602,7 +616,7 @@ export function ReactionEngineeringLab() {
               testId="metric-reactor-volume"
             />
             <LabMetricCard
-              label={`Target Sizing (${inputs.targetConversion_pct}% Goal)`}
+              label={`Target Sizing ($X_{\\mathrm{target}} = ${inputs.targetConversion_pct}\\%$)`}
               value={
                 !results.isValid
                   ? '—'
@@ -619,12 +633,12 @@ export function ReactionEngineeringLab() {
                   ? '—'
                   : !targetDesign.isTargetAchievable
                   ? inputs.targetConversion_pct === 100
-                    ? 'X = 100% requires infinite t or V'
-                    : 'k = 0 s⁻¹ gives zero conversion'
+                    ? '$X = 100\\%$ requires infinite $t$ or $V$'
+                    : '$k = 0\\,\\mathrm{s^{-1}}$ gives zero conversion'
                   : targetDesign.requiredVolumeCSTR_m3 !== null &&
                     targetDesign.requiredVolumePFR_m3 !== null
-                  ? `V_CSTR: ${targetDesign.requiredVolumeCSTR_m3.toFixed(2)} m³ vs V_PFR: ${targetDesign.requiredVolumePFR_m3.toFixed(2)} m³ (${(targetDesign.cstrToPfrVolumeRatio ?? 1).toFixed(2)}×)`
-                  : `Required batch t_req = ${(targetDesign.requiredBatchTime_s ?? 0).toFixed(1)} s`
+                  ? `$V_{\\mathrm{CSTR}}$: ${targetDesign.requiredVolumeCSTR_m3.toFixed(2)} m³ vs $V_{\\mathrm{PFR}}$: ${targetDesign.requiredVolumePFR_m3.toFixed(2)} m³ (${(targetDesign.cstrToPfrVolumeRatio ?? 1).toFixed(2)}×)`
+                  : `Required batch $t_{\\mathrm{req}} = ${(targetDesign.requiredBatchTime_s ?? 0).toFixed(1)}\\,\\mathrm{s}$`
               }
               testId="metric-target-sizing"
               valueClassName={
@@ -667,19 +681,23 @@ export function ReactionEngineeringLab() {
                     For the{' '}
                     <strong className="text-slate-900">{active.label}</strong> at{' '}
                     <span className="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">
-                      {active.timeSymbol} = {active.characteristicTime_s.toFixed(1)} s
+                      <MathInline
+                        latex={active.timeSymbol === 'τ' ? '\\tau' : 't'}
+                      />{' '}
+                      = {active.characteristicTime_s.toFixed(1)} s
                     </span>{' '}
                     and dimensionless Damköhler number{' '}
                     <strong className="font-mono text-slate-900">
-                      Da = {active.damkohlerNumber.toFixed(2)}
+                      <MathInline latex="\mathrm{Da}" /> = {active.damkohlerNumber.toFixed(2)}
                     </strong>
                     , conversion reaches{' '}
                     <strong className="font-mono text-teal-800">
-                      X = {active.conversion_pct.toFixed(2)}%
+                      <MathInline latex="X" /> = {active.conversion_pct.toFixed(2)}%
                     </strong>{' '}
                     with reactant concentration{' '}
                     <strong className="font-mono text-slate-900">
-                      CA = {active.outletConcentration_mol_m3.toFixed(2)} mol/m³
+                      <MathInline latex="C_A" /> = {active.outletConcentration_mol_m3.toFixed(2)}{' '}
+                      mol/m³
                     </strong>
                     .
                   </p>
@@ -705,7 +723,7 @@ export function ReactionEngineeringLab() {
                     <p>
                       To hit{' '}
                       <span className="font-mono text-xs font-semibold">
-                        X_target = {inputs.targetConversion_pct}%
+                        <MathInline latex="X_{\mathrm{target}}" /> = {inputs.targetConversion_pct}%
                       </span>
                       , an Ideal CSTR requires{' '}
                       <strong className="font-mono text-rose-700">
@@ -721,7 +739,8 @@ export function ReactionEngineeringLab() {
                       </strong>{' '}
                       volume penalty). Batch operation requires{' '}
                       <span className="font-mono text-xs font-semibold">
-                        t_req = {(targetDesign.requiredBatchTime_s ?? 0).toFixed(1)} s
+                        <MathInline latex="t_{\mathrm{req}}" /> ={' '}
+                        {(targetDesign.requiredBatchTime_s ?? 0).toFixed(1)} s
                       </span>{' '}
                       of active reaction time (excluding filling, emptying, and turnaround).
                     </p>
@@ -740,7 +759,10 @@ export function ReactionEngineeringLab() {
             </div>
 
             <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 font-mono tabular-nums">
-              <span>First-Order Irreversible A → B (−rA = k·CA)</span>
+              <span>
+                First-Order Irreversible{' '}
+                <MathInline latex="A \rightarrow B \quad (-r_A = k C_A)" />
+              </span>
               <span>Isothermal · Constant Density</span>
             </div>
           </div>
@@ -758,7 +780,7 @@ export function ReactionEngineeringLab() {
         <LabTheoryDisclosureCard
           eyebrow="Conceptual Reference · Reactor Design Equations"
           title="Understanding Batch, CSTR, and PFR Material Balances"
-          subtitle="From mole balances and rate laws to Damköhler numbers, residence time τ, and why CSTRs require larger volumes at high conversion."
+          subtitle="From mole balances and rate laws to Damköhler numbers $\mathrm{Da}$, residence time $\tau$, and why CSTRs require larger volumes at high conversion."
           expandLabel="Expand Reactor Design Equations"
           collapseLabel="Hide Reactor Design Equations"
           concepts={[
@@ -767,9 +789,9 @@ export function ReactionEngineeringLab() {
               body: (
                 <>
                   Unsteady uniform vessel:{' '}
-                  <span className="font-mono text-slate-800">CA(t) = CA0·exp(−k·t)</span> and{' '}
-                  <span className="font-mono text-slate-800">X = 1 − exp(−k·t)</span>. Time{' '}
-                  <span className="font-mono">t</span> excludes turnaround.
+                  <MathInline latex="C_A(t) = C_{A,0} e^{-kt}" /> and{' '}
+                  <MathInline latex="X = 1 - e^{-kt}" />. Time <MathInline latex="t" /> excludes
+                  turnaround.
                 </>
               ),
             },
@@ -778,8 +800,8 @@ export function ReactionEngineeringLab() {
               body: (
                 <>
                   Algebraic mole balance:{' '}
-                  <span className="font-mono text-slate-800">X = kτ / (1 + kτ)</span>, operating
-                  everywhere at the low outlet concentration <span className="font-mono">CA,out</span>.
+                  <MathInline latex="X = \frac{k\tau}{1 + k\tau}" />, operating everywhere at the
+                  low outlet concentration <MathInline latex="C_{A,\mathrm{out}}" />.
                 </>
               ),
             },
@@ -788,8 +810,8 @@ export function ReactionEngineeringLab() {
               body: (
                 <>
                   Differential balance yields{' '}
-                  <span className="font-mono text-slate-800">CA(V) = CA0·exp(−kV/q)</span>, matching
-                  Batch performance when <span className="font-mono">τ = t</span>.
+                  <MathInline latex="C_A(V) = C_{A,0} e^{-kV/q}" />, matching Batch performance
+                  when <MathInline latex="\tau = t" />.
                 </>
               ),
             },
@@ -797,9 +819,9 @@ export function ReactionEngineeringLab() {
               title: 'Target Sizing Ratio',
               body: (
                 <>
-                  <span className="font-mono text-slate-800">V_CSTR = qX/[k(1−X)]</span> grows as{' '}
-                  <span className="font-mono">(1−X)⁻¹</span>, diverging much faster than{' '}
-                  <span className="font-mono">−ln(1−X)</span> as X → 100%.
+                  <MathInline latex="V_{\mathrm{CSTR}} = \frac{qX}{k(1-X)}" /> grows as{' '}
+                  <MathInline latex="(1-X)^{-1}" />, diverging much faster than{' '}
+                  <MathInline latex="-\ln(1-X)" /> as <MathInline latex="X \to 100\%" />.
                 </>
               ),
             },
@@ -807,32 +829,118 @@ export function ReactionEngineeringLab() {
           detailedBlocks={[
             {
               title: '01. Batch Reactor Design Equations',
-              subtitle: 'Constant-volume isothermal mole balance dNA/dt = rA·V:',
+              subtitle: 'Constant-volume isothermal mole balance $\\frac{dN_A}{dt} = r_A V$:',
               equations: [
-                { text: 'dCA/dt = −k · CA   (CA(0) = CA0)' },
-                { text: 'CA(t) = CA0 · exp(−k · t)', tone: 'teal' },
-                { text: 'X(t) = 1 − exp(−k · t)' },
-                { text: 't_req = −ln(1 − X_target) / k  [s]', tone: 'muted' },
+                {
+                  latex: '\\frac{dC_A}{dt} = -k C_A, \\qquad C_A(0) = C_{A,0}',
+                  equationNumber: '3.1',
+                },
+                {
+                  latex: 'C_A(t) = C_{A,0} e^{-kt}, \\qquad X(t) = 1 - e^{-kt}',
+                  equationNumber: '3.2',
+                  tone: 'teal',
+                },
+                {
+                  latex:
+                    't_{\\mathrm{req}} = -\\frac{\\ln(1 - X_{\\mathrm{target}})}{k}',
+                  equationNumber: '3.3',
+                  tone: 'muted',
+                },
+              ],
+              definitions: [
+                {
+                  symbolLatex: 'C_A(t),\\, C_{A,0}',
+                  description: 'Instantaneous and initial concentration of reactant A',
+                  unitLatex: '\\mathrm{mol/m^3}',
+                },
+                {
+                  symbolLatex: 'k',
+                  description: 'First-order reaction rate constant at reactor temperature',
+                  unitLatex: '\\mathrm{s^{-1}}',
+                },
+                {
+                  symbolLatex: 't,\\, t_{\\mathrm{req}}',
+                  description: 'Active batch reaction time and required time for target conversion',
+                  unitLatex: '\\mathrm{s}',
+                },
               ],
             },
             {
               title: '02. Ideal CSTR Design Equations',
-              subtitle: 'Steady backmixed algebraic balance FA0 − FA + rA·V = 0:',
+              subtitle: 'Steady backmixed algebraic mole balance $F_{A,0} - F_A + r_A V = 0$:',
               equations: [
-                { text: 'τ = V / q  [s],   Da = k · τ' },
-                { text: 'CA = CA0 / (1 + k · τ)', tone: 'teal' },
-                { text: 'X = (k · τ) / (1 + k · τ)' },
-                { text: 'V_req,CSTR = q · X / [k · (1 − X)]  [m³]', tone: 'muted' },
+                {
+                  latex: '\\tau = \\frac{V}{q}, \\qquad \\mathrm{Da} = k \\tau',
+                  equationNumber: '3.4',
+                },
+                {
+                  latex:
+                    'C_A = \\frac{C_{A,0}}{1 + k\\tau}, \\qquad X = \\frac{k\\tau}{1 + k\\tau}',
+                  equationNumber: '3.5',
+                  tone: 'teal',
+                },
+                {
+                  latex:
+                    'V_{\\mathrm{req,CSTR}} = \\frac{q X_{\\mathrm{target}}}{k (1 - X_{\\mathrm{target}})}',
+                  equationNumber: '3.6',
+                  tone: 'muted',
+                },
+              ],
+              definitions: [
+                {
+                  symbolLatex: '\\tau',
+                  description: 'Continuous space time (mean hydraulic residence time)',
+                  unitLatex: '\\mathrm{s}',
+                },
+                {
+                  symbolLatex: '\\mathrm{Da}',
+                  description: 'First-order Damköhler number (reaction rate vs. convection rate)',
+                  unitLatex: '\\text{dimensionless}',
+                },
+                {
+                  symbolLatex: 'V_{\\mathrm{req,CSTR}}',
+                  description: 'CSTR liquid volume required for target conversion $X_{\\mathrm{target}}$',
+                  unitLatex: '\\mathrm{m^3}',
+                },
               ],
             },
             {
               title: '03. Ideal PFR Design Equations',
-              subtitle: 'Steady plug-flow differential balance dFA/dV = rA:',
+              subtitle: 'Steady plug-flow differential mole balance $\\frac{dF_A}{dV} = r_A$:',
               equations: [
-                { text: 'q · dCA/dV = −k · CA' },
-                { text: 'CA(V) = CA0 · exp(−k · V / q)', tone: 'teal' },
-                { text: 'X = 1 − exp(−k · τ)   (τ = V/q)' },
-                { text: 'V_req,PFR = −(q / k) · ln(1 − X_target)  [m³]', tone: 'muted' },
+                {
+                  latex: 'q \\frac{dC_A}{dV} = -k C_A',
+                  equationNumber: '3.7',
+                },
+                {
+                  latex:
+                    'C_A(V) = C_{A,0} e^{-kV/q}, \\qquad X = 1 - e^{-k\\tau}',
+                  equationNumber: '3.8',
+                  tone: 'teal',
+                },
+                {
+                  latex:
+                    'V_{\\mathrm{req,PFR}} = -\\frac{q}{k}\\ln(1 - X_{\\mathrm{target}})',
+                  equationNumber: '3.9',
+                  tone: 'muted',
+                },
+              ],
+              definitions: [
+                {
+                  symbolLatex: 'q',
+                  description: 'Steady volumetric feed flow rate',
+                  unitLatex: '\\mathrm{m^3/s}',
+                },
+                {
+                  symbolLatex: 'V_{\\mathrm{req,PFR}}',
+                  description: 'PFR reactor volume required for target conversion $X_{\\mathrm{target}}$',
+                  unitLatex: '\\mathrm{m^3}',
+                },
+                {
+                  symbolLatex: 'V_{\\mathrm{CSTR}} / V_{\\mathrm{PFR}}',
+                  description: 'Volume penalty ratio $\\frac{X / (1-X)}{-\\ln(1-X)}$ due to backmixing',
+                  unitLatex: '\\text{dimensionless}',
+                },
               ],
             },
           ]}

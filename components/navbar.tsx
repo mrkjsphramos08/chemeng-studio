@@ -7,7 +7,10 @@ export type ActiveView =
   | 'directory'
   | 'heat-exchanger'
   | 'fluid-mechanics'
-  | 'reaction-engineering';
+  | 'reaction-engineering'
+  | 'distillation'
+  | 'thermodynamics'
+  | 'process-control';
 
 interface NavbarProps {
   activeView: ActiveView;
@@ -18,11 +21,14 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
   const isInsideLab =
     activeView === 'heat-exchanger' ||
     activeView === 'fluid-mechanics' ||
-    activeView === 'reaction-engineering';
+    activeView === 'reaction-engineering' ||
+    activeView === 'distillation' ||
+    activeView === 'thermodynamics' ||
+    activeView === 'process-control';
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
-      <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-6 px-6 py-4">
+      <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-4 px-6 py-4">
         {/* Zone 1: Single text element wordmark */}
         <button
           type="button"
@@ -35,7 +41,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
         {/* Zone 2: Concise single-line text navigation links */}
         <nav
           aria-label="Primary Navigation"
-          className="hidden md:flex items-center gap-5 text-sm font-medium text-slate-700"
+          className="hidden md:flex items-center gap-3 lg:gap-3.5 text-sm font-medium text-slate-700"
         >
           <button
             type="button"
@@ -90,6 +96,39 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           </button>
           <button
             type="button"
+            onClick={() => onSelectView('distillation')}
+            className={`hover:text-slate-900 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+              activeView === 'distillation'
+                ? 'text-teal-800 font-semibold underline'
+                : ''
+            }`}
+          >
+            Distillation
+          </button>
+          <button
+            type="button"
+            onClick={() => onSelectView('thermodynamics')}
+            className={`hover:text-slate-900 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+              activeView === 'thermodynamics'
+                ? 'text-teal-800 font-semibold underline'
+                : ''
+            }`}
+          >
+            Thermodynamics
+          </button>
+          <button
+            type="button"
+            onClick={() => onSelectView('process-control')}
+            className={`hover:text-slate-900 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+              activeView === 'process-control'
+                ? 'text-teal-800 font-semibold underline'
+                : ''
+            }`}
+          >
+            Process Control
+          </button>
+          <button
+            type="button"
             onClick={() => onSelectView('overview', 'roadmap')}
             className="hover:text-slate-900 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
           >
@@ -110,10 +149,10 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           ) : activeView === 'directory' ? (
             <button
               type="button"
-              onClick={() => onSelectView('reaction-engineering')}
+              onClick={() => onSelectView('process-control')}
               className="px-4 py-2 text-xs font-semibold text-white bg-[#0F172A] rounded-lg hover:bg-teal-800 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
             >
-              Open Reaction Eng. Lab
+              Open Process Control Lab
             </button>
           ) : (
             <button
@@ -186,6 +225,39 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           }`}
         >
           Reaction Eng.
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelectView('distillation')}
+          className={`whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-teal-700 ${
+            activeView === 'distillation'
+              ? 'text-teal-800 font-semibold underline underline-offset-4'
+              : ''
+          }`}
+        >
+          Distillation
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelectView('thermodynamics')}
+          className={`whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-teal-700 ${
+            activeView === 'thermodynamics'
+              ? 'text-teal-800 font-semibold underline underline-offset-4'
+              : ''
+          }`}
+        >
+          Thermodynamics
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelectView('process-control')}
+          className={`whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-teal-700 ${
+            activeView === 'process-control'
+              ? 'text-teal-800 font-semibold underline underline-offset-4'
+              : ''
+          }`}
+        >
+          Process Control
         </button>
         <button
           type="button"

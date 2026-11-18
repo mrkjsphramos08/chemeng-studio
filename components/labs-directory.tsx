@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { LABORATORY_MODULES, LabModule } from '@/lib/labs-data';
+import { MathBlock, MathText } from '@/components/lab-shared/math';
 import {
   Flame,
   Layers,
@@ -16,7 +17,10 @@ import {
 export type AvailableLabId =
   | 'heat-exchanger'
   | 'fluid-mechanics'
-  | 'reaction-engineering';
+  | 'reaction-engineering'
+  | 'distillation'
+  | 'thermodynamics'
+  | 'process-control';
 
 interface LabsDirectoryProps {
   onOpenLab: (labId: AvailableLabId) => void;
@@ -73,19 +77,29 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
           </h2>
           <p className="text-sm text-slate-600 leading-relaxed">
             Each laboratory pairs rigorous first-principles conservation equations with interactive
-            parameter manipulation and guided conceptual inquiry.{' '}
-            <strong className="font-semibold text-slate-800">
-              Countercurrent Heat Exchanger
-            </strong>{' '}
+            parameter manipulation and guided conceptual inquiry. All six core chemical engineering
+            virtual laboratories—<strong className="font-semibold text-slate-800">Countercurrent Heat Exchanger</strong>{' '}
             (Phase 1 / 1.1),{' '}
             <strong className="font-semibold text-slate-800">
               Fluid Mechanics &amp; Pipe Hydraulics
             </strong>{' '}
-            (Phase 1.2), and{' '}
+            (Phase 1.2),{' '}
             <strong className="font-semibold text-slate-800">
               Chemical Reaction Engineering
             </strong>{' '}
-            (Phase 2.1) are now live, with three additional core modules planned in Phases 2.2–2.4.
+            (Phase 2.1),{' '}
+            <strong className="font-semibold text-slate-800">
+              Distillation &amp; Separation Processes
+            </strong>{' '}
+            (Phase 2.2),{' '}
+            <strong className="font-semibold text-slate-800">
+              Chemical Engineering Thermodynamics
+            </strong>{' '}
+            (Phase 2.3), and{' '}
+            <strong className="font-semibold text-slate-800">
+              Process Dynamics &amp; Control
+            </strong>{' '}
+            (Phase 2.4)—are now live.
           </p>
         </div>
 
@@ -125,6 +139,12 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
               ? 'Launch Fluid Mechanics Laboratory'
               : module.id === 'reaction-engineering'
               ? 'Launch Reaction Engineering Lab'
+              : module.id === 'distillation'
+              ? 'Launch Distillation Laboratory'
+              : module.id === 'thermodynamics'
+              ? 'Launch Thermodynamics Laboratory'
+              : module.id === 'process-control'
+              ? 'Launch Process Control Laboratory'
               : 'Launch Heat Exchanger Laboratory';
 
           return (
@@ -166,23 +186,27 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
                 </div>
 
                 <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                  {module.description}
+                  <MathText text={module.description} />
                 </p>
 
                 {/* Governing Relation Box */}
-                <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 mb-4">
-                  <div className="text-[11px] font-medium text-slate-600">
+                <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 mb-4">
+                  <div className="text-[11px] font-medium text-slate-600 mb-1">
                     Governing Engineering Model
                   </div>
-                  <div className="text-xs font-mono font-semibold text-slate-800 mt-0.5">
-                    {module.governingEquation}
+                  <div className="text-xs text-slate-900 overflow-x-auto">
+                    <MathBlock
+                      latex={module.governingEquationLatex}
+                      align="left"
+                      className="py-0.5"
+                    />
                   </div>
                 </div>
 
                 {/* Unboxed key topics & roadmap phase */}
                 <div className="text-xs text-slate-600 leading-relaxed mb-2">
                   <span className="font-semibold text-slate-800">Core Concepts: </span>
-                  {module.keyTopics.join(' · ')}
+                  <MathText text={module.keyTopics.join(' · ')} />
                 </div>
                 <div className="text-xs text-slate-600 mb-5">
                   <span className="font-semibold text-slate-800">Roadmap Milestone: </span>

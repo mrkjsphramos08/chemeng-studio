@@ -10,7 +10,16 @@ export default async function HomePage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   let initialView: ActiveView = 'overview';
 
-  if (resolvedParams.view === 'reaction-engineering') {
+  if (resolvedParams.view === 'process-control') {
+    initialView = 'process-control';
+  } else if (resolvedParams.view === 'thermodynamics') {
+    initialView = 'thermodynamics';
+  } else if (
+    resolvedParams.view === 'distillation' ||
+    resolvedParams.view === 'distillation-separations'
+  ) {
+    initialView = 'distillation';
+  } else if (resolvedParams.view === 'reaction-engineering') {
     initialView = 'reaction-engineering';
   } else if (resolvedParams.view === 'fluid-mechanics') {
     initialView = 'fluid-mechanics';

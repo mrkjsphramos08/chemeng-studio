@@ -34,7 +34,9 @@ const PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'Th_in',
     label: 'Hot Inlet Temperature',
     symbol: 'Th,in',
+    symbolLatex: 'T_{h,\\mathrm{in}}',
     unit: '°C',
+    unitLatex: '^\\circ\\mathrm{C}',
     min: 30,
     max: 220,
     step: 1,
@@ -45,7 +47,9 @@ const PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'Tc_in',
     label: 'Cold Inlet Temperature',
     symbol: 'Tc,in',
+    symbolLatex: 'T_{c,\\mathrm{in}}',
     unit: '°C',
+    unitLatex: '^\\circ\\mathrm{C}',
     min: 5,
     max: 120,
     step: 1,
@@ -56,7 +60,9 @@ const PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'mh',
     label: 'Hot Stream Mass Flow Rate',
     symbol: 'mh',
+    symbolLatex: '\\dot{m}_h',
     unit: 'kg/s',
+    unitLatex: '\\mathrm{kg/s}',
     min: 0.2,
     max: 8.0,
     step: 0.1,
@@ -67,7 +73,9 @@ const PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'mc',
     label: 'Cold Stream Mass Flow Rate',
     symbol: 'mc',
+    symbolLatex: '\\dot{m}_c',
     unit: 'kg/s',
+    unitLatex: '\\mathrm{kg/s}',
     min: 0.2,
     max: 8.0,
     step: 0.1,
@@ -78,7 +86,9 @@ const PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'Cph_kJ',
     label: 'Hot Specific Heat Capacity',
     symbol: 'Cp,h',
+    symbolLatex: 'C_{p,h}',
     unit: 'kJ/(kg·K)',
+    unitLatex: '\\mathrm{kJ/(kg\\cdot K)}',
     min: 1.0,
     max: 5.0,
     step: 0.02,
@@ -89,7 +99,9 @@ const PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'Cpc_kJ',
     label: 'Cold Specific Heat Capacity',
     symbol: 'Cp,c',
+    symbolLatex: 'C_{p,c}',
     unit: 'kJ/(kg·K)',
+    unitLatex: '\\mathrm{kJ/(kg\\cdot K)}',
     min: 1.0,
     max: 5.0,
     step: 0.02,
@@ -100,7 +112,9 @@ const PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'U',
     label: 'Overall Heat Transfer Coeff.',
     symbol: 'U',
+    symbolLatex: 'U',
     unit: 'W/(m²·K)',
+    unitLatex: '\\mathrm{W/(m^2\\cdot K)}',
     min: 50,
     max: 2500,
     step: 10,
@@ -111,7 +125,9 @@ const PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'A',
     label: 'Heat Transfer Surface Area',
     symbol: 'A',
+    symbolLatex: 'A',
     unit: 'm²',
+    unitLatex: '\\mathrm{m^2}',
     min: 0.5,
     max: 50.0,
     step: 0.5,
@@ -123,15 +139,15 @@ const PARAMETER_CONTROLS: LabSliderControlConfig<
 const HEAT_LEARNING_OBJECTIVES = [
   {
     title: '1. Capacity Rates:',
-    detail: 'Calculate Ch, Cc, Cmin, and capacity ratio Cr from mass flows and specific heats in SI units.',
+    detail: 'Calculate $C_h$, $C_c$, $C_{\\min}$, and capacity ratio $C_r$ from mass flows and specific heats in SI units.',
   },
   {
     title: '2. NTU & Area Scaling:',
-    detail: 'Explain why effectiveness ε approaches 100% asymptotically as surface area A grows.',
+    detail: 'Explain why effectiveness $\\varepsilon$ approaches $100\\%$ asymptotically as surface area $A$ grows.',
   },
   {
     title: '3. Temperature Cross:',
-    detail: 'Observe when Tc,out exceeds Th,out without violating the Second Law of Thermodynamics.',
+    detail: 'Observe when $T_{c,\\mathrm{out}}$ exceeds $T_{h,\\mathrm{out}}$ without violating the Second Law of Thermodynamics.',
   },
   {
     title: '4. Model Scope:',
@@ -142,11 +158,11 @@ const HEAT_LEARNING_OBJECTIVES = [
 const HEAT_WORKFLOW_STEPS = [
   {
     title: 'Step 1 — Configure',
-    detail: 'Select an operating preset or adjust inlet temperatures, flows, and area A.',
+    detail: 'Select an operating preset or adjust inlet temperatures, flows, and area $A$.',
   },
   {
     title: 'Step 2 — Simulate',
-    detail: 'Observe real-time updates to heat duty Q, effectiveness ε, NTU, and outlet temperatures.',
+    detail: 'Observe real-time updates to heat duty $Q$, effectiveness $\\varepsilon$, $\\mathrm{NTU}$, and outlet temperatures.',
   },
   {
     title: 'Step 3 — Analyze',
@@ -306,7 +322,7 @@ export function HeatExchangerLab() {
           'SI Units Standard',
         ]}
         title="Countercurrent Heat Exchanger Virtual Laboratory"
-        description="Investigate how stream heat capacity rates (Ch, Cc), overall conductance (UA), and Number of Transfer Units (NTU) govern thermal effectiveness (ε) and outlet temperatures using the steady-state, constant-property ε–NTU method."
+        description="Investigate how stream heat capacity rates ($C_h$, $C_c$), overall conductance ($UA$), and Number of Transfer Units ($\\mathrm{NTU}$) govern thermal effectiveness ($\\varepsilon$) and outlet temperatures using the steady-state, constant-property $\\varepsilon\\text{–}\\mathrm{NTU}$ method."
         presets={OPERATING_PRESETS}
         selectedPresetId={selectedPresetId}
         onSelectPreset={handleSelectPreset}
@@ -329,7 +345,7 @@ export function HeatExchangerLab() {
       {/* Main 2-Zone Sandbox Layout: Controls Deck (Left 4 cols) + Stage & Dashboard (Right 8 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <LabParameterPanel<HeatExchangerInputs>
-          subtitle="Consistent SI inputs (instant ε–NTU update)"
+          subtitle="Consistent SI inputs (instant $\varepsilon\text{–}\mathrm{NTU}$ update)"
           groups={CONTROL_GROUPS}
           controls={PARAMETER_CONTROLS}
           values={inputs}
@@ -356,46 +372,46 @@ export function HeatExchangerLab() {
             data-testid="results-dashboard"
           >
             <LabMetricCard
-              label="Heat Transfer Rate (Q)"
+              label="Heat Transfer Rate ($Q$)"
               value={results.isValid ? `${results.Q_kW.toFixed(2)} kW` : '—'}
-              subtext={`Qmax = ${results.isValid ? `${results.Qmax_kW.toFixed(1)} kW` : '—'} · UA = ${results.isValid ? `${(results.UA_W_K / 1000).toFixed(2)} kW/K` : '—'}`}
+              subtext={`$Q_{\\max}$ = ${results.isValid ? `${results.Qmax_kW.toFixed(1)} kW` : '—'} · $UA$ = ${results.isValid ? `${(results.UA_W_K / 1000).toFixed(2)} kW/K` : '—'}`}
               testId="metric-heat-duty"
             />
             <LabMetricCard
-              label="Hot Outlet Temperature (Th,out)"
+              label="Hot Outlet Temperature ($T_{h,\\mathrm{out}}$)"
               value={results.isValid ? `${results.Th_out.toFixed(2)} °C` : '—'}
-              subtext={`Inlet: ${inputs.Th_in.toFixed(1)} °C · ΔTh = −${results.isValid ? results.deltaTh.toFixed(2) : '0.00'} °C`}
+              subtext={`Inlet: ${inputs.Th_in.toFixed(1)} °C · $\\Delta T_h$ = −${results.isValid ? results.deltaTh.toFixed(2) : '0.00'} °C`}
               testId="metric-hot-outlet"
               valueClassName="text-2xl text-rose-700"
             />
             <LabMetricCard
-              label="Cold Outlet Temperature (Tc,out)"
+              label="Cold Outlet Temperature ($T_{c,\\mathrm{out}}$)"
               value={results.isValid ? `${results.Tc_out.toFixed(2)} °C` : '—'}
-              subtext={`Inlet: ${inputs.Tc_in.toFixed(1)} °C · ΔTc = +${results.isValid ? results.deltaTc.toFixed(2) : '0.00'} °C`}
+              subtext={`Inlet: ${inputs.Tc_in.toFixed(1)} °C · $\\Delta T_c$ = +${results.isValid ? results.deltaTc.toFixed(2) : '0.00'} °C`}
               testId="metric-cold-outlet"
               valueClassName="text-2xl text-sky-800"
             />
             <LabMetricCard
-              label="Exchanger Effectiveness (ε)"
+              label="Exchanger Effectiveness ($\\varepsilon$)"
               value={results.isValid ? `${results.effectiveness_pct.toFixed(2)}%` : '—'}
-              subtext={`ε = Q / Qmax = ${results.isValid ? results.effectiveness.toFixed(4) : '—'}`}
+              subtext={`$\\varepsilon = Q / Q_{\\max}$ = ${results.isValid ? results.effectiveness.toFixed(4) : '—'}`}
               testId="metric-effectiveness"
               valueClassName="text-2xl text-teal-800"
             />
             <LabMetricCard
-              label="Number of Transfer Units (NTU)"
+              label="Number of Transfer Units ($\\mathrm{NTU}$)"
               value={results.isValid ? results.NTU.toFixed(3) : '—'}
-              subtext={`Capacity Ratio Cr = ${results.isValid ? results.Cr.toFixed(3) : '—'}`}
+              subtext={`Capacity Ratio $C_r$ = ${results.isValid ? results.Cr.toFixed(3) : '—'}`}
               testId="metric-ntu"
             />
             <LabMetricCard
-              label="Heat Capacity Rates (Ch / Cc)"
+              label="Heat Capacity Rates ($C_h / C_c$)"
               value={
                 results.isValid
                   ? `${results.Ch_kW_K.toFixed(2)} / ${results.Cc_kW_K.toFixed(2)} kW/K`
                   : '—'
               }
-              subtext={`Cmin = ${results.isValid ? `${results.Cmin_kW_K.toFixed(2)} kW/K` : '—'} (${results.limitingStream})`}
+              subtext={`$C_{\\min}$ = ${results.isValid ? `${results.Cmin_kW_K.toFixed(2)} kW/K` : '—'} (${results.limitingStream})`}
               testId="metric-capacity-rates"
               valueClassName="text-lg text-slate-900"
             />

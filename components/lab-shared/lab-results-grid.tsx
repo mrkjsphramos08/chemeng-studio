@@ -1,13 +1,15 @@
 'use client';
 
 import React from 'react';
+import { MathText } from '@/components/lab-shared/math';
 
-interface LabMetricCardProps {
-  label: string;
-  value: string;
-  subtext: string;
+export interface LabMetricCardProps {
+  label: React.ReactNode;
+  value: React.ReactNode;
+  subtext: React.ReactNode;
   testId?: string;
   valueClassName?: string;
+  className?: string;
 }
 
 export function LabMetricCard({
@@ -16,28 +18,33 @@ export function LabMetricCard({
   subtext,
   testId,
   valueClassName = 'text-2xl text-slate-900',
+  className = '',
 }: LabMetricCardProps) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4">
-      <div className="text-xs font-medium text-slate-600">{label}</div>
-      <div
-        className={`mt-1 font-bold font-mono tabular-nums ${valueClassName}`}
-        data-testid={testId}
-      >
+    <div
+      className={`bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between ${className}`}
+      data-testid={testId}
+    >
+      <div className="text-xs font-medium text-slate-600">
+        <MathText text={label} />
+      </div>
+      <div className={`mt-1.5 font-mono font-bold tabular-nums tracking-tight ${valueClassName}`}>
         {value}
       </div>
-      <div className="mt-1.5 text-xs text-slate-600 font-mono tabular-nums">{subtext}</div>
+      <div className="mt-1.5 text-[11px] font-mono text-slate-600 tabular-nums">
+        <MathText text={subtext} />
+      </div>
     </div>
   );
 }
 
-interface LabChartCardProps {
-  title: string;
-  subtitle: string;
+export interface LabChartCardProps {
+  title: React.ReactNode;
+  subtitle: React.ReactNode;
   rightMeta?: React.ReactNode;
   footer?: React.ReactNode;
-  className?: string;
   children: React.ReactNode;
+  className?: string;
 }
 
 export function LabChartCard({
@@ -45,8 +52,8 @@ export function LabChartCard({
   subtitle,
   rightMeta,
   footer,
-  className = '',
   children,
+  className = '',
 }: LabChartCardProps) {
   return (
     <div
@@ -54,12 +61,18 @@ export function LabChartCard({
     >
       <div>
         <div className="flex flex-wrap items-baseline justify-between gap-2 mb-1">
-          <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+          <h3 className="text-base font-semibold text-slate-900">
+            <MathText text={title} />
+          </h3>
           {rightMeta && (
-            <div className="text-xs font-mono text-slate-600 tabular-nums">{rightMeta}</div>
+            <span className="text-xs font-mono text-slate-600 tabular-nums">
+              <MathText text={rightMeta} />
+            </span>
           )}
         </div>
-        <p className="text-xs text-slate-600 mb-4">{subtitle}</p>
+        <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+          <MathText text={subtitle} />
+        </p>
       </div>
 
       {children}

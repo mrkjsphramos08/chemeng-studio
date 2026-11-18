@@ -20,6 +20,7 @@ import {
   HeatExchangerResults,
   generateSensitivitySeries,
 } from '@/lib/heat-exchanger';
+import { MathInline } from '@/components/lab-shared';
 import { Plus, Trash2, RotateCcw } from 'lucide-react';
 
 export interface SavedScenario {
@@ -140,14 +141,16 @@ export function HeatExchangerCharts({
           <div>
             <div className="flex items-baseline justify-between gap-2 mb-1">
               <h3 className="text-base font-semibold text-slate-900">
-                Inlet vs. Outlet Temperatures
+                Inlet vs. Outlet Temperatures (<MathInline latex="T_h, T_c" />)
               </h3>
               <span className="text-xs font-mono text-slate-600 tabular-nums">
-                ΔTmax = {(inputs.Th_in - inputs.Tc_in).toFixed(1)} °C
+                <MathInline latex="\Delta T_{\max}" /> = {(inputs.Th_in - inputs.Tc_in).toFixed(1)}{' '}
+                °C
               </span>
             </div>
             <p className="text-xs text-slate-600 mb-4">
-              Terminal stream temperatures showing hot fluid cooling (−{results.deltaTh.toFixed(1)} °C) and cold fluid heating (+{results.deltaTc.toFixed(1)} °C).
+              Terminal stream temperatures showing hot fluid cooling (−{results.deltaTh.toFixed(1)}{' '}
+              °C) and cold fluid heating (+{results.deltaTc.toFixed(1)} °C).
             </p>
           </div>
 
@@ -197,14 +200,16 @@ export function HeatExchangerCharts({
           <div>
             <div className="flex flex-wrap items-baseline justify-between gap-2 mb-1">
               <h3 className="text-base font-semibold text-slate-900">
-                Countercurrent Axial Temperature Profile T(x/L)
+                Countercurrent Axial Temperature Profile <MathInline latex="T(x/L)" />
               </h3>
               <span className="text-xs font-mono text-slate-600 tabular-nums">
-                x/L = 0 (Hot Inlet / Cold Outlet) → x/L = 1 (Hot Outlet / Cold Inlet)
+                <MathInline latex="x/L = 0" /> (Hot In / Cold Out) → <MathInline latex="x/L = 1" />{' '}
+                (Hot Out / Cold In)
               </span>
             </div>
             <p className="text-xs text-slate-600 mb-4">
-              Analytical solution of coupled steady-state differential energy balances along dimensionless position x/L.
+              Analytical solution of coupled steady-state differential energy balances along
+              dimensionless position <MathInline latex="x/L" />.
             </p>
           </div>
 
@@ -273,9 +278,17 @@ export function HeatExchangerCharts({
           </div>
 
           <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 font-mono tabular-nums">
-            <span>Hot-End Approach (x/L=0): ΔT1 = {results.approachTempHotEnd.toFixed(2)} °C</span>
-            <span>Cold-End Approach (x/L=1): ΔT2 = {results.approachTempColdEnd.toFixed(2)} °C</span>
-            <span>Log-Mean ΔT: {results.LMTD.toFixed(2)} °C</span>
+            <span>
+              Hot-End Approach (<MathInline latex="x/L=0" />): <MathInline latex="\Delta T_1" /> ={' '}
+              {results.approachTempHotEnd.toFixed(2)} °C
+            </span>
+            <span>
+              Cold-End Approach (<MathInline latex="x/L=1" />): <MathInline latex="\Delta T_2" /> ={' '}
+              {results.approachTempColdEnd.toFixed(2)} °C
+            </span>
+            <span>
+              Log-Mean <MathInline latex="\Delta T_{\mathrm{lm}}" />: {results.LMTD.toFixed(2)} °C
+            </span>
           </div>
         </div>
       </div>
@@ -285,10 +298,10 @@ export function HeatExchangerCharts({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-100">
           <div>
             <h3 className="text-base font-semibold text-slate-900">
-              Heat Duty &amp; Effectiveness Response to Parameter Variation
+              Heat Duty (<MathInline latex="Q" />) &amp; Effectiveness (<MathInline latex="\varepsilon" />) Response to Parameter Variation
             </h3>
             <p className="text-xs text-slate-600 mt-0.5">
-              Explore how Heat Transfer Rate Q (kW) and Effectiveness ε (%) respond under the ideal steady-state model while holding all other inputs constant.
+              Explore how Heat Transfer Rate <MathInline latex="Q" /> (<MathInline latex="\mathrm{kW}" />) and Effectiveness <MathInline latex="\varepsilon" /> (%) respond under the ideal steady-state model while holding all other inputs constant.
             </p>
           </div>
 

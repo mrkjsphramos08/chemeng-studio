@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { BookmarkPlus, Download, RotateCcw, Target } from 'lucide-react';
+import { MathText } from '@/components/lab-shared/math';
 
 export interface LabPresetOption {
   id: string;
@@ -62,14 +63,18 @@ export function LabWorkspaceHeader({
             {kickerItems.map((item, idx) => (
               <React.Fragment key={idx}>
                 {idx > 0 && <span aria-hidden="true">·</span>}
-                <span>{item}</span>
+                <span>
+                  <MathText text={item} />
+                </span>
               </React.Fragment>
             ))}
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-            {title}
+            <MathText text={title} />
           </h1>
-          <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            <MathText text={description} />
+          </p>
         </div>
 
         {/* Preset Operating Scenarios, Snapshot, Export & Reset Toolbar */}
@@ -132,7 +137,9 @@ export function LabWorkspaceHeader({
           </div>
 
           {activePreset && (
-            <p className="text-[11px] text-slate-600 max-w-xl">{activePreset.description}</p>
+            <p className="text-[11px] text-slate-600 max-w-xl">
+              <MathText text={activePreset.description} />
+            </p>
           )}
         </div>
       </div>
@@ -149,7 +156,10 @@ export function LabWorkspaceHeader({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs text-slate-700">
           {learningObjectives.map((obj, idx) => (
             <div key={idx}>
-              <span className="font-semibold text-slate-900">{obj.title}</span> {obj.detail}
+              <span className="font-semibold text-slate-900">
+                <MathText text={obj.title} />
+              </span>{' '}
+              <MathText text={obj.detail} />
             </div>
           ))}
         </div>
@@ -162,8 +172,12 @@ export function LabWorkspaceHeader({
       >
         {workflowSteps.map((step, idx) => (
           <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg">
-            <div className="font-bold text-teal-900 mb-0.5">{step.title}</div>
-            <p className="text-slate-600">{step.detail}</p>
+            <div className="font-bold text-teal-900 mb-0.5">
+              <MathText text={step.title} />
+            </div>
+            <p className="text-slate-600">
+              <MathText text={step.detail} />
+            </p>
           </div>
         ))}
       </div>

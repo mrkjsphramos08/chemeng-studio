@@ -112,8 +112,8 @@ export function FluidMechanicsCharts({
         <LabChartCard
           className="lg:col-span-6"
           title="Frictional Pressure Loss vs. Flow Rate"
-          subtitle="ΔP_friction = ρg(hf + hm) grows roughly quadratically with volumetric flow rate Q while geometry and fluid properties stay fixed."
-          rightMeta={`Active ΔP = ${results.frictionalPressureLoss_kPa.toFixed(2)} kPa`}
+          subtitle="$\Delta P_{\mathrm{f}} = \rho g(h_f + h_m)$ grows roughly quadratically with volumetric flow rate $Q$ while geometry and fluid properties stay fixed."
+          rightMeta={`Active $\\Delta P_{\\mathrm{f}}$ = ${results.frictionalPressureLoss_kPa.toFixed(2)} kPa`}
           footer={
             <>
               <span>Major Loss hf: {results.majorHeadLoss_m.toFixed(2)} m</span>
@@ -184,8 +184,8 @@ export function FluidMechanicsCharts({
         <LabChartCard
           className="lg:col-span-6"
           title="Reynolds Number vs. Flow Rate"
-          subtitle="Re = ρvD/μ scales linearly with Q. Shaded band marks transitional uncertainty (2,100 ≤ Re ≤ 4,000)."
-          rightMeta={`Active Re = ${Math.round(results.reynoldsNumber).toLocaleString()}`}
+          subtitle="$\mathrm{Re} = \frac{\rho v D}{\mu}$ scales linearly with $Q$. Shaded band marks transitional uncertainty ($2,100 \le \mathrm{Re} \le 4,000$)."
+          rightMeta={`Active $\\mathrm{Re}$ = ${Math.round(results.reynoldsNumber).toLocaleString()}`}
           footer={
             <>
               <span>Laminar &lt; 2,100 · Turbulent &gt; 4,000</span>
@@ -277,9 +277,9 @@ export function FluidMechanicsCharts({
         {/* Chart 3: Moody-Style Darcy Friction Factor vs Reynolds Number */}
         <LabChartCard
           className="lg:col-span-7"
-          title="Moody-Style Diagram: Darcy Friction Factor vs. Reynolds Number"
-          subtitle="Log-log chart showing Hagen–Poiseuille laminar flow (64/Re) and Colebrook–White turbulent friction at your ε/D vs. smooth pipe. Transitional band [2,100–4,000] is shaded rather than interpolated."
-          rightMeta={`ε/D = ${results.relativeRoughness.toExponential(2)}`}
+          title="Moody-Style Diagram: Darcy Friction Factor ($f_D$) vs. $\mathrm{Re}$"
+          subtitle="Log-log chart showing Hagen–Poiseuille laminar flow ($f_D = 64/\mathrm{Re}$) and Colebrook–White turbulent friction at your $\varepsilon/D$ vs. smooth pipe. Transitional band [$2,100\text{–}4,000$] is shaded."
+          rightMeta={`$\\varepsilon/D$ = ${results.relativeRoughness.toExponential(2)}`}
           footer={
             <>
               <span>
@@ -403,9 +403,9 @@ export function FluidMechanicsCharts({
         {/* Chart 4: Required Pump Head vs Flow Rate */}
         <LabChartCard
           className="lg:col-span-5"
-          title="Required Pump Head vs. Flow Rate"
-          subtitle="System head H = Δz + hf + hm combines static elevation rise (Δz) with flow-dependent major and minor friction losses."
-          rightMeta={`Active H = ${results.requiredPumpHead_m.toFixed(2)} m`}
+          title="Required Pump Head ($H$) vs. Flow Rate"
+          subtitle="System head $H = \Delta z + h_f + h_m$ combines static elevation rise ($\Delta z$) with flow-dependent major and minor friction losses."
+          rightMeta={`Active $H$ = ${results.requiredPumpHead_m.toFixed(2)} m`}
           footer={
             <>
               <span>Static Elevation Δz: {inputs.elevationDiff_m.toFixed(1)} m</span>

@@ -19,6 +19,7 @@ import {
   LabTheoryDisclosureCard,
   LabValidationAlerts,
   LabWorkspaceHeader,
+  MathInline,
 } from '@/components/lab-shared';
 import { FluidMechanicsSchematic } from './fluid-mechanics-schematic';
 import {
@@ -43,7 +44,9 @@ const FLUID_PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'flowRate_L_s',
     label: 'Volumetric Flow Rate',
     symbol: 'Q',
+    symbolLatex: 'Q',
     unit: 'L/s',
+    unitLatex: '\\mathrm{L/s}',
     min: 0,
     max: 40,
     step: 0.5,
@@ -56,7 +59,9 @@ const FLUID_PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'diameter_m',
     label: 'Pipe Internal Diameter',
     symbol: 'D',
+    symbolLatex: 'D',
     unit: 'm',
+    unitLatex: '\\mathrm{m}',
     min: 0.015,
     max: 0.3,
     step: 0.005,
@@ -69,7 +74,9 @@ const FLUID_PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'length_m',
     label: 'Straight Pipe Length',
     symbol: 'L',
+    symbolLatex: 'L',
     unit: 'm',
+    unitLatex: '\\mathrm{m}',
     min: 1,
     max: 500,
     step: 5,
@@ -82,7 +89,9 @@ const FLUID_PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'roughness_mm',
     label: 'Absolute Roughness',
     symbol: 'ε',
+    symbolLatex: '\\varepsilon',
     unit: 'mm',
+    unitLatex: '\\mathrm{mm}',
     min: 0,
     max: 2.0,
     step: 0.005,
@@ -90,12 +99,13 @@ const FLUID_PARAMETER_CONTROLS: LabSliderControlConfig<
     inputMax: 50,
     inputStep: 'any',
     group: 'pipe',
-    helperText: 'Smooth tubing ≈ 0.0015 mm · Commercial steel ≈ 0.045 mm · Cast iron ≈ 0.26–0.8 mm',
+    helperText: 'Smooth tubing $\\approx 0.0015\\text{ mm}$ · Commercial steel $\\approx 0.045\\text{ mm}$ · Cast iron $\\approx 0.26\\text{–}0.8\\text{ mm}$',
   },
   {
     key: 'minorLossK',
     label: 'Total Minor-Loss Coeff.',
     symbol: 'ΣK',
+    symbolLatex: '\\sum K',
     unit: '—',
     min: 0,
     max: 35,
@@ -109,7 +119,9 @@ const FLUID_PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'density_kg_m3',
     label: 'Fluid Density',
     symbol: 'ρ',
+    symbolLatex: '\\rho',
     unit: 'kg/m³',
+    unitLatex: '\\mathrm{kg/m^3}',
     min: 500,
     max: 1600,
     step: 5,
@@ -122,7 +134,9 @@ const FLUID_PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'viscosity_Pa_s',
     label: 'Dynamic Viscosity',
     symbol: 'μ',
+    symbolLatex: '\\mu',
     unit: 'Pa·s',
+    unitLatex: '\\mathrm{Pa\\cdot s}',
     min: 0.0003,
     max: 0.1,
     step: 0.0005,
@@ -130,13 +144,15 @@ const FLUID_PARAMETER_CONTROLS: LabSliderControlConfig<
     inputMax: 50,
     inputStep: 'any',
     group: 'fluid',
-    helperText: 'Water (20 °C) ≈ 0.001002 Pa·s · Glycerin solution ≈ 0.050 Pa·s',
+    helperText: 'Water ($20\\,^\\circ\\mathrm{C}$) $\\approx 0.001002\\text{ Pa}\\cdot\\text{s}$ · Glycerin solution $\\approx 0.050\\text{ Pa}\\cdot\\text{s}$',
   },
   {
     key: 'elevationDiff_m',
     label: 'Elevation Rise',
     symbol: 'Δz',
+    symbolLatex: '\\Delta z',
     unit: 'm',
+    unitLatex: '\\mathrm{m}',
     min: 0,
     max: 50,
     step: 1,
@@ -149,6 +165,7 @@ const FLUID_PARAMETER_CONTROLS: LabSliderControlConfig<
     key: 'pumpEfficiency_pct',
     label: 'Pump Efficiency',
     symbol: 'η',
+    symbolLatex: '\\eta',
     unit: '%',
     min: 20,
     max: 95,
@@ -163,34 +180,34 @@ const FLUID_PARAMETER_CONTROLS: LabSliderControlConfig<
 const FLUID_LEARNING_OBJECTIVES = [
   {
     title: '1. Reynolds & Regimes:',
-    detail: 'Classify Laminar (< 2,100), Transitional (2,100–4,000), and Turbulent (> 4,000) pipe flow.',
+    detail: 'Classify Laminar ($\\mathrm{Re} < 2,100$), Transitional ($2,100\\text{–}4,000$), and Turbulent ($\\mathrm{Re} > 4,000$) pipe flow.',
   },
   {
     title: '2. Friction & Moody Chart:',
-    detail: 'Contrast roughness-independent 64/Re laminar flow against Colebrook–White turbulent drag.',
+    detail: 'Contrast roughness-independent $64/\\mathrm{Re}$ laminar flow against Colebrook–White turbulent drag.',
   },
   {
     title: '3. Major vs. Minor Losses:',
-    detail: 'Evaluate D⁻⁵ diameter sensitivity and compare straight-pipe hf with fitting losses hm.',
+    detail: 'Evaluate $D^{-5}$ diameter sensitivity and compare straight-pipe $h_f$ with fitting losses $h_m$.',
   },
   {
     title: '4. Pump Head & Power:',
-    detail: 'Distinguish frictional ΔP from static elevation lift Δz and size required shaft power Ps.',
+    detail: 'Distinguish frictional $\\Delta P_{\\mathrm{f}}$ from static elevation lift $\\Delta z$ and size required shaft power $P_s$.',
   },
 ];
 
 const FLUID_WORKFLOW_STEPS = [
   {
     title: 'Step 1 — Configure',
-    detail: 'Select a hydraulic preset or tune flow rate Q, pipe diameter D, roughness ε, and fluid μ.',
+    detail: 'Select a hydraulic preset or tune flow rate $Q$, pipe diameter $D$, roughness $\\varepsilon$, and fluid $\\mu$.',
   },
   {
     title: 'Step 2 — Simulate',
-    detail: 'Inspect velocity, Reynolds number, Darcy/Fanning friction factors, head losses, and pump power.',
+    detail: 'Inspect velocity $v$, Reynolds number $\\mathrm{Re}$, Darcy/Fanning friction factors, head losses, and pump power.',
   },
   {
     title: 'Step 3 — Analyze',
-    detail: 'Examine ΔP vs. Q, the log-log Moody diagram, pump head curves, and saved scenario rows.',
+    detail: 'Examine $\\Delta P$ vs. $Q$, the log-log Moody diagram, pump head curves, and saved scenario rows.',
   },
   {
     title: 'Step 4 — Reflect',
@@ -201,30 +218,30 @@ const FLUID_WORKFLOW_STEPS = [
 const FLUID_MODEL_ASSUMPTIONS = [
   {
     label: '1. Steady incompressible flow',
-    detail: '∂/∂t = 0; constant ρ and single-phase Newtonian fluid',
+    detail: '$\\partial/\\partial t = 0$; constant $\\rho$ and single-phase Newtonian fluid',
   },
   {
     label: '2. Isothermal properties',
-    detail: 'Viscosity μ and density ρ remain uniform along the pipe',
+    detail: 'Viscosity $\\mu$ and density $\\rho$ remain uniform along the pipe',
   },
   {
     label: '3. Uniform circular pipe',
-    detail: 'Constant internal diameter D and equivalent roughness ε',
+    detail: 'Constant internal diameter $D$ and equivalent roughness $\\varepsilon$',
   },
   {
-    label: '4. Fully developed & lumped K',
-    detail: 'Entrance effects and fitting interactions lumped into ΣK',
+    label: '4. Fully developed & lumped $K$',
+    detail: 'Entrance effects and fitting interactions lumped into $\\sum K$',
   },
   {
-    label: '5. Equal terminal gauge P',
-    detail: 'Introductory model assumes P₁ = P₂ (gauge) and Δz ≥ 0 m',
+    label: '5. Equal terminal gauge $P$',
+    detail: 'Introductory model assumes $P_1 = P_2$ (gauge) and $\\Delta z \\ge 0\\text{ m}$',
   },
   {
     label: '6. Transitional uncertainty',
-    detail: 'Re ∈ [2,100, 4,000] flags Colebrook–White as reference only',
+    detail: '$\\mathrm{Re} \\in [2100, 4000]$ flags Colebrook–White as reference only',
   },
   {
-    label: '7. No H–Q curve / NPSH',
+    label: '7. No $H\\text{–}Q$ curve / NPSH',
     detail: 'Pump curves and cavitation margins planned for later modules',
   },
 ];
@@ -420,7 +437,7 @@ export function FluidMechanicsLab() {
           'SI Units Standard',
         ]}
         title="Fluid Flow & Pipe Hydraulics Virtual Laboratory"
-        description="Explore steady, incompressible internal pipe flow using Reynolds regime classification, the Colebrook–White friction equation, Darcy–Weisbach major and minor head losses, and mechanical energy balances."
+        description="Explore steady, incompressible internal pipe flow using Reynolds regime classification ($\mathrm{Re} = \rho v D / \mu$), the Colebrook–White friction equation, Darcy–Weisbach major and minor head losses, and mechanical energy balances."
         presets={FLUID_MECHANICS_PRESETS}
         selectedPresetId={selectedPresetId}
         onSelectPreset={handleSelectPreset}
@@ -477,17 +494,17 @@ export function FluidMechanicsLab() {
             data-testid="fluid-results-dashboard"
           >
             <LabMetricCard
-              label="Flow Velocity (v)"
+              label="Flow Velocity ($v$)"
               value={results.isValid ? `${results.velocity_m_s.toFixed(2)} m/s` : '—'}
               subtext={
                 results.isValid
-                  ? `A = ${(results.area_m2 * 1e4).toFixed(2)} cm² · v²/2g = ${results.velocityHead_m.toFixed(2)} m`
+                  ? `$A$ = ${(results.area_m2 * 1e4).toFixed(2)} cm² · $v^2/(2g)$ = ${results.velocityHead_m.toFixed(2)} m`
                   : '—'
               }
               testId="metric-velocity"
             />
             <LabMetricCard
-              label="Reynolds Number (Re)"
+              label="Reynolds Number ($\mathrm{Re}$)"
               value={
                 results.isValid
                   ? Math.round(results.reynoldsNumber).toLocaleString()
@@ -495,7 +512,7 @@ export function FluidMechanicsLab() {
               }
               subtext={
                 results.isValid
-                  ? `ε/D = ${results.relativeRoughness.toExponential(2)}`
+                  ? `$\\varepsilon/D$ = ${results.relativeRoughness.toExponential(2)}`
                   : '—'
               }
               testId="metric-reynolds"
@@ -506,11 +523,11 @@ export function FluidMechanicsLab() {
               subtext={
                 results.isValid
                   ? results.flowRegime === 'Laminar'
-                    ? 'Exact Hagen–Poiseuille (< 2,100)'
+                    ? 'Exact Hagen–Poiseuille ($< 2,100$)'
                     : results.flowRegime === 'Transitional'
-                    ? 'Uncertain band [2,100–4,000]'
+                    ? 'Uncertain band [$2,100\\text{–}4,000$]'
                     : results.flowRegime === 'Turbulent'
-                    ? 'Colebrook–White (> 4,000)'
+                    ? 'Colebrook–White ($> 4,000$)'
                     : 'Static fluid column'
                   : '—'
               }
@@ -518,7 +535,7 @@ export function FluidMechanicsLab() {
               valueClassName={regimeColorClass}
             />
             <LabMetricCard
-              label="Darcy Friction Factor (f_D)"
+              label="Darcy Friction Factor ($f_D$)"
               value={
                 results.isValid
                   ? results.flowRegime === 'Zero Flow'
@@ -528,33 +545,33 @@ export function FluidMechanicsLab() {
               }
               subtext={
                 results.isValid
-                  ? `Fanning f_F = f_D/4 = ${results.fanningFrictionFactor.toFixed(4)}`
+                  ? `Fanning $f_F = f_D/4$ = ${results.fanningFrictionFactor.toFixed(4)}`
                   : '—'
               }
               testId="metric-friction-factor"
             />
             <LabMetricCard
-              label="Major Head Loss (hf)"
+              label="Major Head Loss ($h_f$)"
               value={results.isValid ? `${results.majorHeadLoss_m.toFixed(2)} m` : '—'}
               subtext={
                 results.isValid
-                  ? `L/D = ${(inputs.length_m / Math.max(inputs.diameter_m, 1e-6)).toFixed(0)} · straight pipe`
+                  ? `$L/D$ = ${(inputs.length_m / Math.max(inputs.diameter_m, 1e-6)).toFixed(0)} · straight pipe`
                   : '—'
               }
               testId="metric-major-loss"
             />
             <LabMetricCard
-              label="Minor Head Loss (hm)"
+              label="Minor Head Loss ($h_m$)"
               value={results.isValid ? `${results.minorHeadLoss_m.toFixed(2)} m` : '—'}
               subtext={
                 results.isValid
-                  ? `ΣK = ${inputs.minorLossK.toFixed(1)} · valves & fittings`
+                  ? `$\\sum K$ = ${inputs.minorLossK.toFixed(1)} · valves & fittings`
                   : '—'
               }
               testId="metric-minor-loss"
             />
             <LabMetricCard
-              label="Frictional Pressure Loss (ΔP)"
+              label="Frictional Pressure Loss ($\Delta P_{\mathrm{f}}$)"
               value={
                 results.isValid
                   ? `${results.frictionalPressureLoss_kPa.toFixed(2)} kPa`
@@ -562,29 +579,29 @@ export function FluidMechanicsLab() {
               }
               subtext={
                 results.isValid
-                  ? `Static Δz term: ${results.elevationPressure_kPa.toFixed(2)} kPa`
+                  ? `Static $\\Delta z$ term: ${results.elevationPressure_kPa.toFixed(2)} kPa`
                   : '—'
               }
               testId="metric-pressure-loss"
               valueClassName="text-2xl text-rose-700"
             />
             <LabMetricCard
-              label="Required Pump Head (H)"
+              label="Required Pump Head ($H$)"
               value={results.isValid ? `${results.requiredPumpHead_m.toFixed(2)} m` : '—'}
               subtext={
                 results.isValid
-                  ? `H = Δz (${inputs.elevationDiff_m.toFixed(1)}) + friction (${results.totalFrictionHeadLoss_m.toFixed(2)})`
+                  ? `$H = \\Delta z$ (${inputs.elevationDiff_m.toFixed(1)}) + friction (${results.totalFrictionHeadLoss_m.toFixed(2)})`
                   : '—'
               }
               testId="metric-pump-head"
               valueClassName="text-2xl text-teal-800"
             />
             <LabMetricCard
-              label="Estimated Shaft Power (Ps)"
+              label="Estimated Shaft Power ($P_s$)"
               value={results.isValid ? `${results.shaftPower_kW.toFixed(2)} kW` : '—'}
               subtext={
                 results.isValid
-                  ? `Hydraulic Ph = ${results.hydraulicPower_kW.toFixed(2)} kW (η=${inputs.pumpEfficiency_pct}%)`
+                  ? `Hydraulic $P_h$ = ${results.hydraulicPower_kW.toFixed(2)} kW ($\\eta$=${inputs.pumpEfficiency_pct}%)`
                   : '—'
               }
               testId="metric-shaft-power"
@@ -621,17 +638,19 @@ export function FluidMechanicsLab() {
                 results.flowRegime === 'Zero Flow' ? (
                   <div className="space-y-3 text-sm text-slate-700 leading-relaxed">
                     <p>
-                      Volumetric flow rate is zero (<span className="font-mono text-xs">Q = 0 L/s</span>),
-                      so fluid velocity and all viscous/turbulent friction losses vanish (
-                      <span className="font-mono text-xs">hf = hm = 0 m</span>,{' '}
-                      <span className="font-mono text-xs">ΔP_friction = 0.00 kPa</span>).
+                      Volumetric flow rate is zero (<MathInline latex="Q = 0\text{ L/s}" />), so
+                      fluid velocity and all viscous/turbulent friction losses vanish (
+                      <MathInline latex="h_f = h_m = 0\text{ m}" />,{' '}
+                      <MathInline latex="\Delta P_{\mathrm{f}} = 0.00\text{ kPa}" />).
                     </p>
                     <p>
                       To hold the static liquid column across{' '}
-                      <span className="font-mono text-xs">Δz = {inputs.elevationDiff_m.toFixed(1)} m</span>,
-                      the required static head is{' '}
+                      <span className="font-mono text-xs">
+                        <MathInline latex="\Delta z" /> = {inputs.elevationDiff_m.toFixed(1)} m
+                      </span>
+                      , the required static head is{' '}
                       <strong className="font-mono text-slate-900">
-                        H = {results.requiredPumpHead_m.toFixed(2)} m
+                        <MathInline latex="H" /> = {results.requiredPumpHead_m.toFixed(2)} m
                       </strong>{' '}
                       (<span className="font-mono text-xs">{results.elevationPressure_kPa.toFixed(2)} kPa</span>),
                       with zero hydraulic or shaft power delivered to a flowing stream.
@@ -642,15 +661,16 @@ export function FluidMechanicsLab() {
                     <p>
                       At{' '}
                       <span className="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">
-                        v = {results.velocity_m_s.toFixed(2)} m/s
+                        <MathInline latex="v" /> = {results.velocity_m_s.toFixed(2)} m/s
                       </span>{' '}
                       in a{' '}
                       <span className="font-mono text-xs">
-                        D = {inputs.diameter_m.toFixed(3)} m
+                        <MathInline latex="D" /> = {inputs.diameter_m.toFixed(3)} m
                       </span>{' '}
                       pipe, the Reynolds number is{' '}
                       <strong className="font-mono text-slate-900">
-                        Re = {Math.round(results.reynoldsNumber).toLocaleString()}
+                        <MathInline latex="\mathrm{Re}" /> ={' '}
+                        {Math.round(results.reynoldsNumber).toLocaleString()}
                       </strong>{' '}
                       ({results.flowRegime} regime). Using{' '}
                       <span className="font-medium text-slate-900">
@@ -658,11 +678,11 @@ export function FluidMechanicsLab() {
                       </span>
                       , Darcy friction factor is{' '}
                       <strong className="font-mono text-teal-800">
-                        f_D = {results.darcyFrictionFactor.toFixed(4)}
+                        <MathInline latex="f_D" /> = {results.darcyFrictionFactor.toFixed(4)}
                       </strong>{' '}
                       (Fanning{' '}
                       <span className="font-mono text-xs">
-                        f_F = {results.fanningFrictionFactor.toFixed(4)}
+                        <MathInline latex="f_F" /> = {results.fanningFrictionFactor.toFixed(4)}
                       </span>
                       ).
                     </p>
@@ -673,33 +693,34 @@ export function FluidMechanicsLab() {
                       </strong>{' '}
                       (yielding{' '}
                       <strong className="font-mono text-rose-700">
-                        ΔP_friction = {results.frictionalPressureLoss_kPa.toFixed(2)} kPa
+                        <MathInline latex="\Delta P_{\mathrm{f}}" /> ={' '}
+                        {results.frictionalPressureLoss_kPa.toFixed(2)} kPa
                       </strong>
                       ), where major wall friction contributes{' '}
                       <span className="font-mono text-xs font-semibold">
                         {frictionSplitMajorPct.toFixed(1)}%
                       </span>{' '}
-                      (hf = {results.majorHeadLoss_m.toFixed(2)} m) and minor fitting losses
-                      contribute{' '}
+                      (<MathInline latex="h_f" /> = {results.majorHeadLoss_m.toFixed(2)} m) and
+                      minor fitting losses contribute{' '}
                       <span className="font-mono text-xs font-semibold">
                         {(100 - frictionSplitMajorPct).toFixed(1)}%
                       </span>{' '}
-                      (hm = {results.minorHeadLoss_m.toFixed(2)} m).
+                      (<MathInline latex="h_m" /> = {results.minorHeadLoss_m.toFixed(2)} m).
                     </p>
                     <p>
                       Including static elevation lift (
                       <span className="font-mono text-xs">
-                        Δz = {inputs.elevationDiff_m.toFixed(1)} m
+                        <MathInline latex="\Delta z" /> = {inputs.elevationDiff_m.toFixed(1)} m
                       </span>
                       ), the pump must supply{' '}
                       <strong className="font-mono text-teal-800">
-                        H = {results.requiredPumpHead_m.toFixed(2)} m
+                        <MathInline latex="H" /> = {results.requiredPumpHead_m.toFixed(2)} m
                       </strong>{' '}
                       and{' '}
                       <strong className="font-mono text-slate-900">
-                        Ps = {results.shaftPower_kW.toFixed(2)} kW
+                        <MathInline latex="P_s" /> = {results.shaftPower_kW.toFixed(2)} kW
                       </strong>{' '}
-                      of shaft power at η = {inputs.pumpEfficiency_pct}%.
+                      of shaft power at <MathInline latex="\eta" /> = {inputs.pumpEfficiency_pct}%.
                     </p>
                   </div>
                 )
@@ -713,9 +734,11 @@ export function FluidMechanicsLab() {
 
             <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 font-mono tabular-nums">
               <span>
-                f_D = 4 · f_F (Darcy–Weisbach vs. Fanning convention verified)
+                <MathInline latex="f_D = 4 f_F" /> (Darcy–Weisbach vs. Fanning convention verified)
               </span>
-              <span>SI Units Verified (ρ g Q H)</span>
+              <span>
+                SI Units Verified (<MathInline latex="\rho g Q H" />)
+              </span>
             </div>
           </div>
 
@@ -732,7 +755,7 @@ export function FluidMechanicsLab() {
         <LabTheoryDisclosureCard
           eyebrow="Conceptual Reference · Core Variables & Physical Meaning"
           title="Understanding Darcy–Weisbach & Colebrook–White Hydraulics"
-          subtitle="From pipe velocity and Reynolds number to friction factor correlations, major/minor head losses, and mechanical energy balances."
+          subtitle="From pipe velocity and Reynolds number ($\mathrm{Re}$) to friction factor correlations, major/minor head losses, and mechanical energy balances."
           expandLabel="Expand Detailed Equations & Correlations"
           collapseLabel="Hide Detailed Equations & Correlations"
           concepts={[
@@ -740,9 +763,10 @@ export function FluidMechanicsLab() {
               title: 'Reynolds Number & Flow Regimes',
               body: (
                 <>
-                  <span className="font-mono text-slate-800">Re = ρvD / μ</span> compares inertial
-                  to viscous forces. Flow is Laminar below 2,100, Transitional in 2,100–4,000, and
-                  Turbulent above 4,000.
+                  <MathInline latex="\mathrm{Re} = \frac{\rho v D}{\mu}" /> compares inertial to
+                  viscous forces. Flow is Laminar below <MathInline latex="2,100" />, Transitional
+                  in <MathInline latex="2,100\text{–}4,000" />, and Turbulent above{' '}
+                  <MathInline latex="4,000" />.
                 </>
               ),
             },
@@ -751,9 +775,9 @@ export function FluidMechanicsLab() {
               body: (
                 <>
                   This simulator uses the <strong className="text-slate-800">Darcy</strong> factor{' '}
-                  <span className="font-mono">f_D = 64/Re</span> (laminar), equal to{' '}
-                  <span className="font-mono">4 · f_F</span> where Fanning{' '}
-                  <span className="font-mono">f_F = 16/Re</span>.
+                  <MathInline latex="f_D = \frac{64}{\mathrm{Re}}" /> (laminar), equal to{' '}
+                  <MathInline latex="4 f_F" /> where Fanning{' '}
+                  <MathInline latex="f_F = \frac{16}{\mathrm{Re}}" />.
                 </>
               ),
             },
@@ -761,9 +785,9 @@ export function FluidMechanicsLab() {
               title: 'Major & Minor Head Losses',
               body: (
                 <>
-                  Straight-pipe friction <span className="font-mono">hf = f_D(L/D)(v²/2g)</span>{' '}
-                  adds with valve/elbow losses <span className="font-mono">hm = ΣK(v²/2g)</span> to
-                  produce frictional ΔP.
+                  Straight-pipe friction <MathInline latex="h_f = f_D \frac{L}{D}\frac{v^2}{2g}" />{' '}
+                  adds with valve/elbow losses <MathInline latex="h_m = \sum K \frac{v^2}{2g}" />{' '}
+                  to produce frictional <MathInline latex="\Delta P_{\mathrm{f}}" />.
                 </>
               ),
             },
@@ -771,10 +795,9 @@ export function FluidMechanicsLab() {
               title: 'Pump Head & Shaft Power',
               body: (
                 <>
-                  Required head <span className="font-mono">H = Δz + hf + hm</span> separates
-                  static lift from friction. Hydraulic power{' '}
-                  <span className="font-mono">Ph = ρgQH</span> scales shaft power{' '}
-                  <span className="font-mono">Ps = Ph / η</span>.
+                  Required head <MathInline latex="H = \Delta z + h_f + h_m" /> separates static
+                  lift from friction. Hydraulic power <MathInline latex="P_h = \rho g Q H" />{' '}
+                  scales shaft power <MathInline latex="P_s = \frac{P_h}{\eta}" />.
                 </>
               ),
             },
@@ -782,37 +805,130 @@ export function FluidMechanicsLab() {
           detailedBlocks={[
             {
               title: '01. Kinematics & Reynolds Classification',
-              subtitle: 'Convert Q from L/s to m³/s and ε from mm to m internally:',
+              subtitle:
+                'Convert $Q$ from $\\mathrm{L/s}$ to $\\mathrm{m^3/s}$ and $\\varepsilon$ from $\\mathrm{mm}$ to $\\mathrm{m}$ internally:',
               equations: [
-                { text: 'A = π · D² / 4  [m²]' },
-                { text: 'v = Q_SI / A  [m/s]' },
-                { text: 'Re = (ρ · v · D) / μ' },
-                { text: 'Laminar: Re < 2,100', tone: 'teal' },
-                { text: 'Turbulent: Re > 4,000', tone: 'muted' },
+                {
+                  label: 'Pipe Cross-Sectional Area & Mean Velocity',
+                  latex: 'A = \\frac{\\pi D^2}{4}, \\quad v = \\frac{Q}{A}',
+                  equationNumber: '1',
+                },
+                {
+                  label: 'Reynolds Number & Relative Roughness',
+                  latex: '\\mathrm{Re} = \\frac{\\rho v D}{\\mu}, \\quad \\text{Rel. Roughness} = \\frac{\\varepsilon}{D}',
+                  equationNumber: '2',
+                  tone: 'teal',
+                },
+                {
+                  label: 'Regime Thresholds (Laminar / Turbulent)',
+                  latex: '\\mathrm{Re} < 2100 \\; (\\text{Lam.}), \\quad \\mathrm{Re} > 4000 \\; (\\text{Turb.})',
+                  equationNumber: '3',
+                },
+              ],
+              definitions: [
+                {
+                  symbolLatex: '\\rho',
+                  description: 'Fluid mass density',
+                  unitLatex: '\\mathrm{kg/m^3}',
+                },
+                {
+                  symbolLatex: 'v',
+                  description: 'Cross-sectional average fluid velocity',
+                  unitLatex: '\\mathrm{m/s}',
+                },
+                {
+                  symbolLatex: 'D',
+                  description: 'Internal circular pipe diameter',
+                  unitLatex: '\\mathrm{m}',
+                },
+                {
+                  symbolLatex: '\\mu',
+                  description: 'Dynamic viscosity',
+                  unitLatex: '\\mathrm{Pa\\cdot s}',
+                },
               ],
             },
             {
               title: '02. Friction Factor Correlations',
               subtitle: 'Hagen–Poiseuille exact laminar vs. implicit Colebrook–White turbulent:',
               equations: [
-                { text: 'Laminar: f_D = 64 / Re   (f_F = 16 / Re)' },
                 {
-                  text: 'Turbulent: 1/√f_D = −2·log10( (ε/D)/3.7 + 2.51/(Re·√f_D) )',
+                  label: 'Laminar Flow (Hagen–Poiseuille)',
+                  latex: 'f_D = \\frac{64}{\\mathrm{Re}}, \\quad f_F = \\frac{f_D}{4} = \\frac{16}{\\mathrm{Re}}',
+                  equationNumber: '4',
+                },
+                {
+                  label: 'Turbulent Flow (Implicit Colebrook–White)',
+                  latex: '\\frac{1}{\\sqrt{f_D}} = -2 \\log_{10}\\!\\left( \\frac{\\varepsilon / D}{3.7} + \\frac{2.51}{\\mathrm{Re}\\sqrt{f_D}} \\right)',
+                  equationNumber: '5',
                   tone: 'teal',
                 },
-                { text: 'Solved via Haaland seed + Newton–Raphson', tone: 'muted' },
-                { text: '2,100 ≤ Re ≤ 4,000 flagged as uncertain', tone: 'muted' },
+                {
+                  label: 'Explicit Haaland Seed for Newton–Raphson',
+                  latex: '\\frac{1}{\\sqrt{f_{D,0}}} = -1.8 \\log_{10}\\!\\left[ \\left(\\frac{\\varepsilon/D}{3.7}\\right)^{1.11} + \\frac{6.9}{\\mathrm{Re}} \\right]',
+                  equationNumber: '6',
+                },
+              ],
+              definitions: [
+                {
+                  symbolLatex: 'f_D',
+                  description: 'Darcy–Weisbach friction factor',
+                  unit: '—',
+                },
+                {
+                  symbolLatex: 'f_F',
+                  description: 'Fanning friction factor ($f_D / 4$)',
+                  unit: '—',
+                },
+                {
+                  symbolLatex: '\\varepsilon / D',
+                  description: 'Dimensionless relative wall roughness',
+                  unit: '—',
+                },
               ],
             },
             {
               title: '03. Head Losses & Mechanical Energy',
-              subtitle: 'Steady mechanical energy balance with P₁ = P₂ (gauge):',
+              subtitle: 'Steady mechanical energy balance with $P_1 = P_2$ (gauge):',
               equations: [
-                { text: 'hf = f_D · (L / D) · (v² / 2g)  [m]' },
-                { text: 'hm = ΣK · (v² / 2g)  [m]' },
-                { text: 'ΔP_friction = ρ · g · (hf + hm)  [Pa]' },
-                { text: 'H = Δz + hf + hm  [m]', tone: 'teal' },
-                { text: 'Ph = ρ · g · Q_SI · H  [W],  Ps = Ph / η' },
+                {
+                  label: 'Darcy–Weisbach Major & Minor Head Losses',
+                  latex: 'h_f = f_D \\frac{L}{D} \\frac{v^2}{2g}, \\quad h_m = \\sum K \\frac{v^2}{2g}',
+                  equationNumber: '7',
+                },
+                {
+                  label: 'Frictional Pressure Loss & Required Pump Head',
+                  latex: '\\Delta P_{\\mathrm{f}} = \\rho g (h_f + h_m), \\; H = \\Delta z + h_f + h_m',
+                  equationNumber: '8',
+                  tone: 'teal',
+                },
+                {
+                  label: 'Hydraulic Power & Pump Shaft Power',
+                  latex: 'P_h = \\rho g Q H, \\quad P_s = \\frac{P_h}{\\eta}',
+                  equationNumber: '9',
+                },
+              ],
+              definitions: [
+                {
+                  symbolLatex: 'h_f, h_m',
+                  description: 'Major pipe and minor fitting head losses',
+                  unitLatex: '\\mathrm{m}',
+                },
+                {
+                  symbolLatex: 'g',
+                  description: 'Gravitational acceleration ($9.80665$)',
+                  unitLatex: '\\mathrm{m/s^2}',
+                },
+                {
+                  symbolLatex: 'H',
+                  description: 'Total required pump head',
+                  unitLatex: '\\mathrm{m}',
+                },
+                {
+                  symbolLatex: 'P_h, P_s',
+                  description: 'Hydraulic and shaft pumping power',
+                  unitLatex: '\\mathrm{W}',
+                },
               ],
             },
           ]}

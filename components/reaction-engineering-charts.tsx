@@ -24,7 +24,7 @@ import {
   generateResidenceTimeComparisonSeries,
   generateTargetConversionSizingSeries,
 } from '@/lib/reaction-engineering';
-import { LabChartCard } from '@/components/lab-shared';
+import { LabChartCard, MathInline } from '@/components/lab-shared';
 import { Info, Plus, RotateCcw, Trash2 } from 'lucide-react';
 
 export interface SavedReactionScenario {
@@ -154,9 +154,9 @@ export function ReactionEngineeringCharts({
           {/* Chart 1: Batch CA(t) vs Time */}
           <LabChartCard
             className="lg:col-span-6"
-            title="Batch Reactor: Reactant Concentration CA(t) vs. Time"
-            subtitle="Exponential first-order decay CA(t) = CA0·exp(−k·t) in a closed, isothermal, constant-density vessel."
-            rightMeta={`CA(${inputs.batchTime_s.toFixed(1)}s) = ${active.outletConcentration_mol_m3.toFixed(1)} mol/m³`}
+            title="Batch Reactor: Reactant Concentration $C_A(t)$ vs. Time"
+            subtitle="Exponential first-order decay $C_A(t) = C_{A,0} e^{-kt}$ in a closed, isothermal, constant-density vessel."
+            rightMeta={`$C_A(${inputs.batchTime_s.toFixed(1)}\\text{ s})$ = ${active.outletConcentration_mol_m3.toFixed(1)} mol/m³`}
             footer={
               <>
                 <span>Initial CA0: {inputs.initialConcentration_mol_m3.toFixed(1)} mol/m³</span>
@@ -235,9 +235,9 @@ export function ReactionEngineeringCharts({
           {/* Chart 2: Batch Conversion X(t) vs Time */}
           <LabChartCard
             className="lg:col-span-6"
-            title="Batch Reactor: Conversion X(t) vs. Time"
-            subtitle="First-order batch conversion X(t) = 1 − exp(−k·t) rises steeply early and approaches 100% asymptotically."
-            rightMeta={`X(${inputs.batchTime_s.toFixed(1)}s) = ${active.conversion_pct.toFixed(2)}%`}
+            title="Batch Reactor: Conversion $X(t)$ vs. Time"
+            subtitle="First-order batch conversion $X(t) = 1 - e^{-kt}$ rises steeply early and approaches $100\%$ asymptotically."
+            rightMeta={`$X(${inputs.batchTime_s.toFixed(1)}\\text{ s})$ = ${active.conversion_pct.toFixed(2)}%`}
             footer={
               <>
                 <span>
@@ -320,12 +320,12 @@ export function ReactionEngineeringCharts({
         {/* Chart 3: Continuous Reactors — Conversion X vs Residence Time tau (CSTR vs PFR) */}
         <LabChartCard
           className="lg:col-span-6"
-          title="Continuous Reactors: Conversion X vs. Residence Time τ"
-          subtitle="Compares Ideal PFR (X = 1 − exp(−k·τ)) against Ideal CSTR (X = k·τ / (1 + k·τ)) across space time τ = V/q."
+          title="Continuous Reactors: Conversion $X$ vs. Residence Time $\tau$"
+          subtitle="Compares Ideal PFR ($X = 1 - e^{-k\tau}$) against Ideal CSTR ($X = \frac{k\tau}{1 + k\tau}$) across space time $\tau = V/q$."
           rightMeta={
             results.residenceTime_s !== null
-              ? `τ = ${results.residenceTime_s.toFixed(1)} s`
-              : `t_eq = ${results.equivalentCharacteristicTime_s.toFixed(1)} s`
+              ? `$\\tau$ = ${results.residenceTime_s.toFixed(1)} s`
+              : `$t_{\\mathrm{eq}}$ = ${results.equivalentCharacteristicTime_s.toFixed(1)} s`
           }
           footer={
             <>
@@ -411,9 +411,9 @@ export function ReactionEngineeringCharts({
         {inputs.reactorType === 'pfr' ? (
           <LabChartCard
             className="lg:col-span-6"
-            title="Plug Flow Reactor (PFR): Concentration CA(V) vs. Volume"
-            subtitle="Spatial depletion profile CA(V) = CA0·exp(−k·V/q) along an Ideal PFR from inlet (V = 0) to outlet."
-            rightMeta={`CA,out = ${active.outletConcentration_mol_m3.toFixed(1)} mol/m³`}
+            title="Plug Flow Reactor (PFR): Concentration $C_A(V)$ vs. Volume"
+            subtitle="Spatial depletion profile $C_A(V) = C_{A,0} e^{-kV/q}$ along an Ideal PFR from inlet ($V = 0$) to outlet."
+            rightMeta={`$C_{A,\\mathrm{out}}$ = ${active.outletConcentration_mol_m3.toFixed(1)} mol/m³`}
             footer={
               <>
                 <span>Inlet CA0: {inputs.initialConcentration_mol_m3.toFixed(1)} mol/m³</span>
@@ -501,29 +501,32 @@ export function ReactionEngineeringCharts({
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Unlike a Plug Flow Reactor where concentration drops continuously along reactor volume{' '}
-                <span className="font-mono text-slate-800">CA(V)</span>, an Ideal CSTR assumes{' '}
+                <MathInline latex="C_A(V)" />, an Ideal CSTR assumes{' '}
                 <strong className="text-slate-800">instantaneous, complete mixing</strong>. As soon
-                as feed <span className="font-mono text-slate-800">CA0</span> enters the tank, it
-                drops immediately to the uniform outlet concentration{' '}
+                as feed <MathInline latex="C_{A,0}" /> enters the tank, it drops immediately to the
+                uniform outlet concentration{' '}
                 <span className="font-mono font-semibold text-teal-900">
-                  CA = {active.outletConcentration_mol_m3.toFixed(2)} mol/m³
+                  <MathInline latex="C_A" /> = {active.outletConcentration_mol_m3.toFixed(2)} mol/m³
                 </span>{' '}
                 everywhere inside the vessel.
               </p>
               <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 space-y-1.5 text-xs font-mono text-slate-800 tabular-nums">
                 <div>
-                  Uniform Vessel &amp; Outlet CA = {active.outletConcentration_mol_m3.toFixed(2)} mol/m³
+                  Uniform Vessel &amp; Outlet <MathInline latex="C_A" /> ={' '}
+                  {active.outletConcentration_mol_m3.toFixed(2)} mol/m³
                 </div>
                 <div>
-                  Uniform Reaction Rate −rA = {active.reactionRate_mol_m3_s.toFixed(3)} mol/(m³·s)
+                  Uniform Reaction Rate <MathInline latex="-r_A" /> ={' '}
+                  {active.reactionRate_mol_m3_s.toFixed(3)} mol/(m³·s)
                 </div>
                 <div className="text-slate-600">
-                  Design Balance: V = q·(CA0 − CA) / (−rA) = {inputs.reactorVolume_m3.toFixed(2)} m³
+                  Design Balance: <MathInline latex="V = \frac{q(C_{A,0} - C_A)}{-r_A}" /> ={' '}
+                  {inputs.reactorVolume_m3.toFixed(2)} m³
                 </div>
               </div>
             </div>
             <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-600">
-              Switch to <strong className="text-slate-800">Ideal PFR</strong> in Step 1 to inspect the continuous spatial <span className="font-mono">CA(V)</span> profile.
+              Switch to <strong className="text-slate-800">Ideal PFR</strong> in Step 1 to inspect the continuous spatial <MathInline latex="C_A(V)" /> profile.
             </div>
           </div>
         ) : (
@@ -531,8 +534,8 @@ export function ReactionEngineeringCharts({
           <LabChartCard
             className="lg:col-span-6"
             title="Reactor Performance Comparison at Equivalent Time"
-            subtitle={`Compares Batch conversion at reaction time t = ${results.equivalentCharacteristicTime_s.toFixed(1)} s against steady CSTR and PFR at residence time τ = ${results.equivalentCharacteristicTime_s.toFixed(1)} s.`}
-            rightMeta={`k = ${inputs.rateConstant_per_s.toFixed(4)} s⁻¹`}
+            subtitle={`Compares Batch conversion at reaction time $t = ${results.equivalentCharacteristicTime_s.toFixed(1)}\\text{ s}$ against steady CSTR and PFR at residence time $\\tau = ${results.equivalentCharacteristicTime_s.toFixed(1)}\\text{ s}$.`}
+            rightMeta={`$k = ${inputs.rateConstant_per_s.toFixed(4)}\\text{ s}^{-1}$`}
             footer={
               <>
                 <span>Batch t excludes turnaround</span>
@@ -581,9 +584,9 @@ export function ReactionEngineeringCharts({
         {inputs.reactorType !== 'batch' && (
           <LabChartCard
             className="lg:col-span-5"
-            title="Reactor Performance Comparison (t = τ)"
-            subtitle={`Conversion at identical characteristic time (Batch reaction time t = ${results.equivalentCharacteristicTime_s.toFixed(1)} s vs. continuous residence time τ = ${results.equivalentCharacteristicTime_s.toFixed(1)} s).`}
-            rightMeta={`Da = ${active.damkohlerNumber.toFixed(2)}`}
+            title="Reactor Performance Comparison ($t = \tau$)"
+            subtitle={`Conversion at identical characteristic time (Batch reaction time $t = ${results.equivalentCharacteristicTime_s.toFixed(1)}\\text{ s}$ vs. continuous residence time $\\tau = ${results.equivalentCharacteristicTime_s.toFixed(1)}\\text{ s}$).`}
+            rightMeta={`$\\mathrm{Da}$ = ${active.damkohlerNumber.toFixed(2)}`}
             footer={
               <>
                 <span>Batch t excludes turnaround</span>
@@ -629,13 +632,13 @@ export function ReactionEngineeringCharts({
         {/* Chart 6: Required Reactor Volume V_req vs Target Conversion X_target */}
         <LabChartCard
           className={inputs.reactorType === 'batch' ? 'lg:col-span-12' : 'lg:col-span-7'}
-          title="Required Reactor Volume V_req vs. Target Conversion (CSTR vs. PFR)"
-          subtitle="Demonstrates the steep CSTR sizing penalty V_CSTR = q·X / [k·(1 − X)] vs. PFR V_PFR = −(q/k)·ln(1 − X) as X → 95%."
+          title="Required Reactor Volume $V_{\mathrm{req}}$ vs. Target Conversion (CSTR vs. PFR)"
+          subtitle="Demonstrates the steep CSTR sizing penalty $V_{\mathrm{CSTR}} = \frac{q X}{k(1 - X)}$ vs. PFR $V_{\mathrm{PFR}} = -\frac{q}{k}\ln(1 - X)$ as $X \rightarrow 95\%$."
           rightMeta={
             results.targetDesign.isTargetAchievable &&
             results.targetDesign.cstrToPfrVolumeRatio !== null
-              ? `V_CSTR / V_PFR = ${results.targetDesign.cstrToPfrVolumeRatio.toFixed(2)}× at ${inputs.targetConversion_pct}%`
-              : 'Target unbounded at X = 100% or k = 0'
+              ? `$V_{\\mathrm{CSTR}} / V_{\\mathrm{PFR}}$ = ${results.targetDesign.cstrToPfrVolumeRatio.toFixed(2)}× at ${inputs.targetConversion_pct}%`
+              : 'Target unbounded at $X = 100\\%$ or $k = 0$'
           }
           footer={
             <>

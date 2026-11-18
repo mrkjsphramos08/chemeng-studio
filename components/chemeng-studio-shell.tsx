@@ -13,6 +13,9 @@ import { LabsDirectory, AvailableLabId } from '@/components/labs-directory';
 import { HeatExchangerLab } from '@/components/heat-exchanger-lab';
 import { FluidMechanicsLab } from '@/components/fluid-mechanics-lab';
 import { ReactionEngineeringLab } from '@/components/reaction-engineering-lab';
+import { DistillationLab } from '@/components/distillation-lab';
+import { ThermodynamicsLab } from '@/components/thermodynamics-lab';
+import { ProcessControlLab } from '@/components/process-control-lab';
 
 interface ChemEngStudioShellProps {
   initialView: ActiveView;
@@ -42,10 +45,10 @@ export function ChemEngStudioShell({ initialView }: ChemEngStudioShellProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 overflow-x-hidden">
       <Navbar activeView={activeView} onSelectView={handleSelectView} />
 
-      <main className="flex-1">
+      <main className="flex-1 min-w-0">
         {activeView === 'overview' && (
           <>
             <HeroSection
@@ -74,6 +77,12 @@ export function ChemEngStudioShell({ initialView }: ChemEngStudioShellProps) {
         {activeView === 'fluid-mechanics' && <FluidMechanicsLab />}
 
         {activeView === 'reaction-engineering' && <ReactionEngineeringLab />}
+
+        {activeView === 'distillation' && <DistillationLab />}
+
+        {activeView === 'thermodynamics' && <ThermodynamicsLab />}
+
+        {activeView === 'process-control' && <ProcessControlLab />}
       </main>
 
       <Footer onSelectView={handleSelectView} />
