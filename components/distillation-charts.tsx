@@ -1150,34 +1150,44 @@ export function DistillationCharts({
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 font-mono text-[11px] tabular-nums">
-                <div className="bg-white rounded-lg p-2 border border-slate-200/80">
+                <div className="bg-white rounded-lg p-2.5 border border-slate-200/80 min-w-0">
                   <div className="text-[10px] font-sans text-slate-500">α &amp; Feed q</div>
-                  <div className="font-semibold text-slate-900 whitespace-nowrap">
-                    α = {s.inputs.relativeVolatility_alpha.toFixed(2)} · q ={' '}
-                    {s.inputs.feedQuality_q.toFixed(2)}
+                  <div className="font-semibold text-slate-900 leading-snug flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                    <span>α = {s.inputs.relativeVolatility_alpha.toFixed(2)}</span>
+                    <span className="text-slate-400">·</span>
+                    <span>q = {s.inputs.feedQuality_q.toFixed(2)}</span>
                   </div>
                 </div>
-                <div className="bg-white rounded-lg p-2 border border-slate-200/80">
+                <div className="bg-white rounded-lg p-2.5 border border-slate-200/80 min-w-0">
                   <div className="text-[10px] font-sans text-slate-500">Reflux R (Rmin)</div>
-                  <div className="font-semibold text-slate-900 whitespace-nowrap">
+                  <div className="font-semibold text-slate-900 leading-snug break-words">
                     {s.inputs.refluxRatio_R.toFixed(2)} (
                     {s.minimumReflux_Rmin !== null ? s.minimumReflux_Rmin.toFixed(2) : '—'})
                   </div>
                 </div>
-                <div className="bg-white rounded-lg p-2 border border-slate-200/80">
+                <div className="bg-white rounded-lg p-2.5 border border-slate-200/80 min-w-0">
                   <div className="text-[10px] font-sans text-slate-500">zF → xD / xB</div>
-                  <div className="font-semibold text-slate-900 whitespace-nowrap">
-                    {s.inputs.feedComposition_zF.toFixed(2)} →{' '}
-                    {s.inputs.distillateComposition_xD.toFixed(2)} /{' '}
-                    {s.inputs.bottomsComposition_xB.toFixed(2)}
+                  <div className="font-semibold text-slate-900 leading-snug flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                    <span>{s.inputs.feedComposition_zF.toFixed(2)} →</span>
+                    <span>
+                      {s.inputs.distillateComposition_xD.toFixed(2)} /{' '}
+                      {s.inputs.bottomsComposition_xB.toFixed(2)}
+                    </span>
                   </div>
                 </div>
-                <div className="bg-white rounded-lg p-2 border border-slate-200/80">
+                <div className="bg-white rounded-lg p-2.5 border border-slate-200/80 min-w-0">
                   <div className="text-[10px] font-sans text-slate-500">Stages N (Feed NF)</div>
-                  <div className="font-semibold text-teal-800 whitespace-nowrap">
-                    {s.totalTheoreticalStages !== null && s.fractionalTheoreticalStages !== null
-                      ? `${s.totalTheoreticalStages} (${s.fractionalTheoreticalStages.toFixed(2)}) · NF=${s.feedStageNumber ?? '—'}`
-                      : 'Pinched'}
+                  <div className="font-semibold text-teal-800 leading-snug flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                    {s.totalTheoreticalStages !== null && s.fractionalTheoreticalStages !== null ? (
+                      <>
+                        <span>
+                          {s.totalTheoreticalStages} ({s.fractionalTheoreticalStages.toFixed(2)})
+                        </span>
+                        <span>· NF={s.feedStageNumber ?? '—'}</span>
+                      </>
+                    ) : (
+                      <span>Pinched</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1193,16 +1203,17 @@ export function DistillationCharts({
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 font-mono text-[11px] tabular-nums">
-              <div className="bg-white rounded-lg p-2 border border-teal-200/80">
+              <div className="bg-white rounded-lg p-2.5 border border-teal-200/80 min-w-0">
                 <div className="text-[10px] font-sans text-slate-500">α &amp; Feed q</div>
-                <div className="font-semibold text-slate-900 whitespace-nowrap">
-                  α = {inputs.relativeVolatility_alpha.toFixed(2)} · q ={' '}
-                  {inputs.feedQuality_q.toFixed(2)}
+                <div className="font-semibold text-slate-900 leading-snug flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                  <span>α = {inputs.relativeVolatility_alpha.toFixed(2)}</span>
+                  <span className="text-slate-400">·</span>
+                  <span>q = {inputs.feedQuality_q.toFixed(2)}</span>
                 </div>
               </div>
-              <div className="bg-white rounded-lg p-2 border border-teal-200/80">
+              <div className="bg-white rounded-lg p-2.5 border border-teal-200/80 min-w-0">
                 <div className="text-[10px] font-sans text-slate-500">Reflux R (Rmin)</div>
-                <div className="font-semibold text-slate-900 whitespace-nowrap">
+                <div className="font-semibold text-slate-900 leading-snug break-words">
                   {inputs.refluxRatio_R.toFixed(2)} (
                   {results.minimumReflux.minimumRefluxRatio_Rmin !== null
                     ? results.minimumReflux.minimumRefluxRatio_Rmin.toFixed(2)
@@ -1210,21 +1221,31 @@ export function DistillationCharts({
                   )
                 </div>
               </div>
-              <div className="bg-white rounded-lg p-2 border border-teal-200/80">
+              <div className="bg-white rounded-lg p-2.5 border border-teal-200/80 min-w-0">
                 <div className="text-[10px] font-sans text-slate-500">zF → xD / xB</div>
-                <div className="font-semibold text-slate-900 whitespace-nowrap">
-                  {inputs.feedComposition_zF.toFixed(2)} →{' '}
-                  {inputs.distillateComposition_xD.toFixed(2)} /{' '}
-                  {inputs.bottomsComposition_xB.toFixed(2)}
+                <div className="font-semibold text-slate-900 leading-snug flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                  <span>{inputs.feedComposition_zF.toFixed(2)} →</span>
+                  <span>
+                    {inputs.distillateComposition_xD.toFixed(2)} /{' '}
+                    {inputs.bottomsComposition_xB.toFixed(2)}
+                  </span>
                 </div>
               </div>
-              <div className="bg-white rounded-lg p-2 border border-teal-200/80">
+              <div className="bg-white rounded-lg p-2.5 border border-teal-200/80 min-w-0">
                 <div className="text-[10px] font-sans text-slate-500">Stages N (Feed NF)</div>
-                <div className="font-semibold text-teal-900 whitespace-nowrap">
+                <div className="font-semibold text-teal-900 leading-snug flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                   {results.stageCalculation.totalTheoreticalStages !== null &&
-                  results.stageCalculation.fractionalTheoreticalStages !== null
-                    ? `${results.stageCalculation.totalTheoreticalStages} (${results.stageCalculation.fractionalTheoreticalStages.toFixed(2)}) · NF=${results.stageCalculation.feedStageNumber ?? '—'}`
-                    : 'Pinched'}
+                  results.stageCalculation.fractionalTheoreticalStages !== null ? (
+                    <>
+                      <span>
+                        {results.stageCalculation.totalTheoreticalStages} (
+                        {results.stageCalculation.fractionalTheoreticalStages.toFixed(2)})
+                      </span>
+                      <span>· NF={results.stageCalculation.feedStageNumber ?? '—'}</span>
+                    </>
+                  ) : (
+                    <span>Pinched</span>
+                  )}
                 </div>
               </div>
             </div>

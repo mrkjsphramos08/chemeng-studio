@@ -331,18 +331,18 @@ export function HeatExchangerSchematic({ inputs, results }: SchematicProps) {
           </g>
 
           {/* 4. COLD INLET CALLOUT (BOTTOM RIGHT) */}
-          <g transform="translate(652, 228)">
-            <rect width="194" height="78" rx="8" fill="#F0F9FF" stroke="#BAE6FD" strokeWidth="1.5" />
-            <text x="12" y="19" className="text-[11px] font-bold fill-sky-950">
+          <g transform="translate(636, 228)">
+            <rect width="210" height="78" rx="8" fill="#F0F9FF" stroke="#BAE6FD" strokeWidth="1.5" />
+            <text x="10" y="19" className="text-[11px] font-bold fill-sky-950">
               COLD INLET (Tc,in)
             </text>
-            <text x="12" y="42" className="text-[18px] font-mono font-bold fill-sky-800">
+            <text x="10" y="42" className="text-[18px] font-mono font-bold fill-sky-800">
               {inputs.Tc_in.toFixed(1)} °C
             </text>
             <text x="100" y="41" className="text-[11px] font-mono fill-sky-900">
               mc = {inputs.mc.toFixed(2)} kg/s
             </text>
-            <text x="12" y="60" className="text-[11px] font-mono fill-sky-900">
+            <text x="10" y="60" className="text-[11px] font-mono fill-sky-900">
               Cc = {results.isValid ? results.Cc_kW_K.toFixed(2) : '0.00'} kW/K · ΔT2 ={' '}
               {results.isValid ? `${results.approachTempColdEnd.toFixed(1)} °C` : '—'}
             </text>

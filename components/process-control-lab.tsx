@@ -1158,7 +1158,6 @@ export function ProcessControlLab() {
           subtitle="Complete mathematical formulation for open-loop first-order-plus-dead-time dynamics, P/PI/PID feedback laws, actuator saturation anti-windup, and time-integral performance indices."
           expandLabel="Show Full Control Derivations & Equations"
           collapseLabel="Hide Full Control Derivations"
-          defaultExpanded={true}
           concepts={[
             {
               title: '1. First-Order & FOPDT Dynamics',

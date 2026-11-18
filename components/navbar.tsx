@@ -141,7 +141,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
         {/* Zone 2: Primary Platform Navigation (5 single-line links) */}
         <nav
           aria-label="Primary Navigation"
-          className="hidden md:flex items-center gap-1 lg:gap-1.5"
+          className="hidden lg:flex items-center gap-1 lg:gap-1.5"
         >
           <button
             type="button"
@@ -225,7 +225,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:bg-slate-100 border border-slate-200"
+            className="lg:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:bg-slate-100 border border-slate-200 cursor-pointer"
             aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={mobileMenuOpen}
             data-testid="nav-mobile-toggle"
@@ -278,21 +278,21 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
             );
           })}
         </div>
-        {/* Subtle horizontal scroll fade cues on mobile */}
+        {/* Subtle horizontal scroll fade cues on mobile & tablet */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-slate-50 to-transparent md:hidden"
+          className="pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-slate-50 to-transparent lg:hidden"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-slate-50 to-transparent md:hidden"
+          className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-slate-50 to-transparent lg:hidden"
         />
       </div>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile & Tablet Navigation Drawer */}
       {mobileMenuOpen && (
         <div
-          className="md:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-4 shadow-lg"
+          className="lg:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-4 shadow-lg"
           data-testid="nav-mobile-drawer"
         >
           <div className="space-y-1">

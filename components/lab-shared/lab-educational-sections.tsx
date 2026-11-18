@@ -108,7 +108,7 @@ export function LabTheoryDisclosureCard({
   collapseLabel,
   concepts,
   detailedBlocks,
-  defaultExpanded = true,
+  defaultExpanded = false,
 }: LabTheoryDisclosureCardProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
 

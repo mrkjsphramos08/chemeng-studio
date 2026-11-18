@@ -160,7 +160,7 @@ export function LabParameterPanel<T extends object>({
                               step={ctrl.inputStep ?? ctrl.step}
                               value={currentVal}
                               onChange={(e) => onChange(ctrl.key, e.target.value)}
-                              className="w-20 px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
+                              className="w-24 min-w-[6rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
                               data-testid={`number-${ctrl.key}`}
                             />
                             <span className="text-[11px] text-slate-500 shrink-0 whitespace-nowrap">

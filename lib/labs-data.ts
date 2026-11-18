@@ -1,7 +1,11 @@
 import type { SharedGuidedQuestion } from '@/components/lab-shared';
 import type { FluidMechanicsInputs } from '@/lib/fluid-mechanics';
 import type { ReactionEngineeringInputs } from '@/lib/reaction-engineering';
-import type { DistillationInputs } from '@/lib/distillation';
+import {
+  DEFAULT_DISTILLATION_INPUTS,
+  calculateDistillation,
+  type DistillationInputs,
+} from '@/lib/distillation';
 import type { PureFluidPVTInputs, BinaryVLEInputs } from '@/lib/thermodynamics';
 import type { ProcessControlInputs } from '@/lib/process-control';
 
@@ -844,6 +848,99 @@ export const REACTION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Reactio
   },
 ];
 
+const DISTILLATION_BASELINE_RESULT = calculateDistillation(DEFAULT_DISTILLATION_INPUTS);
+const DIST_BASE_N = DISTILLATION_BASELINE_RESULT.stageCalculation.totalTheoreticalStages ?? 11;
+const DIST_BASE_N_FRAC = (
+  DISTILLATION_BASELINE_RESULT.stageCalculation.fractionalTheoreticalStages ?? 10.39
+).toFixed(2);
+const DIST_BASE_NF = DISTILLATION_BASELINE_RESULT.stageCalculation.feedStageNumber ?? 5;
+const DIST_BASE_RMIN = (
+  DISTILLATION_BASELINE_RESULT.minimumReflux.minimumRefluxRatio_Rmin ?? 1.1
+).toFixed(3);
+const DIST_BASE_NMIN = (
+  DISTILLATION_BASELINE_RESULT.minimumReflux.fenskeMinimumStages_Nmin ?? 6.43
+).toFixed(2);
+
+const DIST_Q1_INPUTS: DistillationInputs = {
+  ...DEFAULT_DISTILLATION_INPUTS,
+  relativeVolatility_alpha: 4.0,
+  refluxRatio_R: 2.0,
+  feedQuality_q: 1.0,
+};
+const DIST_Q1_RESULT = calculateDistillation(DIST_Q1_INPUTS);
+const DIST_Q1_N = DIST_Q1_RESULT.stageCalculation.totalTheoreticalStages ?? 6;
+const DIST_Q1_N_FRAC = (
+  DIST_Q1_RESULT.stageCalculation.fractionalTheoreticalStages ?? 5.59
+).toFixed(2);
+const DIST_Q1_RMIN = (DIST_Q1_RESULT.minimumReflux.minimumRefluxRatio_Rmin ?? 0.5).toFixed(3);
+const DIST_Q1_NMIN = (DIST_Q1_RESULT.minimumReflux.fenskeMinimumStages_Nmin ?? 4.25).toFixed(2);
+
+const DIST_Q2_INPUTS: DistillationInputs = {
+  ...DEFAULT_DISTILLATION_INPUTS,
+  relativeVolatility_alpha: 2.5,
+  refluxRatio_R: 5.0,
+  feedQuality_q: 1.0,
+};
+const DIST_Q2_RESULT = calculateDistillation(DIST_Q2_INPUTS);
+const DIST_Q2_N = DIST_Q2_RESULT.stageCalculation.totalTheoreticalStages ?? 8;
+const DIST_Q2_N_FRAC = (
+  DIST_Q2_RESULT.stageCalculation.fractionalTheoreticalStages ?? 7.79
+).toFixed(2);
+
+const DIST_Q3_INPUTS: DistillationInputs = {
+  ...DEFAULT_DISTILLATION_INPUTS,
+  relativeVolatility_alpha: 2.5,
+  refluxRatio_R: 1.18,
+  feedQuality_q: 1.0,
+};
+const DIST_Q3_RESULT = calculateDistillation(DIST_Q3_INPUTS);
+const DIST_Q3_N = DIST_Q3_RESULT.stageCalculation.totalTheoreticalStages ?? 19;
+const DIST_Q3_N_FRAC = (
+  DIST_Q3_RESULT.stageCalculation.fractionalTheoreticalStages ?? 18.45
+).toFixed(2);
+
+const DIST_Q4_INPUTS: DistillationInputs = {
+  ...DEFAULT_DISTILLATION_INPUTS,
+  relativeVolatility_alpha: 2.5,
+  refluxRatio_R: 2.8,
+  feedQuality_q: 0.0,
+};
+const DIST_Q4_RESULT = calculateDistillation(DIST_Q4_INPUTS);
+const DIST_Q4_RMIN = (DIST_Q4_RESULT.minimumReflux.minimumRefluxRatio_Rmin ?? 2.1).toFixed(3);
+
+const DIST_Q5_INPUTS: DistillationInputs = {
+  ...DEFAULT_DISTILLATION_INPUTS,
+  relativeVolatility_alpha: 2.5,
+  refluxRatio_R: 2.4,
+  feedQuality_q: 0.5,
+};
+const DIST_Q5_RESULT = calculateDistillation(DIST_Q5_INPUTS);
+const DIST_Q5_N = DIST_Q5_RESULT.stageCalculation.totalTheoreticalStages ?? 11;
+const DIST_Q5_N_FRAC = (
+  DIST_Q5_RESULT.stageCalculation.fractionalTheoreticalStages ?? 10.52
+).toFixed(2);
+const DIST_Q5_NF = DIST_Q5_RESULT.stageCalculation.feedStageNumber ?? 6;
+const DIST_Q5_XINT = DIST_Q5_RESULT.operatingLines.intersection_x.toFixed(3);
+const DIST_Q5_FEED_XEQ = (
+  DIST_Q5_RESULT.stageCalculation.stages[DIST_Q5_NF - 1]?.x_eq ?? 0.369
+).toFixed(3);
+
+const DIST_Q6_INPUTS: DistillationInputs = {
+  feedFlow_kmol_h: 100.0,
+  feedComposition_zF: 0.5,
+  distillateComposition_xD: 0.92,
+  bottomsComposition_xB: 0.08,
+  relativeVolatility_alpha: 1.5,
+  refluxRatio_R: 4.2,
+  feedQuality_q: 1.0,
+};
+const DIST_Q6_RESULT = calculateDistillation(DIST_Q6_INPUTS);
+const DIST_Q6_N = DIST_Q6_RESULT.stageCalculation.totalTheoreticalStages ?? 24;
+const DIST_Q6_TRAYS = DIST_Q6_RESULT.stageCalculation.columnTheoreticalTrays ?? 23;
+const DIST_Q6_N_FRAC = (
+  DIST_Q6_RESULT.stageCalculation.fractionalTheoreticalStages ?? 23.53
+).toFixed(2);
+
 export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<DistillationInputs>[] = [
   {
     id: 'dist-q1-relative-volatility',
@@ -851,26 +948,16 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
     number: '01',
     question:
       'Why does increasing relative volatility (α) from 2.50 to 4.00 make binary distillation easier and reduce both the minimum reflux ratio (Rmin) and required theoretical stages (N)?',
-    experimentPrompt:
-      '1) Observe the baseline (α = 2.50, R = 2.00: Rmin = 1.100, N = 9 stages / 8.72 fractional, NF = 5) and snapshot it. 2) Apply α = 4.00 at R = 2.00 below and inspect the McCabe–Thiele diagram.',
+    experimentPrompt: `1) Observe the baseline (α = 2.50, R = 2.00: Rmin = ${DIST_BASE_RMIN}, N = ${DIST_BASE_N} stages / ${DIST_BASE_N_FRAC} fractional, NF = ${DIST_BASE_NF}) and snapshot it. 2) Apply α = 4.00 at R = 2.00 below and inspect the McCabe–Thiele diagram.`,
     presetActionLabel: 'Apply High Volatility (α = 4.00, R = 2.00)',
-    suggestedInputs: {
-      feedFlow_kmol_h: 100.0,
-      feedComposition_zF: 0.5,
-      distillateComposition_xD: 0.95,
-      bottomsComposition_xB: 0.05,
-      relativeVolatility_alpha: 4.0,
-      refluxRatio_R: 2.0,
-      feedQuality_q: 1.0,
-    },
+    suggestedInputs: DIST_Q1_INPUTS,
     selfCheckPrompt: 'How does increasing α from 2.50 to 4.00 alter the McCabe–Thiele diagram?',
     selfCheckOptions: [
       {
         id: 'dq1-opt-a',
-        label: 'It bows the VLE curve y*(x) further above the y = x diagonal, widening the stage-stepping gap so N drops from 9 (8.72) to 6 (5.26) stages and Rmin drops from 1.100 to 0.567.',
+        label: `It bows the VLE curve y*(x) further above the y = x diagonal, widening the stage-stepping gap so N drops from ${DIST_BASE_N} (${DIST_BASE_N_FRAC}) to ${DIST_Q1_N} (${DIST_Q1_N_FRAC}) stages and Rmin drops from ${DIST_BASE_RMIN} to ${DIST_Q1_RMIN}.`,
         isCorrect: true,
-        feedback:
-          'Correct! A higher relative volatility means vapor is much richer in light component A at every liquid composition x, allowing each equilibrium stage to achieve a larger composition step.',
+        feedback: `Correct! A higher relative volatility means vapor is much richer in light component A at every liquid composition x, allowing each equilibrium stage to achieve a larger composition step (cutting N from ${DIST_BASE_N} to ${DIST_Q1_N} stages).`,
       },
       {
         id: 'dq1-opt-b',
@@ -887,8 +974,7 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
           'When α → 1.0, y*(x) collapses onto the y = x diagonal, eliminating the vapor-liquid enrichment driving force and making distillation impossible without infinite stages.',
       },
     ],
-    keyObservation:
-      'Increasing α from 2.50 to 4.00 at fixed R = 2.00 reduces minimum reflux Rmin from 1.100 to 0.567, Fenske minimum stages Nmin from 6.43 to 4.25, and required theoretical stages from 9 (8.72 fractional) to 6 (5.26 fractional).',
+    keyObservation: `Increasing α from 2.50 to 4.00 at fixed R = 2.00 reduces minimum reflux Rmin from ${DIST_BASE_RMIN} to ${DIST_Q1_RMIN}, Fenske minimum stages Nmin from ${DIST_BASE_NMIN} to ${DIST_Q1_NMIN}, and required theoretical stages from ${DIST_BASE_N} (${DIST_BASE_N_FRAC} fractional) to ${DIST_Q1_N} (${DIST_Q1_N_FRAC} fractional).`,
     engineeringExplanation:
       'From y* = αx / [1 + (α − 1)x], the enrichment driving force y* − x = (α − 1)x(1 − x) / [1 + (α − 1)x] is directly proportional to (α − 1). Wider vertical distance between the equilibrium curve and the operating lines lets each McCabe–Thiele staircase step span a much larger composition change.',
   },
@@ -898,33 +984,22 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
     number: '02',
     question:
       'What happens to the operating lines, internal vapor/liquid flows (L, V), and required theoretical stages (N) when reflux ratio increases from R = 2.00 to R = 5.00?',
-    experimentPrompt:
-      '1) Compare baseline R = 2.00 (N = 9 stages / 8.72 frac, V = 150 kmol/h) against High Reflux R = 5.00 below. 2) Inspect both the McCabe–Thiele staircase and the Theoretical Stages vs. Reflux Ratio curve.',
+    experimentPrompt: `1) Compare baseline R = 2.00 (N = ${DIST_BASE_N} stages / ${DIST_BASE_N_FRAC} frac, V = 150 kmol/h) against High Reflux R = 5.00 below. 2) Inspect both the McCabe–Thiele staircase and the Theoretical Stages vs. Reflux Ratio curve.`,
     presetActionLabel: 'Apply High Reflux Ratio (R = 5.00)',
-    suggestedInputs: {
-      feedFlow_kmol_h: 100.0,
-      feedComposition_zF: 0.5,
-      distillateComposition_xD: 0.95,
-      bottomsComposition_xB: 0.05,
-      relativeVolatility_alpha: 2.5,
-      refluxRatio_R: 5.0,
-      feedQuality_q: 1.0,
-    },
+    suggestedInputs: DIST_Q2_INPUTS,
     selfCheckPrompt: 'What is the engineering trade-off when raising R from 2.00 to 5.00?',
     selfCheckOptions: [
       {
         id: 'dq2-opt-a',
-        label: 'Rectifying slope R/(R+1) increases toward 1.0 (pulling operating lines closer to the y = x diagonal), reducing stages from 9 (8.72) to 7 (6.95) at the cost of doubling vapor boilup V from 150 to 300 kmol/h.',
+        label: `Rectifying slope R/(R+1) increases toward 1.0 (pulling operating lines closer to the y = x diagonal), reducing stages from ${DIST_BASE_N} (${DIST_BASE_N_FRAC}) to ${DIST_Q2_N} (${DIST_Q2_N_FRAC}) at the cost of doubling vapor boilup V from 150 to 300 kmol/h.`,
         isCorrect: true,
-        feedback:
-          'Correct! Higher reflux widens the gap between the operating lines and the VLE curve—cutting stage count toward Fenske Nmin = 6.43—but requires twice the overhead vapor traffic (and reboiler/condenser energy).',
+        feedback: `Correct! Higher reflux widens the gap between the operating lines and the VLE curve—cutting stage count from ${DIST_BASE_N} (${DIST_BASE_N_FRAC}) to ${DIST_Q2_N} (${DIST_Q2_N_FRAC}) toward Fenske Nmin = ${DIST_BASE_NMIN}—but requires twice the overhead vapor traffic (and reboiler/condenser energy).`,
       },
       {
         id: 'dq2-opt-b',
         label: 'Raising reflux ratio reduces the number of stages to zero at total reflux.',
         isCorrect: false,
-        feedback:
-          'Even as R → ∞ (total reflux, where operating lines coincide with y = x), a nonzero minimum number of stages Nmin = 6.43 (Fenske limit) is still required.',
+        feedback: `Even as R → ∞ (total reflux, where operating lines coincide with y = x), a nonzero minimum number of stages Nmin = ${DIST_BASE_NMIN} (Fenske limit) is still required.`,
       },
       {
         id: 'dq2-opt-c',
@@ -934,8 +1009,7 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
           'At fixed feed F = 100 kmol/h and purities xD = 0.95, xB = 0.05, distillate flow D remains 50.00 kmol/h; higher R recycles more liquid L = R·D internally.',
       },
     ],
-    keyObservation:
-      'Raising R from 2.00 to 5.00 increases rectifying slope L/V from 0.667 to 0.833, lowering required theoretical stages from 9 (8.72 fractional) to 7 (6.95 fractional, near Fenske Nmin = 6.43) while doubling internal vapor traffic V from 150.0 to 300.0 kmol/h.',
+    keyObservation: `Raising R from 2.00 to 5.00 increases rectifying slope L/V from 0.667 to 0.833, lowering required theoretical stages from ${DIST_BASE_N} (${DIST_BASE_N_FRAC} fractional) to ${DIST_Q2_N} (${DIST_Q2_N_FRAC} fractional, approaching Fenske Nmin = ${DIST_BASE_NMIN}) while doubling internal vapor traffic V from 150.0 to 300.0 kmol/h.`,
     engineeringExplanation:
       'In column design, reflux ratio R governs the fundamental capital-versus-operating-cost trade-off: higher R reduces column height (fewer trays) but increases column diameter and reboiler/condenser thermal duties because internal vapor flow V = (R + 1)D scales linearly with R.',
   },
@@ -948,23 +1022,14 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
     experimentPrompt:
       '1) Apply R = 1.18 (1.07× Rmin) below and inspect the crowded staircase near x = 0.50. 2) Then select the "Infeasible Case — Below Minimum Reflux (R = 0.95)" preset to observe pinch behavior.',
     presetActionLabel: 'Apply Near-Pinch Reflux (R = 1.18)',
-    suggestedInputs: {
-      feedFlow_kmol_h: 100.0,
-      feedComposition_zF: 0.5,
-      distillateComposition_xD: 0.95,
-      bottomsComposition_xB: 0.05,
-      relativeVolatility_alpha: 2.5,
-      refluxRatio_R: 1.18,
-      feedQuality_q: 1.0,
-    },
-    selfCheckPrompt: 'What occurs on the McCabe–Thiele diagram as R approaches Rmin = 1.100?',
+    suggestedInputs: DIST_Q3_INPUTS,
+    selfCheckPrompt: `What occurs on the McCabe–Thiele diagram as R approaches Rmin = ${DIST_BASE_RMIN}?`,
     selfCheckOptions: [
       {
         id: 'dq3-opt-a',
-        label: 'The operating-line intersection approaches the VLE curve (pinch point), causing stages to crowd into tiny steps (17 stages at R = 1.18, ∞ stages at R ≤ 1.100).',
+        label: `The operating-line intersection approaches the VLE curve (pinch point), causing stages to crowd into tiny steps (${DIST_Q3_N} stages at R = 1.18, ∞ stages at R ≤ ${DIST_BASE_RMIN}).`,
         isCorrect: true,
-        feedback:
-          'Correct! At R = 1.18, y_int = 0.7064 is just below y*(0.50) = 0.7143, requiring 17 stages (16.48 fractional). At R ≤ 1.100, the intersection touches or crosses the VLE curve, trapping the staircase in a pinch.',
+        feedback: `Correct! At R = 1.18, y_int = 0.7064 is just below y*(0.50) = 0.7143, requiring ${DIST_Q3_N} stages (${DIST_Q3_N_FRAC} fractional) compared to ${DIST_BASE_N} (${DIST_BASE_N_FRAC}) at baseline R = 2.00. At R ≤ ${DIST_BASE_RMIN}, the intersection touches or crosses the VLE curve, trapping the staircase in a pinch.`,
       },
       {
         id: 'dq3-opt-b',
@@ -981,8 +1046,7 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
           'Rmin is an intensive thermodynamic/geometric property determined by zF, xD, α, and feed quality q—independent of total throughput F.',
       },
     ],
-    keyObservation:
-      'Lowering R from 2.00 to 1.18 (1.07× Rmin) nearly doubles required theoretical stages from 9 (8.72) to 17 (16.48), with dense stage crowding around the feed intersection x_int = 0.500.',
+    keyObservation: `Lowering R from 2.00 to 1.18 (1.07× Rmin) sharply increases required theoretical stages from ${DIST_BASE_N} (${DIST_BASE_N_FRAC}) to ${DIST_Q3_N} (${DIST_Q3_N_FRAC}), with dense stage crowding around the feed intersection x_int = 0.500.`,
     engineeringExplanation:
       'At R = Rmin, the rectifying and stripping operating lines intersect directly on the vapor–liquid equilibrium curve. At that pinch point, the liquid and vapor streams are in thermodynamic equilibrium (y* = y_op), so net mass transfer driving force vanishes and stepping across the pinch requires an infinite number of equilibrium stages.',
   },
@@ -992,26 +1056,16 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
     number: '04',
     question:
       'How does changing the feed condition from Saturated Liquid (q = 1.0) to Saturated Vapor (q = 0.0) rotate the q-line and change minimum reflux (Rmin)?',
-    experimentPrompt:
-      '1) Compare Saturated Liquid (q = 1.0, vertical q-line x = 0.50, Rmin = 1.100) against Saturated Vapor (q = 0.0) at R = 2.80 below. 2) Inspect the purple q-line and internal stripping flows L̄ and V̄.',
+    experimentPrompt: `1) Compare Saturated Liquid (q = 1.0, vertical q-line x = 0.50, Rmin = ${DIST_BASE_RMIN}) against Saturated Vapor (q = 0.0) at R = 2.80 below. 2) Inspect the purple q-line and internal stripping flows L̄ and V̄.`,
     presetActionLabel: 'Apply Saturated Vapor Feed (q = 0.00, R = 2.80)',
-    suggestedInputs: {
-      feedFlow_kmol_h: 100.0,
-      feedComposition_zF: 0.5,
-      distillateComposition_xD: 0.95,
-      bottomsComposition_xB: 0.05,
-      relativeVolatility_alpha: 2.5,
-      refluxRatio_R: 2.8,
-      feedQuality_q: 0.0,
-    },
+    suggestedInputs: DIST_Q4_INPUTS,
     selfCheckPrompt: 'How does switching from saturated liquid (q = 1) to saturated vapor (q = 0) affect the q-line and Rmin?',
     selfCheckOptions: [
       {
         id: 'dq4-opt-a',
-        label: 'The q-line rotates from vertical (x = zF) to horizontal (y = zF), shifting the VLE pinch point to lower x (0.286) and raising Rmin from 1.100 to 1.875.',
+        label: `The q-line rotates from vertical (x = zF) to horizontal (y = zF), shifting the VLE pinch point to lower x (0.286) and raising Rmin from ${DIST_BASE_RMIN} to ${DIST_Q4_RMIN}.`,
         isCorrect: true,
-        feedback:
-          'Correct! A saturated vapor feed (q = 0) enters entirely as vapor (V = V̄ + F), so the q-line is horizontal at y = zF = 0.50, intersecting the VLE curve at x_pinch = 0.286 and raising Rmin to 1.875.',
+        feedback: `Correct! A saturated vapor feed (q = 0) enters entirely as vapor (V = V̄ + F), so the q-line is horizontal at y = zF = 0.50, intersecting the VLE curve at x_pinch = 0.286 and raising Rmin to ${DIST_Q4_RMIN}.`,
       },
       {
         id: 'dq4-opt-b',
@@ -1024,12 +1078,10 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
         id: 'dq4-opt-c',
         label: 'Vaporizing the feed decreases Rmin to zero.',
         isCorrect: false,
-        feedback:
-          'Lowering q from 1.0 to 0.0 shifts the pinch point leftward along the VLE curve, requiring a steeper rectifying slope and thus a higher Rmin (1.100 → 1.875).',
+        feedback: `Lowering q from 1.0 to 0.0 shifts the pinch point leftward along the VLE curve, requiring a steeper rectifying slope and thus a higher Rmin (${DIST_BASE_RMIN} → ${DIST_Q4_RMIN}).`,
       },
     ],
-    keyObservation:
-      'At q = 0.00 (saturated vapor feed), the q-line becomes horizontal at y = 0.50, shifting the pinch point to (x = 0.286, y = 0.500), increasing Rmin from 1.100 to 1.875, and setting stripping liquid equal to rectifying liquid (L̄ = L = 140.0 kmol/h).',
+    keyObservation: `At q = 0.00 (saturated vapor feed), the q-line becomes horizontal at y = 0.50, shifting the pinch point to (x = 0.286, y = 0.500), increasing Rmin from ${DIST_BASE_RMIN} to ${DIST_Q4_RMIN}, and setting stripping liquid equal to rectifying liquid (L̄ = L = 140.0 kmol/h).`,
     engineeringExplanation:
       'By definition, q is the fraction of feed F that joins the downward-flowing stripping liquid (L̄ = L + qF), while (1 − q)F joins the upward-flowing rectifying vapor (V = V̄ + (1 − q)F). Eliminating flow rates between the section material balances yields the q-line locus y = [q/(q − 1)]x − zF/(q − 1) passing through (zF, zF).',
   },
@@ -1039,18 +1091,9 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
     number: '05',
     question:
       'Why is the feed-stage location (NF) important, and why does McCabe–Thiele switch from the rectifying operating line to the stripping operating line at the intersection x_int?',
-    experimentPrompt:
-      '1) Apply the partially vaporized feed condition below (q = 0.50, R = 2.40). 2) Use the "Stage 1 / Next" stepper above the McCabe–Thiele diagram to watch the transition at Stage NF = 5.',
+    experimentPrompt: `1) Apply the partially vaporized feed condition below (q = 0.50, R = 2.40). 2) Use the "Stage 1 / Next" stepper above the McCabe–Thiele diagram to watch the transition at Stage NF = ${DIST_Q5_NF}.`,
     presetActionLabel: 'Inspect Feed Transition (q = 0.50, R = 2.40)',
-    suggestedInputs: {
-      feedFlow_kmol_h: 100.0,
-      feedComposition_zF: 0.5,
-      distillateComposition_xD: 0.95,
-      bottomsComposition_xB: 0.05,
-      relativeVolatility_alpha: 2.5,
-      refluxRatio_R: 2.4,
-      feedQuality_q: 0.5,
-    },
+    suggestedInputs: DIST_Q5_INPUTS,
     selfCheckPrompt: 'Why is the optimal feed stage located where equilibrium liquid x_n first drops below x_int?',
     selfCheckOptions: [
       {
@@ -1075,8 +1118,7 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
           'The feed stage itself is a normal equilibrium stage (Stage NF) where the operating-line relationship transitions from rectifying to stripping.',
       },
     ],
-    keyObservation:
-      'At q = 0.50 and R = 2.40 (x_int = 0.419), Stages 1–4 have x_eq > 0.419 (rectifying section), and Stage 5 is the first stage where x_eq = 0.354 ≤ 0.419—making Stage 5 the optimal feed stage out of 10 total stages.',
+    keyObservation: `At q = 0.50 and R = 2.40 (x_int = ${DIST_Q5_XINT}), Stages 1–${DIST_Q5_NF - 1} have x_eq > ${DIST_Q5_XINT} (rectifying section), and Stage ${DIST_Q5_NF} is the first stage where x_eq = ${DIST_Q5_FEED_XEQ} ≤ ${DIST_Q5_XINT}—making Stage ${DIST_Q5_NF} the optimal feed stage out of ${DIST_Q5_N} total stages (${DIST_Q5_N_FRAC} fractional).`,
     engineeringExplanation:
       'If feed is introduced too high (continuing on the stripping line at x > x_int) or too low (staying on the rectifying line at x < x_int), the vertical steps terminate closer to the equilibrium curve, wasting mass-transfer driving force and requiring additional trays to achieve the same product purities.',
   },
@@ -1089,23 +1131,14 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
     experimentPrompt:
       '1) Apply the close-boiling separation (α = 1.50, R = 4.20) below. 2) Compare Total Theoretical Stages N, Column Theoretical Trays (N − 1), and Fractional Stages in the KPI dashboard.',
     presetActionLabel: 'Apply Close-Boiling Column (α = 1.50, R = 4.20)',
-    suggestedInputs: {
-      feedFlow_kmol_h: 100.0,
-      feedComposition_zF: 0.5,
-      distillateComposition_xD: 0.92,
-      bottomsComposition_xB: 0.08,
-      relativeVolatility_alpha: 1.5,
-      refluxRatio_R: 4.2,
-      feedQuality_q: 1.0,
-    },
+    suggestedInputs: DIST_Q6_INPUTS,
     selfCheckPrompt: 'How do theoretical stages relate to actual physical column trays and reboilers?',
     selfCheckOptions: [
       {
         id: 'dq6-opt-a',
         label: 'A partial reboiler counts as 1 theoretical stage (and a total condenser as 0), while real column trays only achieve partial mass-transfer equilibrium (efficiency η < 100%) and therefore require more physical trays than theoretical stages.',
         isCorrect: true,
-        feedback:
-          'Correct! If N_total = 17 theoretical stages, the partial reboiler provides 1 equilibrium stage and the column requires 16 theoretical trays. With a 70% overall tray efficiency, the column would need 16 / 0.70 ≈ 23 actual trays.',
+        feedback: `Correct! Here N_total = ${DIST_Q6_N} theoretical stages (${DIST_Q6_N_FRAC} fractional), so the partial reboiler provides 1 equilibrium stage and the column requires ${DIST_Q6_TRAYS} theoretical trays. With a 70% overall tray efficiency, the column would need ${DIST_Q6_TRAYS} / 0.70 ≈ ${Math.ceil(DIST_Q6_TRAYS / 0.7)} actual trays.`,
       },
       {
         id: 'dq6-opt-b',
@@ -1122,8 +1155,7 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
           'Because vapor bubbles have finite contact time passing through liquid on a tray, actual stage efficiency is less than 100%, so actual trays exceed theoretical trays.',
       },
     ],
-    keyObservation:
-      'For α = 1.50, xD = 0.92, xB = 0.08 at R = 4.20, McCabe–Thiele requires 17 graphical stages (16.92 fractional), corresponding to 16 theoretical column trays plus 1 partial reboiler.',
+    keyObservation: `For α = 1.50, xD = 0.92, xB = 0.08 at R = 4.20, McCabe–Thiele requires ${DIST_Q6_N} graphical stages (${DIST_Q6_N_FRAC} fractional), corresponding to ${DIST_Q6_TRAYS} theoretical column trays plus 1 partial reboiler.`,
     engineeringExplanation:
       'McCabe–Thiele assumes ideal equilibrium stages where vapor and liquid leaving stage n are in complete thermodynamic equilibrium (y_n = y*(x_n)). In practice, finite mass-transfer rates, liquid mixing gradients, and weeping/entrainment reduce tray efficiency (typically 50%–85%), and non-integer fractional stage requirements are rounded up or adjusted via reflux trim.',
   },
@@ -1136,15 +1168,7 @@ export const DISTILLATION_GUIDED_EXPLORATION_QUESTIONS: SharedGuidedQuestion<Dis
     experimentPrompt:
       '1) Return to the Baseline (α = 2.50, R = 2.00, q = 1.00) below. 2) Inspect the Section Molar Flows KPI card (L = 100, V = 150; L̄ = 200, V̄ = 150 kmol/h) and Documented Assumptions.',
     presetActionLabel: 'Apply Baseline CMO Configuration',
-    suggestedInputs: {
-      feedFlow_kmol_h: 100.0,
-      feedComposition_zF: 0.5,
-      distillateComposition_xD: 0.95,
-      bottomsComposition_xB: 0.05,
-      relativeVolatility_alpha: 2.5,
-      refluxRatio_R: 2.0,
-      feedQuality_q: 1.0,
-    },
+    suggestedInputs: { ...DEFAULT_DISTILLATION_INPUTS },
     selfCheckPrompt: 'Why are the operating lines y = (L/V)x + (D/V)xD straight lines with constant slope?',
     selfCheckOptions: [
       {

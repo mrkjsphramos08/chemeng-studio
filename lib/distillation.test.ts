@@ -180,9 +180,13 @@ test('5. Independent McCabe-Thiele analytical benchmark (alpha=2.5, zF=0.50, xD=
   assert.ok(stages[feedStage - 1].x_eq <= 0.5, 'Feed stage must be the first stage with x_eq <= x_int');
   assert.equal(stages[feedStage - 1].section, 'feed');
 
-  // 5. Verify final stage reaches x_eq <= xB (0.05) and total stage count is 9 (with 8 column trays + 1 reboiler)
+  // 5. Verify final stage reaches x_eq <= xB (0.05) and total stage count is 11 (with 10 column trays + 1 reboiler, 10.39 fractional stages)
   const lastStage = stages[stages.length - 1];
   assert.ok(lastStage.x_eq <= 0.05 && lastStage.x_prev > 0.05);
+  assert.equal(res.stageCalculation.totalTheoreticalStages, 11);
+  assert.equal(res.stageCalculation.columnTheoreticalTrays, 10);
+  assert.equal(res.stageCalculation.feedStageNumber, 5);
+  assert.equal(res.stageCalculation.fractionalTheoreticalStages?.toFixed(2), '10.39');
   assert.equal(
     res.stageCalculation.columnTheoreticalTrays,
     (res.stageCalculation.totalTheoreticalStages ?? 0) - 1
@@ -340,3 +344,47 @@ test('10. All built-in Distillation presets and chart series generators produce 
     );
   }
 });
+
+test('11. Distillation Guided Exploration Questions agree with verified baseline (N = 11, 10.39 fractional) and target scenario solver results', async () => {
+  const { DISTILLATION_GUIDED_EXPLORATION_QUESTIONS } = await import('./labs-data');
+  const baseRes = calculateDistillation(DEFAULT_DISTILLATION_INPUTS);
+  assert.equal(baseRes.stageCalculation.totalTheoreticalStages, 11);
+  assert.equal(baseRes.stageCalculation.fractionalTheoreticalStages?.toFixed(2), '10.39');
+
+  for (const q of DISTILLATION_GUIDED_EXPLORATION_QUESTIONS) {
+    const correctOptions = q.selfCheckOptions.filter((o) => o.isCorrect);
+    assert.equal(
+      correctOptions.length,
+      1,
+      `Question ${q.id} must have exactly one correct option`
+    );
+
+    const combinedText = [
+      q.question,
+      q.experimentPrompt,
+      q.keyObservation,
+      q.engineeringExplanation,
+      ...q.selfCheckOptions.flatMap((o) => [o.label, o.feedback]),
+    ].join(' ');
+
+    assert.ok(
+      !combinedText.includes('8.72') && !combinedText.includes('9 (8.72)'),
+      `Question ${q.id} must not contain obsolete N = 9 (8.72) stage reference`
+    );
+  }
+
+  // Verify Q01, Q02, Q03 explicitly reference the verified baseline 11 (10.39) and target solver values
+  const [q1, q2, q3] = DISTILLATION_GUIDED_EXPLORATION_QUESTIONS;
+  assert.ok(q1.experimentPrompt.includes('N = 11 stages / 10.39 fractional'));
+  assert.ok(q1.selfCheckOptions[0].label.includes('from 11 (10.39) to 6 (5.59) stages'));
+  assert.ok(q1.keyObservation.includes('from 11 (10.39 fractional) to 6 (5.59 fractional)'));
+
+  assert.ok(q2.experimentPrompt.includes('N = 11 stages / 10.39 frac'));
+  assert.ok(q2.selfCheckOptions[0].label.includes('from 11 (10.39) to 8 (7.79)'));
+  assert.ok(q2.keyObservation.includes('from 11 (10.39 fractional) to 8 (7.79 fractional'));
+
+  assert.ok(q3.selfCheckOptions[0].label.includes('19 stages at R = 1.18'));
+  assert.ok(q3.selfCheckOptions[0].feedback.includes('19 stages (18.45 fractional) compared to 11 (10.39)'));
+  assert.ok(q3.keyObservation.includes('from 11 (10.39) to 19 (18.45)'));
+});
+
