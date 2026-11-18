@@ -248,4 +248,78 @@ test('Batch 2 — LABORATORY_MODULES provide concise student descriptions, 3 top
   );
 });
 
+import { OPERATING_PRESETS } from './heat-exchanger';
+import { FLUID_MECHANICS_PRESETS } from './fluid-mechanics';
+import { REACTION_ENGINEERING_PRESETS } from './reaction-engineering';
+import { DISTILLATION_PRESETS } from './distillation';
+import { THERMO_PVT_PRESETS, THERMO_VLE_PRESETS } from './thermodynamics';
+import { PROCESS_CONTROL_PRESETS } from './process-control';
+
+test('Batch 3 — All 6 laboratory scenario preset lists have unique IDs, non-empty labels/descriptions, and clean custom-state fallback resolution', () => {
+  const catalogEntries = [
+    {
+      lab: 'heat-exchanger',
+      defaultId: 'baseline-water',
+      presets: OPERATING_PRESETS.map((p) => ({ id: p.id, name: p.name, description: p.description })),
+    },
+    {
+      lab: 'fluid-mechanics',
+      defaultId: 'water-baseline',
+      presets: FLUID_MECHANICS_PRESETS.map((p) => ({ id: p.id, name: p.name, description: p.description })),
+    },
+    {
+      lab: 'reaction-engineering',
+      defaultId: 'baseline-pfr',
+      presets: REACTION_ENGINEERING_PRESETS.map((p) => ({ id: p.id, name: p.name, description: p.description })),
+    },
+    {
+      lab: 'distillation',
+      defaultId: 'baseline-moderate-alpha',
+      presets: DISTILLATION_PRESETS.map((p) => ({ id: p.id, name: p.label, description: p.description })),
+    },
+    {
+      lab: 'thermo-pvt',
+      defaultId: 'moderate-pressure-real-gas',
+      presets: THERMO_PVT_PRESETS.map((p) => ({ id: p.id, name: p.name, description: p.description })),
+    },
+    {
+      lab: 'thermo-vle',
+      defaultId: 'equimolar-ideal-mixture',
+      presets: THERMO_VLE_PRESETS.map((p) => ({ id: p.id, name: p.name, description: p.description })),
+    },
+    {
+      lab: 'process-control',
+      defaultId: 'pi-integral-action',
+      presets: PROCESS_CONTROL_PRESETS.map((p) => ({ id: p.id, name: p.name, description: p.description })),
+    },
+  ];
+
+  for (const entry of catalogEntries) {
+    assert.ok(entry.presets.length >= 3, `${entry.lab} should define at least 3 presets`);
+    const ids = entry.presets.map((p) => p.id);
+    assert.equal(new Set(ids).size, ids.length, `${entry.lab} preset IDs must be unique`);
+    assert.ok(
+      ids.includes(entry.defaultId),
+      `${entry.lab} default preset ID "${entry.defaultId}" must exist`
+    );
+
+    for (const preset of entry.presets) {
+      assert.ok(preset.id.trim().length > 0 && preset.id !== 'custom', `${entry.lab} invalid id`);
+      assert.ok(preset.name.trim().length > 0, `${entry.lab}:${preset.id} must have name`);
+      assert.ok(
+        preset.description.trim().length > 0,
+        `${entry.lab}:${preset.id} must have description`
+      );
+    }
+
+    // Mirrors LabWorkspaceHeader selectValue resolution
+    const resolveSelectValue = (selectedId: string) =>
+      entry.presets.some((p) => p.id === selectedId) ? selectedId : 'custom';
+
+    assert.equal(resolveSelectValue(entry.defaultId), entry.defaultId);
+    assert.equal(resolveSelectValue('custom'), 'custom');
+  }
+});
+
+
 

@@ -11,6 +11,7 @@ import {
 import { REACTION_GUIDED_EXPLORATION_QUESTIONS } from '@/lib/labs-data';
 import { downloadSimulationCsv } from '@/lib/lab-download';
 import {
+  LabAdditionalMetricsDisclosure,
   LabAssumptionsCard,
   LabControlGroup,
   LabGuidedInquiryCard,
@@ -427,18 +428,14 @@ export function ReactionEngineeringLab() {
   return (
     <section
       aria-label="Chemical Reaction Engineering Virtual Laboratory"
-      className="max-w-[1360px] mx-auto px-6 py-8 space-y-6"
+      className="max-w-[1360px] mx-auto px-4 sm:px-6 py-5 lg:py-6 space-y-5"
       data-testid="reaction-engineering-lab-workspace"
     >
       {/* Shared Laboratory Workspace Header */}
       <LabWorkspaceHeader
-        kickerItems={[
-          'Unit Operations Laboratory 03',
-          'Ideal Reactor Design & First-Order Kinetics',
-          'SI Units Standard',
-        ]}
+        kickerItems={['Lab 03', 'Reaction Engineering', 'SI Units']}
         title="Chemical Reaction Engineering Virtual Laboratory"
-        description="Investigate isothermal, constant-density, first-order reaction kinetics ($A \rightarrow B$) across Batch, Ideal CSTR, and Ideal PFR systems. Compare conversion $X$, residence time $\tau$, spatial concentration $C_A$, and target reactor sizing."
+        description="Compare isothermal first-order conversion, residence time, and sizing across Batch, CSTR, and PFR reactors."
         presets={REACTION_ENGINEERING_PRESETS}
         selectedPresetId={selectedPresetId}
         onSelectPreset={handleSelectPreset}
@@ -536,14 +533,29 @@ export function ReactionEngineeringLab() {
           />
         </div>
 
-        {/* RIGHT COLUMN: 6 KPI Cards + Reactor Schematic + Charts */}
-        <div className="lg:col-span-8 min-w-0 space-y-6">
+        {/* RIGHT COLUMN: Reactor Schematic -> Primary 4 KPIs -> Additional Metrics -> Charts */}
+        <div className="lg:col-span-8 min-w-0 space-y-5">
+          {/* 1. Primary Dynamic Reactor Schematic */}
+          <ReactionEngineeringSchematic inputs={inputs} results={results} />
+
+          {/* 2. Primary 4 KPI Summary */}
           <div
-            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3"
             data-testid="reaction-results-dashboard"
           >
             <LabMetricCard
-              label="Outlet / Final Concentration ($C_A$)"
+              label="Fractional Conversion ($X$)"
+              value={results.isValid ? `${active.conversion_pct.toFixed(2)}%` : '—'}
+              subtext={
+                results.isValid
+                  ? `CSTR(eq): ${results.cstrAtBatchTime.conversion_pct.toFixed(1)}% · PFR(eq): ${results.pfrAtBatchTime.conversion_pct.toFixed(1)}%`
+                  : '—'
+              }
+              testId="metric-conversion"
+              valueClassName="text-xl sm:text-2xl text-teal-800"
+            />
+            <LabMetricCard
+              label="Outlet / Final Conc. ($C_A$)"
               value={
                 results.isValid
                   ? `${active.outletConcentration_mol_m3.toFixed(2)} mol/m³`
@@ -557,35 +569,10 @@ export function ReactionEngineeringLab() {
               testId="metric-concentration"
             />
             <LabMetricCard
-              label="Fractional Conversion ($X$)"
-              value={results.isValid ? `${active.conversion_pct.toFixed(2)}%` : '—'}
-              subtext={
-                results.isValid
-                  ? `CSTR(eq): ${results.cstrAtBatchTime.conversion_pct.toFixed(1)}% · PFR(eq): ${results.pfrAtBatchTime.conversion_pct.toFixed(1)}%`
-                  : '—'
-              }
-              testId="metric-conversion"
-              valueClassName="text-2xl text-teal-800"
-            />
-            <LabMetricCard
-              label="Reaction Rate ($-r_A$)"
-              value={
-                results.isValid
-                  ? `${active.reactionRate_mol_m3_s.toFixed(3)} mol/(m³·s)`
-                  : '—'
-              }
-              subtext={
-                results.isValid
-                  ? `$-r_A = k C_A$ (initial $-r_{A,0} = ${(inputs.rateConstant_per_s * inputs.initialConcentration_mol_m3).toFixed(2)}$)`
-                  : '—'
-              }
-              testId="metric-reaction-rate"
-            />
-            <LabMetricCard
               label={
                 inputs.reactorType === 'batch'
                   ? 'Batch Reaction Time ($t$)'
-                  : 'Continuous Residence Time ($\\tau$)'
+                  : 'Residence Time ($\\tau$)'
               }
               value={
                 results.isValid
@@ -598,22 +585,6 @@ export function ReactionEngineeringLab() {
                   : `$\\tau = V / q$ · Damköhler $\\mathrm{Da} = ${active.damkohlerNumber.toFixed(2)}$`
               }
               testId="metric-characteristic-time"
-            />
-            <LabMetricCard
-              label="Active Reactor Volume ($V$)"
-              value={
-                results.isValid ? `${inputs.reactorVolume_m3.toFixed(2)} m³` : '—'
-              }
-              subtext={
-                results.isValid
-                  ? inputs.reactorType === 'batch' && active.molesConverted_mol !== null
-                    ? `Converted batch moles: ${active.molesConverted_mol.toFixed(1)} mol`
-                    : active.molarFlowConverted_mol_s !== null
-                    ? `Molar conversion: ${active.molarFlowConverted_mol_s.toFixed(2)} mol/s`
-                    : '—'
-                  : '—'
-              }
-              testId="metric-reactor-volume"
             />
             <LabMetricCard
               label={`Target Sizing ($X_{\\mathrm{target}} = ${inputs.targetConversion_pct}\\%$)`}
@@ -644,13 +615,51 @@ export function ReactionEngineeringLab() {
               valueClassName={
                 results.isValid && !targetDesign.isTargetAchievable
                   ? 'text-xl text-amber-800'
-                  : 'text-2xl text-slate-900'
+                  : 'text-xl sm:text-2xl text-slate-900'
               }
             />
           </div>
 
-          <ReactionEngineeringSchematic inputs={inputs} results={results} />
+          {/* 3. Secondary KPIs (Collapsible Additional Metrics) */}
+          <LabAdditionalMetricsDisclosure
+            count={2}
+            summary="Reaction Rate ($-r_A$) and Active Reactor Volume ($V$)"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <LabMetricCard
+                label="Reaction Rate ($-r_A$)"
+                value={
+                  results.isValid
+                    ? `${active.reactionRate_mol_m3_s.toFixed(3)} mol/(m³·s)`
+                    : '—'
+                }
+                subtext={
+                  results.isValid
+                    ? `$-r_A = k C_A$ (initial $-r_{A,0} = ${(inputs.rateConstant_per_s * inputs.initialConcentration_mol_m3).toFixed(2)}$)`
+                    : '—'
+                }
+                testId="metric-reaction-rate"
+              />
+              <LabMetricCard
+                label="Active Reactor Volume ($V$)"
+                value={
+                  results.isValid ? `${inputs.reactorVolume_m3.toFixed(2)} m³` : '—'
+                }
+                subtext={
+                  results.isValid
+                    ? inputs.reactorType === 'batch' && active.molesConverted_mol !== null
+                      ? `Converted batch moles: ${active.molesConverted_mol.toFixed(1)} mol`
+                      : active.molarFlowConverted_mol_s !== null
+                      ? `Molar conversion: ${active.molarFlowConverted_mol_s.toFixed(2)} mol/s`
+                      : '—'
+                    : '—'
+                }
+                testId="metric-reactor-volume"
+              />
+            </div>
+          </LabAdditionalMetricsDisclosure>
 
+          {/* 4. Secondary Kinetic & Sizing Charts */}
           <ReactionEngineeringCharts
             inputs={inputs}
             results={results}

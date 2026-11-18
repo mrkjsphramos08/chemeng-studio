@@ -284,19 +284,15 @@ export function ThermodynamicsLab() {
 
   return (
     <section
-      className="py-8 lg:py-10"
+      className="py-5 lg:py-6"
       aria-label="Chemical Engineering Thermodynamics Virtual Laboratory"
     >
-      <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
         {/* Shared Workspace Header */}
         <LabWorkspaceHeader
-          kickerItems={[
-            'Laboratory 05 · Phase 2.3',
-            'Phase Equilibria & Equations of State',
-            'SI Units Standard',
-          ]}
+          kickerItems={['Lab 05', 'Thermodynamics', 'SI Units']}
           title="Chemical Engineering Thermodynamics Virtual Laboratory"
-          description="Investigate pure-fluid non-ideal PVT behavior using the Peng–Robinson Equation of State ($Z = Pv/RT$, critical parameters $T_c, P_c, \omega$, and subcritical 3-root analysis) alongside isothermal Ideal Binary Vapor–Liquid Equilibrium ($P\text{–}x\text{–}y$ phase envelopes via Raoult's and Dalton's laws)."
+          description="Explore Peng–Robinson real-gas compressibility ($Z$) and isothermal Raoult's Law binary $P\\text{–}x\\text{–}y$ phase envelopes."
           presets={
             activeModule === 'real-gas-pvt'
               ? THERMO_PVT_PRESETS.map((p) => ({

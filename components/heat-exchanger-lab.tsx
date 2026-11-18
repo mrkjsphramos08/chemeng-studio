@@ -9,6 +9,7 @@ import {
 } from '@/lib/heat-exchanger';
 import { downloadSimulationCsv } from '@/lib/lab-download';
 import {
+  LabAdditionalMetricsDisclosure,
   LabControlGroup,
   LabMetricCard,
   LabParameterPanel,
@@ -311,18 +312,14 @@ export function HeatExchangerLab() {
   return (
     <section
       aria-label="Heat Exchanger Virtual Laboratory"
-      className="max-w-[1360px] mx-auto px-6 py-8 space-y-6"
+      className="max-w-[1360px] mx-auto px-4 sm:px-6 py-5 lg:py-6 space-y-5"
       data-testid="heat-exchanger-lab-workspace"
     >
-      {/* Top Laboratory Header, Learning Objectives & 4-Step Student Workflow */}
+      {/* Top Laboratory Header */}
       <LabWorkspaceHeader
-        kickerItems={[
-          'Unit Operations Laboratory 01',
-          'Ideal Countercurrent Heat Transfer',
-          'SI Units Standard',
-        ]}
+        kickerItems={['Lab 01', 'Heat Transfer', 'SI Units']}
         title="Countercurrent Heat Exchanger Virtual Laboratory"
-        description="Investigate how stream heat capacity rates ($C_h$, $C_c$), overall conductance ($UA$), and Number of Transfer Units ($\\mathrm{NTU}$) govern thermal effectiveness ($\\varepsilon$) and outlet temperatures using the steady-state, constant-property $\\varepsilon\\text{–}\\mathrm{NTU}$ method."
+        description="Simulate steady-state countercurrent heat transfer and outlet temperatures via the $\\varepsilon\\text{–}\\mathrm{NTU}$ method."
         presets={OPERATING_PRESETS}
         selectedPresetId={selectedPresetId}
         onSelectPreset={handleSelectPreset}
@@ -364,11 +361,14 @@ export function HeatExchangerLab() {
           }
         />
 
-        {/* RIGHT COLUMN: Results Dashboard + Schematic + Interactive Charts */}
-        <div className="lg:col-span-8 min-w-0 space-y-6">
-          {/* D. Results Dashboard — 6 KPI Cards */}
+        {/* RIGHT COLUMN: Primary Schematic -> Primary 4 KPIs -> Additional Metrics -> Secondary Charts */}
+        <div className="lg:col-span-8 min-w-0 space-y-5">
+          {/* 1. Primary Interactive Process Schematic */}
+          <HeatExchangerSchematic inputs={inputs} results={results} />
+
+          {/* 2. Primary 4 KPI Summary */}
           <div
-            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3"
             data-testid="results-dashboard"
           >
             <LabMetricCard
@@ -378,49 +378,55 @@ export function HeatExchangerLab() {
               testId="metric-heat-duty"
             />
             <LabMetricCard
-              label="Hot Outlet Temperature ($T_{h,\\mathrm{out}}$)"
-              value={results.isValid ? `${results.Th_out.toFixed(2)} °C` : '—'}
-              subtext={`Inlet: ${inputs.Th_in.toFixed(1)} °C · $\\Delta T_h$ = −${results.isValid ? results.deltaTh.toFixed(2) : '0.00'} °C`}
-              testId="metric-hot-outlet"
-              valueClassName="text-2xl text-rose-700"
-            />
-            <LabMetricCard
-              label="Cold Outlet Temperature ($T_{c,\\mathrm{out}}$)"
-              value={results.isValid ? `${results.Tc_out.toFixed(2)} °C` : '—'}
-              subtext={`Inlet: ${inputs.Tc_in.toFixed(1)} °C · $\\Delta T_c$ = +${results.isValid ? results.deltaTc.toFixed(2) : '0.00'} °C`}
-              testId="metric-cold-outlet"
-              valueClassName="text-2xl text-sky-800"
-            />
-            <LabMetricCard
               label="Exchanger Effectiveness ($\\varepsilon$)"
               value={results.isValid ? `${results.effectiveness_pct.toFixed(2)}%` : '—'}
               subtext={`$\\varepsilon = Q / Q_{\\max}$ = ${results.isValid ? results.effectiveness.toFixed(4) : '—'}`}
               testId="metric-effectiveness"
-              valueClassName="text-2xl text-teal-800"
+              valueClassName="text-xl sm:text-2xl text-teal-800"
             />
             <LabMetricCard
-              label="Number of Transfer Units ($\\mathrm{NTU}$)"
-              value={results.isValid ? results.NTU.toFixed(3) : '—'}
-              subtext={`Capacity Ratio $C_r$ = ${results.isValid ? results.Cr.toFixed(3) : '—'}`}
-              testId="metric-ntu"
+              label="Hot Outlet Temp. ($T_{h,\\mathrm{out}}$)"
+              value={results.isValid ? `${results.Th_out.toFixed(2)} °C` : '—'}
+              subtext={`Inlet: ${inputs.Th_in.toFixed(1)} °C · $\\Delta T_h$ = −${results.isValid ? results.deltaTh.toFixed(2) : '0.00'} °C`}
+              testId="metric-hot-outlet"
+              valueClassName="text-xl sm:text-2xl text-rose-700"
             />
             <LabMetricCard
-              label="Heat Capacity Rates ($C_h / C_c$)"
-              value={
-                results.isValid
-                  ? `${results.Ch_kW_K.toFixed(2)} / ${results.Cc_kW_K.toFixed(2)} kW/K`
-                  : '—'
-              }
-              subtext={`$C_{\\min}$ = ${results.isValid ? `${results.Cmin_kW_K.toFixed(2)} kW/K` : '—'} (${results.limitingStream})`}
-              testId="metric-capacity-rates"
-              valueClassName="text-lg text-slate-900"
+              label="Cold Outlet Temp. ($T_{c,\\mathrm{out}}$)"
+              value={results.isValid ? `${results.Tc_out.toFixed(2)} °C` : '—'}
+              subtext={`Inlet: ${inputs.Tc_in.toFixed(1)} °C · $\\Delta T_c$ = +${results.isValid ? results.deltaTc.toFixed(2) : '0.00'} °C`}
+              testId="metric-cold-outlet"
+              valueClassName="text-xl sm:text-2xl text-sky-800"
             />
           </div>
 
-          {/* B. Interactive Process Schematic */}
-          <HeatExchangerSchematic inputs={inputs} results={results} />
+          {/* 3. Secondary KPIs (Collapsible Additional Metrics) */}
+          <LabAdditionalMetricsDisclosure
+            count={2}
+            summary="$\\mathrm{NTU}$, Capacity Ratio ($C_r$), and Stream Heat Capacity Rates ($C_h / C_c$)"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <LabMetricCard
+                label="Number of Transfer Units ($\\mathrm{NTU}$)"
+                value={results.isValid ? results.NTU.toFixed(3) : '—'}
+                subtext={`Capacity Ratio $C_r$ = ${results.isValid ? results.Cr.toFixed(3) : '—'}`}
+                testId="metric-ntu"
+              />
+              <LabMetricCard
+                label="Heat Capacity Rates ($C_h / C_c$)"
+                value={
+                  results.isValid
+                    ? `${results.Ch_kW_K.toFixed(2)} / ${results.Cc_kW_K.toFixed(2)} kW/K`
+                    : '—'
+                }
+                subtext={`$C_{\\min}$ = ${results.isValid ? `${results.Cmin_kW_K.toFixed(2)} kW/K` : '—'} (${results.limitingStream})`}
+                testId="metric-capacity-rates"
+                valueClassName="text-lg text-slate-900"
+              />
+            </div>
+          </LabAdditionalMetricsDisclosure>
 
-          {/* E. Interactive Visualizations */}
+          {/* 4. Secondary Interactive Charts & Scenario Comparisons */}
           <HeatExchangerCharts
             inputs={inputs}
             results={results}

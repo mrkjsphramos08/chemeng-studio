@@ -56,6 +56,7 @@ interface DistillationChartsProps {
   onRemoveScenario: (id: string) => void;
   onLoadScenario: (inputs: DistillationInputs) => void;
   onClearScenarios: () => void;
+  renderSection?: 'all' | 'diagram' | 'secondary';
 }
 
 export function DistillationCharts({
@@ -66,6 +67,7 @@ export function DistillationCharts({
   onRemoveScenario,
   onLoadScenario,
   onClearScenarios,
+  renderSection = 'all',
 }: DistillationChartsProps) {
   const [customScenarioLabel, setCustomScenarioLabel] = useState('');
   // null means "Show All Stages"; a positive number (1..N) steps up to that stage
@@ -139,6 +141,9 @@ export function DistillationCharts({
   }, [savedScenarios, results, inputs.refluxRatio_R]);
 
   if (!results.isValid) {
+    if (renderSection === 'secondary') {
+      return null;
+    }
     return (
       <div className="bg-white border border-slate-200 rounded-xl p-6 text-center">
         <p className="text-sm font-medium text-slate-700">
@@ -212,8 +217,9 @@ export function DistillationCharts({
   return (
     <div className="space-y-6">
       {/* ==================== CENTERPIECE: INTERACTIVE McCABE-THIELE DIAGRAM ==================== */}
+      {renderSection !== 'secondary' && (
       <div
-        className="bg-white border-2 border-teal-700/80 rounded-xl p-6 space-y-4 shadow-xs"
+        className="bg-white border-2 border-teal-700/80 rounded-xl p-4 sm:p-5 space-y-3 shadow-xs"
         data-testid="mccabe-thiele-diagram-card"
       >
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100">
@@ -715,8 +721,11 @@ export function DistillationCharts({
           </div>
         </div>
       </div>
+      )}
 
       {/* ==================== SECONDARY CHARTS ROW 1: VLE & REFLUX vs STAGES ==================== */}
+      {renderSection !== 'diagram' && (
+        <>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Secondary Chart 1: VLE Curves for Different Relative Volatilities */}
         <LabChartCard
@@ -1378,6 +1387,8 @@ export function DistillationCharts({
           </table>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

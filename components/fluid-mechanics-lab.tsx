@@ -10,6 +10,7 @@ import {
 import { FLUID_GUIDED_EXPLORATION_QUESTIONS } from '@/lib/labs-data';
 import { downloadSimulationCsv } from '@/lib/lab-download';
 import {
+  LabAdditionalMetricsDisclosure,
   LabAssumptionsCard,
   LabControlGroup,
   LabGuidedInquiryCard,
@@ -426,18 +427,14 @@ export function FluidMechanicsLab() {
   return (
     <section
       aria-label="Fluid Mechanics Virtual Laboratory"
-      className="max-w-[1360px] mx-auto px-6 py-8 space-y-6"
+      className="max-w-[1360px] mx-auto px-4 sm:px-6 py-5 lg:py-6 space-y-5"
       data-testid="fluid-mechanics-lab-workspace"
     >
       {/* Shared Laboratory Workspace Header */}
       <LabWorkspaceHeader
-        kickerItems={[
-          'Unit Operations Laboratory 02',
-          'Incompressible Pipe Flow & Pumping Hydraulics',
-          'SI Units Standard',
-        ]}
+        kickerItems={['Lab 02', 'Fluid Mechanics', 'SI Units']}
         title="Fluid Flow & Pipe Hydraulics Virtual Laboratory"
-        description="Explore steady, incompressible internal pipe flow using Reynolds regime classification ($\mathrm{Re} = \rho v D / \mu$), the Colebrook–White friction equation, Darcy–Weisbach major and minor head losses, and mechanical energy balances."
+        description="Analyze incompressible pipe flow regimes, Darcy–Weisbach friction losses, and pumping head requirements."
         presets={FLUID_MECHANICS_PRESETS}
         selectedPresetId={selectedPresetId}
         onSelectPreset={handleSelectPreset}
@@ -487,22 +484,16 @@ export function FluidMechanicsLab() {
           }
         />
 
-        {/* RIGHT COLUMN: 9 KPI Cards + Piping Schematic + Charts */}
-        <div className="lg:col-span-8 min-w-0 space-y-6">
+        {/* RIGHT COLUMN: Piping Schematic -> Primary 4 KPIs -> Additional Metrics -> Charts */}
+        <div className="lg:col-span-8 min-w-0 space-y-5">
+          {/* 1. Primary Piping Schematic */}
+          <FluidMechanicsSchematic inputs={inputs} results={results} />
+
+          {/* 2. Primary 4 KPI Summary */}
           <div
-            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3"
             data-testid="fluid-results-dashboard"
           >
-            <LabMetricCard
-              label="Flow Velocity ($v$)"
-              value={results.isValid ? `${results.velocity_m_s.toFixed(2)} m/s` : '—'}
-              subtext={
-                results.isValid
-                  ? `$A$ = ${(results.area_m2 * 1e4).toFixed(2)} cm² · $v^2/(2g)$ = ${results.velocityHead_m.toFixed(2)} m`
-                  : '—'
-              }
-              testId="metric-velocity"
-            />
             <LabMetricCard
               label="Reynolds Number ($\mathrm{Re}$)"
               value={
@@ -512,27 +503,10 @@ export function FluidMechanicsLab() {
               }
               subtext={
                 results.isValid
-                  ? `$\\varepsilon/D$ = ${results.relativeRoughness.toExponential(2)}`
+                  ? `${results.flowRegime} · $\\varepsilon/D$ = ${results.relativeRoughness.toExponential(2)}`
                   : '—'
               }
               testId="metric-reynolds"
-            />
-            <LabMetricCard
-              label="Flow Regime"
-              value={results.isValid ? results.flowRegime : '—'}
-              subtext={
-                results.isValid
-                  ? results.flowRegime === 'Laminar'
-                    ? 'Exact Hagen–Poiseuille ($< 2,100$)'
-                    : results.flowRegime === 'Transitional'
-                    ? 'Uncertain band [$2,100\\text{–}4,000$]'
-                    : results.flowRegime === 'Turbulent'
-                    ? 'Colebrook–White ($> 4,000$)'
-                    : 'Static fluid column'
-                  : '—'
-              }
-              testId="metric-regime"
-              valueClassName={regimeColorClass}
             />
             <LabMetricCard
               label="Darcy Friction Factor ($f_D$)"
@@ -551,26 +525,6 @@ export function FluidMechanicsLab() {
               testId="metric-friction-factor"
             />
             <LabMetricCard
-              label="Major Head Loss ($h_f$)"
-              value={results.isValid ? `${results.majorHeadLoss_m.toFixed(2)} m` : '—'}
-              subtext={
-                results.isValid
-                  ? `$L/D$ = ${(inputs.length_m / Math.max(inputs.diameter_m, 1e-6)).toFixed(0)} · straight pipe`
-                  : '—'
-              }
-              testId="metric-major-loss"
-            />
-            <LabMetricCard
-              label="Minor Head Loss ($h_m$)"
-              value={results.isValid ? `${results.minorHeadLoss_m.toFixed(2)} m` : '—'}
-              subtext={
-                results.isValid
-                  ? `$\\sum K$ = ${inputs.minorLossK.toFixed(1)} · valves & fittings`
-                  : '—'
-              }
-              testId="metric-minor-loss"
-            />
-            <LabMetricCard
               label="Frictional Pressure Loss ($\Delta P_{\mathrm{f}}$)"
               value={
                 results.isValid
@@ -583,7 +537,7 @@ export function FluidMechanicsLab() {
                   : '—'
               }
               testId="metric-pressure-loss"
-              valueClassName="text-2xl text-rose-700"
+              valueClassName="text-xl sm:text-2xl text-rose-700"
             />
             <LabMetricCard
               label="Required Pump Head ($H$)"
@@ -594,22 +548,77 @@ export function FluidMechanicsLab() {
                   : '—'
               }
               testId="metric-pump-head"
-              valueClassName="text-2xl text-teal-800"
-            />
-            <LabMetricCard
-              label="Estimated Shaft Power ($P_s$)"
-              value={results.isValid ? `${results.shaftPower_kW.toFixed(2)} kW` : '—'}
-              subtext={
-                results.isValid
-                  ? `Hydraulic $P_h$ = ${results.hydraulicPower_kW.toFixed(2)} kW ($\\eta$=${inputs.pumpEfficiency_pct}%)`
-                  : '—'
-              }
-              testId="metric-shaft-power"
+              valueClassName="text-xl sm:text-2xl text-teal-800"
             />
           </div>
 
-          <FluidMechanicsSchematic inputs={inputs} results={results} />
+          {/* 3. Secondary KPIs (Collapsible Additional Metrics) */}
+          <LabAdditionalMetricsDisclosure
+            count={5}
+            summary="Flow Velocity ($v$), Flow Regime, Major/Minor Head Losses ($h_f, h_m$), and Shaft Power ($P_s$)"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 pt-2">
+              <LabMetricCard
+                label="Flow Velocity ($v$)"
+                value={results.isValid ? `${results.velocity_m_s.toFixed(2)} m/s` : '—'}
+                subtext={
+                  results.isValid
+                    ? `$A$ = ${(results.area_m2 * 1e4).toFixed(2)} cm² · $v^2/(2g)$ = ${results.velocityHead_m.toFixed(2)} m`
+                    : '—'
+                }
+                testId="metric-velocity"
+              />
+              <LabMetricCard
+                label="Flow Regime"
+                value={results.isValid ? results.flowRegime : '—'}
+                subtext={
+                  results.isValid
+                    ? results.flowRegime === 'Laminar'
+                      ? 'Exact Hagen–Poiseuille ($< 2,100$)'
+                      : results.flowRegime === 'Transitional'
+                      ? 'Uncertain band [$2,100\\text{–}4,000$]'
+                      : results.flowRegime === 'Turbulent'
+                      ? 'Colebrook–White ($> 4,000$)'
+                      : 'Static fluid column'
+                    : '—'
+                }
+                testId="metric-regime"
+                valueClassName={regimeColorClass}
+              />
+              <LabMetricCard
+                label="Major Head Loss ($h_f$)"
+                value={results.isValid ? `${results.majorHeadLoss_m.toFixed(2)} m` : '—'}
+                subtext={
+                  results.isValid
+                    ? `$L/D$ = ${(inputs.length_m / Math.max(inputs.diameter_m, 1e-6)).toFixed(0)} · straight pipe`
+                    : '—'
+                }
+                testId="metric-major-loss"
+              />
+              <LabMetricCard
+                label="Minor Head Loss ($h_m$)"
+                value={results.isValid ? `${results.minorHeadLoss_m.toFixed(2)} m` : '—'}
+                subtext={
+                  results.isValid
+                    ? `$\\sum K$ = ${inputs.minorLossK.toFixed(1)} · valves & fittings`
+                    : '—'
+                }
+                testId="metric-minor-loss"
+              />
+              <LabMetricCard
+                label="Estimated Shaft Power ($P_s$)"
+                value={results.isValid ? `${results.shaftPower_kW.toFixed(2)} kW` : '—'}
+                subtext={
+                  results.isValid
+                    ? `Hydraulic $P_h$ = ${results.hydraulicPower_kW.toFixed(2)} kW ($\\eta$=${inputs.pumpEfficiency_pct}%)`
+                    : '—'
+                }
+                testId="metric-shaft-power"
+              />
+            </div>
+          </LabAdditionalMetricsDisclosure>
 
+          {/* 4. Secondary Hydraulic & Moody Charts */}
           <FluidMechanicsCharts
             inputs={inputs}
             results={results}

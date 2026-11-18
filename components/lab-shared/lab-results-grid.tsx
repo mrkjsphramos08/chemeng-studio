@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { MathText } from './math';
 
 export interface LabMetricCardProps {
@@ -16,11 +17,11 @@ export function LabMetricCard({
   value,
   subtext,
   testId,
-  valueClassName = 'text-2xl text-slate-900',
+  valueClassName = 'text-xl sm:text-2xl text-slate-900',
 }: LabMetricCardProps) {
   return (
     <div
-      className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-2xs flex flex-col justify-between transition-colors hover:border-slate-300"
+      className="bg-white rounded-xl border border-slate-200/90 p-3.5 sm:p-4 shadow-2xs flex flex-col justify-between transition-colors hover:border-slate-300"
       data-testid={testId}
     >
       <div className="text-xs font-medium text-slate-600 leading-snug">
@@ -34,6 +35,61 @@ export function LabMetricCard({
       <div className="text-[11px] font-mono text-slate-500 mt-1 leading-normal">
         <MathText text={subtext} />
       </div>
+    </div>
+  );
+}
+
+export interface LabAdditionalMetricsDisclosureProps {
+  count: number;
+  summary: string;
+  children: React.ReactNode;
+  testId?: string;
+}
+
+export function LabAdditionalMetricsDisclosure({
+  count,
+  summary,
+  children,
+  testId = 'additional-metrics-disclosure',
+}: LabAdditionalMetricsDisclosureProps) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div
+      className="bg-slate-50/70 border border-slate-200/90 rounded-xl"
+      data-testid={testId}
+    >
+      <button
+        type="button"
+        onClick={() => setExpanded((prev) => !prev)}
+        aria-expanded={expanded}
+        data-testid="additional-metrics-toggle"
+        className="w-full px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-left text-xs font-semibold text-slate-800 hover:bg-slate-100/70 rounded-xl transition-colors cursor-pointer"
+      >
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
+          <span className="text-slate-900">Additional Metrics ({count})</span>
+          <span className="text-slate-300 hidden sm:inline" aria-hidden="true">
+            ·
+          </span>
+          <span className="font-normal text-slate-600 truncate">
+            <MathText text={summary} />
+          </span>
+        </div>
+        <span className="inline-flex items-center gap-1 text-teal-700 shrink-0">
+          <span>{expanded ? 'Hide' : 'Show'}</span>
+          {expanded ? (
+            <ChevronUp className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5" />
+          )}
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 pt-1 border-t border-slate-200/70">
+          {children}
+        </div>
+      )}
     </div>
   );
 }

@@ -223,19 +223,15 @@ export function ProcessControlLab() {
 
   return (
     <section
-      className="py-8 lg:py-10"
+      className="py-5 lg:py-6"
       aria-label="Process Dynamics and Control Virtual Laboratory"
     >
-      <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
         {/* Shared Workspace Header */}
         <LabWorkspaceHeader
-          kickerItems={[
-            'Laboratory 06 · Phase 2.4',
-            'Process Dynamics & Feedback Control',
-            'SISO FOPDT & PID Simulation',
-          ]}
+          kickerItems={['Lab 06', 'Process Control', 'FOPDT & PID']}
           title="Process Dynamics & Control Virtual Laboratory"
-          description="Investigate first-order-plus-dead-time ($\tau \frac{dy}{dt} + y = K_p u(t - \theta)$) process dynamics, compare Open-Loop, P, PI, and filtered PID feedback controllers, and analyze setpoint tracking, load disturbance rejection, actuator saturation, and integral windup."
+          description="Simulate first-order-plus-dead-time dynamics under Open-Loop, P, PI, and PID feedback control with disturbances and anti-windup."
           presets={PROCESS_CONTROL_PRESETS.map((p) => ({
             id: p.id,
             name: p.name,

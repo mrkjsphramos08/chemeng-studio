@@ -10,6 +10,7 @@ import {
 import { DISTILLATION_GUIDED_EXPLORATION_QUESTIONS } from '@/lib/labs-data';
 import { downloadSimulationCsv } from '@/lib/lab-download';
 import {
+  LabAdditionalMetricsDisclosure,
   LabAssumptionsCard,
   LabControlGroup,
   LabGuidedInquiryCard,
@@ -405,18 +406,14 @@ export function DistillationLab() {
   return (
     <section
       aria-label="Binary Distillation Virtual Laboratory"
-      className="max-w-[1360px] mx-auto px-6 py-8 space-y-6"
+      className="max-w-[1360px] mx-auto px-4 sm:px-6 py-5 lg:py-6 space-y-5"
       data-testid="distillation-lab-workspace"
     >
       {/* Shared Laboratory Workspace Header */}
       <LabWorkspaceHeader
-        kickerItems={[
-          'Unit Operations Laboratory 04',
-          'Binary Fractional Distillation · McCabe–Thiele Method',
-          'Molar Flow & Mole Fraction Basis',
-        ]}
+        kickerItems={['Lab 04', 'Separations & Distillation', 'McCabe–Thiele']}
         title="Distillation & Separation Processes Virtual Laboratory"
-        description="Investigate steady-state binary fractional distillation using the McCabe–Thiele graphical equilibrium-stage method. Explore vapor–liquid equilibrium ($\alpha$), reflux ratio trade-offs ($R$ vs. $N$), feed thermal quality ($q$-line), minimum reflux pinch points ($R_{\min}$), and theoretical stage counts."
+        description="Determine equilibrium stages, feed-stage location, and minimum reflux pinch points for binary fractional distillation."
         presets={DISTILLATION_PRESETS.map((p) => ({
           id: p.id,
           name: p.label,
@@ -521,42 +518,27 @@ export function DistillationLab() {
           />
         </div>
 
-        {/* RIGHT COLUMN: 9 KPI Cards + Interactive McCabe-Thiele Diagram + Column Schematic + Charts */}
-        <div className="lg:col-span-8 min-w-0 space-y-6">
+        {/* RIGHT COLUMN: McCabe-Thiele Diagram -> Primary 4 KPIs -> Additional Metrics -> Column Schematic & Secondary Charts */}
+        <div className="lg:col-span-8 min-w-0 space-y-5">
+          {/* 1. Primary Interactive McCabe–Thiele Graphical Diagram */}
+          <DistillationCharts
+            inputs={inputs}
+            results={results}
+            savedScenarios={savedScenarios}
+            onSaveCurrentScenario={handleSaveCurrentScenario}
+            onRemoveScenario={handleRemoveScenario}
+            onLoadScenario={handleApplyGuidedInputs}
+            onClearScenarios={handleClearScenarios}
+            renderSection="diagram"
+          />
+
+          {/* 2. Primary 4 KPI Summary */}
           <div
-            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3"
             data-testid="distillation-results-dashboard"
           >
             <LabMetricCard
-              label="Distillate Molar Flow ($D$)"
-              value={
-                results.isValid
-                  ? `${materialBalance.distillateFlow_kmol_h.toFixed(2)} kmol/h`
-                  : '—'
-              }
-              subtext={
-                results.isValid
-                  ? `$x_D = ${inputs.distillateComposition_xD.toFixed(3)}$ · $A$ Recovery: ${materialBalance.lightRecoveryInDistillate_pct.toFixed(1)}%`
-                  : '—'
-              }
-              testId="metric-distillate-flow"
-            />
-            <LabMetricCard
-              label="Bottoms Molar Flow ($B$)"
-              value={
-                results.isValid
-                  ? `${materialBalance.bottomsFlow_kmol_h.toFixed(2)} kmol/h`
-                  : '—'
-              }
-              subtext={
-                results.isValid
-                  ? `$x_B = ${inputs.bottomsComposition_xB.toFixed(3)}$ · Feed $F = ${inputs.feedFlow_kmol_h.toFixed(1)}\\,\\mathrm{kmol/h}$`
-                  : '—'
-              }
-              testId="metric-bottoms-flow"
-            />
-            <LabMetricCard
-              label="Theoretical Equilibrium Stages ($N$)"
+              label="Theoretical Stages ($N$)"
               value={
                 !results.isValid
                   ? '—'
@@ -571,18 +553,18 @@ export function DistillationLab() {
                   ? '—'
                   : stageCalculation.converged &&
                     stageCalculation.columnTheoreticalTrays !== null
-                  ? `${stageCalculation.columnTheoreticalTrays} column trays + 1 partial reboiler`
+                  ? `${stageCalculation.columnTheoreticalTrays} trays + 1 partial reboiler`
                   : 'Increase reflux ratio $R$ above $R_{\\min}$'
               }
               testId="metric-theoretical-stages"
               valueClassName={
                 results.isValid && !stageCalculation.converged
-                  ? 'text-xl text-amber-800'
-                  : 'text-2xl text-teal-800'
+                  ? 'text-lg text-amber-800'
+                  : 'text-xl sm:text-2xl text-teal-800'
               }
             />
             <LabMetricCard
-              label="Optimal Feed-Stage Location ($N_F$)"
+              label="Optimal Feed Stage ($N_F$)"
               value={
                 !results.isValid
                   ? '—'
@@ -596,23 +578,23 @@ export function DistillationLab() {
                   : stageCalculation.converged &&
                     stageCalculation.rectifyingStageCount !== null &&
                     stageCalculation.strippingStageCount !== null
-                  ? `${stageCalculation.rectifyingStageCount} rectifying above · ${stageCalculation.strippingStageCount} stripping/reboiler`
+                  ? `${stageCalculation.rectifyingStageCount} rectifying · ${stageCalculation.strippingStageCount} stripping/reb.`
                   : 'Requires feasible staircase'
               }
               testId="metric-feed-stage"
             />
             <LabMetricCard
-              label="Operating Reflux Ratio ($R = L/D$)"
+              label="Operating Reflux ($R = L/D$)"
               value={results.isValid ? `${inputs.refluxRatio_R.toFixed(2)}` : '—'}
               subtext={
                 results.isValid && minimumReflux.operatingToMinRefluxRatio !== null
-                  ? `${minimumReflux.operatingToMinRefluxRatio.toFixed(2)}× $R_{\\min}$ · Slope $L/V = ${operatingLines.rectifyingSlope.toFixed(3)}$`
+                  ? `${minimumReflux.operatingToMinRefluxRatio.toFixed(2)}× $R_{\\min}$ · $L/V = ${operatingLines.rectifyingSlope.toFixed(3)}$`
                   : '—'
               }
               testId="metric-operating-reflux"
             />
             <LabMetricCard
-              label="Minimum Reflux Ratio ($R_{\min}$)"
+              label="Minimum Reflux ($R_{\min}$)"
               value={
                 results.isValid && minimumReflux.minimumRefluxRatio_Rmin !== null
                   ? `${minimumReflux.minimumRefluxRatio_Rmin.toFixed(3)}`
@@ -622,56 +604,95 @@ export function DistillationLab() {
                 results.isValid &&
                 minimumReflux.pinch_x !== null &&
                 minimumReflux.pinch_y !== null
-                  ? `Pinch $(x_p, y_p) = (${minimumReflux.pinch_x.toFixed(3)}, ${minimumReflux.pinch_y.toFixed(3)})$`
+                  ? `Pinch $(${minimumReflux.pinch_x.toFixed(3)}, ${minimumReflux.pinch_y.toFixed(3)})$`
                   : '—'
               }
               testId="metric-minimum-reflux"
             />
-            <LabMetricCard
-              label="Relative Volatility ($\alpha$) & Fenske $N_{\min}$"
-              value={
-                results.isValid ? `α = ${inputs.relativeVolatility_alpha.toFixed(2)}` : '—'
-              }
-              subtext={
-                results.isValid && minimumReflux.fenskeMinimumStages_Nmin !== null
-                  ? `Fenske $N_{\\min}$ ($R \\to \\infty$) = ${minimumReflux.fenskeMinimumStages_Nmin.toFixed(2)} stages`
-                  : '—'
-              }
-              testId="metric-volatility-fenske"
-            />
-            <LabMetricCard
-              label="Internal Column Section Flows"
-              value={
-                results.isValid
-                  ? `V = ${internalFlows.rectifyingVapor_V_kmol_h.toFixed(1)} kmol/h`
-                  : '—'
-              }
-              subtext={
-                results.isValid
-                  ? `$L = ${internalFlows.rectifyingLiquid_L_kmol_h.toFixed(1)}$ · $\\bar{L} = ${internalFlows.strippingLiquid_Lbar_kmol_h.toFixed(1)}$ · $\\bar{V} = ${internalFlows.strippingVapor_Vbar_kmol_h.toFixed(1)}$`
-                  : '—'
-              }
-              testId="metric-internal-flows"
-            />
-            <LabMetricCard
-              label="Material Balance & Feasibility"
-              value={
-                !results.isValid
-                  ? 'Invalid'
-                  : materialBalance.isBalanced
-                  ? 'Balanced (0.00 Δ)'
-                  : 'Check Balance'
-              }
-              subtext={
-                results.isValid
-                  ? `$F = D + B$ (${materialBalance.feedFlow_kmol_h.toFixed(1)} kmol/h) · ${operatingLines.feedRegimeLabel}`
-                  : '—'
-              }
-              testId="metric-material-balance"
-            />
           </div>
 
-          {/* Centerpiece Interactive McCabe–Thiele Diagram + Secondary Charts + Scenario Comparison */}
+          {/* 3. Secondary KPIs (Collapsible Additional Metrics) */}
+          <LabAdditionalMetricsDisclosure
+            count={5}
+            summary="Distillate & Bottoms Flows ($D, B$), Fenske $N_{\\min}$, Internal Flows, and Balance Check"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 pt-2">
+              <LabMetricCard
+                label="Distillate Molar Flow ($D$)"
+                value={
+                  results.isValid
+                    ? `${materialBalance.distillateFlow_kmol_h.toFixed(2)} kmol/h`
+                    : '—'
+                }
+                subtext={
+                  results.isValid
+                    ? `$x_D = ${inputs.distillateComposition_xD.toFixed(3)}$ · $A$ Recovery: ${materialBalance.lightRecoveryInDistillate_pct.toFixed(1)}%`
+                    : '—'
+                }
+                testId="metric-distillate-flow"
+              />
+              <LabMetricCard
+                label="Bottoms Molar Flow ($B$)"
+                value={
+                  results.isValid
+                    ? `${materialBalance.bottomsFlow_kmol_h.toFixed(2)} kmol/h`
+                    : '—'
+                }
+                subtext={
+                  results.isValid
+                    ? `$x_B = ${inputs.bottomsComposition_xB.toFixed(3)}$ · Feed $F = ${inputs.feedFlow_kmol_h.toFixed(1)}\\,\\mathrm{kmol/h}$`
+                    : '—'
+                }
+                testId="metric-bottoms-flow"
+              />
+              <LabMetricCard
+                label="Relative Volatility ($\alpha$) & Fenske $N_{\min}$"
+                value={
+                  results.isValid ? `α = ${inputs.relativeVolatility_alpha.toFixed(2)}` : '—'
+                }
+                subtext={
+                  results.isValid && minimumReflux.fenskeMinimumStages_Nmin !== null
+                    ? `Fenske $N_{\\min}$ ($R \\to \\infty$) = ${minimumReflux.fenskeMinimumStages_Nmin.toFixed(2)} stages`
+                    : '—'
+                }
+                testId="metric-volatility-fenske"
+              />
+              <LabMetricCard
+                label="Internal Column Section Flows"
+                value={
+                  results.isValid
+                    ? `V = ${internalFlows.rectifyingVapor_V_kmol_h.toFixed(1)} kmol/h`
+                    : '—'
+                }
+                subtext={
+                  results.isValid
+                    ? `$L = ${internalFlows.rectifyingLiquid_L_kmol_h.toFixed(1)}$ · $\\bar{L} = ${internalFlows.strippingLiquid_Lbar_kmol_h.toFixed(1)}$ · $\\bar{V} = ${internalFlows.strippingVapor_Vbar_kmol_h.toFixed(1)}$`
+                    : '—'
+                }
+                testId="metric-internal-flows"
+              />
+              <LabMetricCard
+                label="Material Balance & Feasibility"
+                value={
+                  !results.isValid
+                    ? 'Invalid'
+                    : materialBalance.isBalanced
+                    ? 'Balanced (0.00 Δ)'
+                    : 'Check Balance'
+                }
+                subtext={
+                  results.isValid
+                    ? `$F = D + B$ (${materialBalance.feedFlow_kmol_h.toFixed(1)} kmol/h) · ${operatingLines.feedRegimeLabel}`
+                    : '—'
+                }
+                testId="metric-material-balance"
+              />
+            </div>
+          </LabAdditionalMetricsDisclosure>
+
+          {/* 4. Column Schematic & Secondary Sensitivity Charts */}
+          <DistillationSchematic inputs={inputs} results={results} />
+
           <DistillationCharts
             inputs={inputs}
             results={results}
@@ -680,10 +701,8 @@ export function DistillationLab() {
             onRemoveScenario={handleRemoveScenario}
             onLoadScenario={handleApplyGuidedInputs}
             onClearScenarios={handleClearScenarios}
+            renderSection="secondary"
           />
-
-          {/* Dynamic Distillation Column SVG Schematic */}
-          <DistillationSchematic inputs={inputs} results={results} />
         </div>
       </div>
 
