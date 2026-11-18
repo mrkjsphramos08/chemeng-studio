@@ -210,3 +210,42 @@ test('Branding 6 — Centralized ENTROLUME_ICON_PATHS and ENTROLUME_WORDMARK_PAT
   assert.equal(ENTROLUME_BRAND_COLORS.white, '#FFFFFF');
 });
 
+import { LABORATORY_MODULES, DEVELOPMENT_ROADMAP } from './labs-data';
+
+test('Batch 2 — LABORATORY_MODULES provide concise student descriptions, 3 topic tags, preserved governing equations, and DEVELOPMENT_ROADMAP separates completed/in-progress from planned phases', () => {
+  assert.equal(LABORATORY_MODULES.length, 6);
+  for (const mod of LABORATORY_MODULES) {
+    assert.ok(mod.shortTitle.length > 0, `Expected shortTitle on ${mod.id}`);
+    assert.ok(
+      mod.description.length > 20 && mod.description.length <= 130,
+      `Expected concise 1-sentence description on ${mod.id}, got length ${mod.description.length}`
+    );
+    assert.ok(
+      mod.keyTopics.length >= 2 && mod.keyTopics.length <= 3,
+      `Expected 2-3 concise topic tags on ${mod.id}, got ${mod.keyTopics.length}`
+    );
+    assert.ok(mod.governingEquation.length > 0);
+    assert.ok(mod.governingEquationLatex.length > 0);
+  }
+
+  const futurePhases = DEVELOPMENT_ROADMAP.filter(
+    (s) => s.status === 'Upcoming' || s.status === 'Planned'
+  );
+  assert.deepEqual(
+    futurePhases.map((s) => s.phase),
+    ['Phase 3', 'Phase 4', 'Phase 5']
+  );
+
+  const historicalPhases = DEVELOPMENT_ROADMAP.filter(
+    (s) => s.status === 'Implemented' || s.status === 'Current Phase'
+  );
+  assert.ok(historicalPhases.some((s) => s.phase === 'Phase 1' && s.status === 'Implemented'));
+  assert.ok(historicalPhases.some((s) => s.phase === 'Phase 2.5.2' && s.status === 'Implemented'));
+  assert.ok(historicalPhases.some((s) => s.phase === 'Phase 2.5.3' && s.status === 'Current Phase'));
+  assert.equal(
+    historicalPhases.some((s) => ['Phase 3', 'Phase 4', 'Phase 5'].includes(s.phase)),
+    false
+  );
+});
+
+

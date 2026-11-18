@@ -13,7 +13,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { LABORATORY_MODULES, LabModule } from '@/lib/labs-data';
-import { MathInline, MathText } from '@/components/lab-shared';
+import { MathText } from '@/components/lab-shared';
 
 export type AvailableLabId =
   | 'heat-exchanger'
@@ -87,9 +87,11 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
       const q = searchQuery.toLowerCase();
       return (
         m.title.toLowerCase().includes(q) ||
+        m.shortTitle.toLowerCase().includes(q) ||
         m.category.toLowerCase().includes(q) ||
         m.description.toLowerCase().includes(q) ||
         m.keyTopics.some((t) => t.toLowerCase().includes(q)) ||
+        m.searchKeywords.some((k) => k.toLowerCase().includes(q)) ||
         m.governingEquation.toLowerCase().includes(q)
       );
     });
@@ -98,27 +100,21 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
   return (
     <section
       aria-label="Virtual Laboratories Directory"
-      className="max-w-[1360px] mx-auto px-4 sm:px-6 py-10 space-y-8"
+      className="max-w-[1360px] mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6"
       data-testid="labs-directory-view"
     >
       {/* Top Directory Header */}
-      <div className="rounded-2xl bg-white border border-slate-200/90 p-6 sm:p-8 shadow-2xs space-y-6">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-          <div className="space-y-2.5 max-w-3xl">
+      <div className="rounded-2xl bg-white border border-slate-200/90 p-5 sm:p-7 shadow-2xs space-y-5">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+          <div className="space-y-1.5 max-w-2xl">
             <div className="text-xs font-semibold uppercase tracking-widest text-teal-700">
-              Entrolume Virtual Laboratory Library · 6 Live Simulators
+              Entrolume Virtual Laboratory Library
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
               Chemical Engineering Virtual Laboratories
             </h1>
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-              Select an interactive simulation workspace below. Every laboratory follows
-              Entrolume’s standardized{' '}
-              <span className="font-semibold text-slate-800">
-                Configure → Simulate → Analyze → Reflect
-              </span>{' '}
-              workflow with real-time SI calculations, process schematics, scenario
-              comparison tables, CSV export, and guided conceptual checks.
+            <p className="text-slate-600 text-sm sm:text-base">
+              Choose a laboratory to begin simulating in real time.
             </p>
           </div>
 
@@ -135,7 +131,7 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search lab, method, or concept..."
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-600 focus:outline-none"
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/30"
                 data-testid="directory-search-input"
               />
             </div>
@@ -143,7 +139,7 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
         </div>
 
         {/* Discipline Filter Tabs */}
-        <div className="pt-4 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="pt-4 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div
             className="flex flex-wrap items-center gap-1.5"
             role="tablist"
@@ -158,7 +154,7 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => setDiscipline(tab.id)}
-                  className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 ${
                     isSelected
                       ? 'bg-slate-900 text-white shadow-2xs'
                       : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
@@ -173,7 +169,7 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
 
           <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
             <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0" />
-            <span>Showing {filteredModules.length} of 6 Verified Laboratories</span>
+            <span>Showing {filteredModules.length} of 6 Laboratories</span>
           </div>
         </div>
       </div>
@@ -196,76 +192,71 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredModules.map((module) => {
             const labNumber =
               LABORATORY_MODULES.findIndex((item) => item.id === module.id) + 1;
             return (
               <article
                 key={module.id}
-                className="rounded-2xl border border-slate-200/90 bg-white p-6 flex flex-col justify-between transition-all hover:border-teal-600/70 hover:shadow-md"
+                className="rounded-2xl border border-slate-200/90 bg-white p-5 flex flex-col justify-between transition-all hover:border-teal-600/70 hover:shadow-xs"
                 data-testid={`directory-card-${module.id}`}
               >
-                <div className="space-y-4">
-                  {/* Top Row: Icon & Unboxed Curriculum Metadata */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-teal-50/90 border border-teal-200/80 flex items-center justify-center shrink-0">
-                      {getModuleIcon(module.iconName)}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-xs font-mono font-semibold text-teal-800 whitespace-nowrap">
-                        LAB 0{labNumber} · Available Now
+                <div className="space-y-3">
+                  {/* 1. Category & Lightweight Lab Number / Metadata */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-teal-50/90 border border-teal-200/80 flex items-center justify-center shrink-0">
+                        {getModuleIcon(module.iconName)}
                       </div>
-                      <div className="text-[11px] font-mono text-slate-500 mt-0.5 whitespace-nowrap">
-                        {module.level} · {module.duration}
+                      <div className="min-w-0">
+                        <div className="text-[11px] font-semibold text-teal-700 truncate">
+                          {module.category}
+                        </div>
+                        <div className="text-[11px] font-mono text-slate-500">
+                          LAB 0{labNumber} · {module.level}
+                        </div>
                       </div>
                     </div>
+                    <span className="text-[11px] font-mono text-slate-400 whitespace-nowrap shrink-0">
+                      {module.duration}
+                    </span>
                   </div>
 
-                  {/* Subject Category, Title & Description */}
+                  {/* 2. Title & 3. One-Sentence Student-Facing Description */}
                   <div>
-                    <div className="text-xs font-semibold text-teal-700">
-                      {module.category}
-                    </div>
-                    <h2 className="text-lg font-bold text-slate-900 mt-0.5">
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
                       {module.title}
                     </h2>
-                    <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
                       <MathText text={module.description} />
                     </p>
                   </div>
 
-                  {/* Governing Equation Box */}
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 overflow-x-auto">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                      Governing Mathematical Relation
-                    </div>
-                    <div className="text-slate-800 text-xs">
-                      <MathInline latex={module.governingEquationLatex} />
-                    </div>
-                  </div>
-
-                  {/* Unboxed Key Concepts */}
-                  <div className="text-xs text-slate-500 leading-relaxed">
-                    <span className="font-semibold text-slate-700">Core Topics: </span>
+                  {/* 4. Two or Three Concise Topic Tags (Unboxed inline metadata) */}
+                  <div className="pt-1 text-xs font-medium text-slate-500 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                     {module.keyTopics.map((topic, idx) => (
                       <React.Fragment key={topic}>
-                        {idx > 0 && <span className="mx-1.5 text-slate-300">·</span>}
-                        <MathText text={topic} />
+                        {idx > 0 && (
+                          <span aria-hidden="true" className="text-slate-300">
+                            ·
+                          </span>
+                        )}
+                        <span className="text-slate-700">{topic}</span>
                       </React.Fragment>
                     ))}
                   </div>
                 </div>
 
-                {/* Launch Action */}
-                <div className="pt-5 mt-6 border-t border-slate-100">
+                {/* 5. Clear Launch Laboratory Action */}
+                <div className="pt-4 mt-4 border-t border-slate-100">
                   <button
                     type="button"
                     onClick={() => onOpenLab(module.id as AvailableLabId)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-teal-700 hover:bg-teal-600 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-teal-700 hover:bg-teal-600 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                     data-testid={`directory-launch-${module.id}`}
                   >
-                    Launch Virtual Laboratory
+                    Launch Laboratory
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>

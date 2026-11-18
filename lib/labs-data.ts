@@ -11,6 +11,7 @@ import type { ProcessControlInputs } from '@/lib/process-control';
 
 export interface LabModule {
   id: string;
+  shortTitle: string;
   title: string;
   category: string;
   status: 'Available' | 'Coming Soon';
@@ -19,6 +20,7 @@ export interface LabModule {
   level: string;
   description: string;
   keyTopics: string[];
+  searchKeywords: string[];
   governingEquation: string;
   governingEquationLatex: string;
   iconName: 'flame' | 'layers' | 'flask' | 'gauge' | 'waves' | 'sliders';
@@ -27,39 +29,50 @@ export interface LabModule {
 export const LABORATORY_MODULES: LabModule[] = [
   {
     id: 'heat-exchanger',
+    shortTitle: 'Heat Exchanger',
     title: 'Heat Exchanger Virtual Laboratory',
     category: 'Heat Transfer & Energy Systems',
     status: 'Available',
     roadmapPhase: 'Phase 1 / 1.1 · Live Now',
-    duration: '45 min lab',
+    duration: '45 min',
     level: 'Undergraduate Core',
     description:
-      'Analyze steady-state ideal countercurrent heat exchangers using the effectiveness–NTU ($\\varepsilon\\text{–}\\mathrm{NTU}$) method. Investigate capacity rate ratios, temperature approach, temperature cross, and surface area scaling.',
-    keyTopics: [
-      'Effectiveness–NTU Method',
-      'Capacity Ratio ($C_r$)',
-      'Temperature Cross',
-      'Energy Conservation',
+      'Explore how flow rates, inlet temperatures, and heat-transfer conditions influence exchanger performance.',
+    keyTopics: ['Heat Transfer', 'Effectiveness', 'Temperature Profiles'],
+    searchKeywords: [
+      'NTU',
+      'LMTD',
+      'countercurrent',
+      'capacity ratio',
+      'temperature cross',
+      'thermal duty',
     ],
     governingEquation: 'Q = ε · Cmin · (Th,in − Tc,in)',
-    governingEquationLatex: 'Q = \\varepsilon C_{\\min}\\left(T_{h,\\mathrm{in}} - T_{c,\\mathrm{in}}\\right)',
+    governingEquationLatex:
+      'Q = \\varepsilon C_{\\min}\\left(T_{h,\\mathrm{in}} - T_{c,\\mathrm{in}}\\right)',
     iconName: 'flame',
   },
   {
     id: 'fluid-mechanics',
+    shortTitle: 'Fluid Mechanics',
     title: 'Fluid Mechanics & Pipe Hydraulics',
     category: 'Momentum Transport & Piping',
     status: 'Available',
     roadmapPhase: 'Phase 1.2 · Live Now',
-    duration: '40 min lab',
+    duration: '40 min',
     level: 'Sophomore / Junior',
     description:
-      'Simulate steady, incompressible pipe flow hydraulics using Reynolds regime classification ($\\mathrm{Re} = \\rho v D / \\mu$), the Colebrook–White friction equation, Darcy–Weisbach major and minor head losses, and required pump head.',
-    keyTopics: [
-      'Darcy–Weisbach Head Loss',
-      'Colebrook–White & Moody Chart',
-      'Major vs. Minor Losses',
-      'Required Pump Head & Power',
+      'Investigate pipe-flow regimes, frictional pressure losses, and required pump head.',
+    keyTopics: ['Flow Regimes', 'Friction Loss', 'Pump Head'],
+    searchKeywords: [
+      'Reynolds',
+      'Darcy-Weisbach',
+      'Colebrook-White',
+      'Moody',
+      'laminar',
+      'turbulent',
+      'head loss',
+      'viscosity',
     ],
     governingEquation: 'hf = f_D · (L / D) · (v² / 2g)',
     governingEquationLatex: 'h_f = f_D \\frac{L}{D} \\frac{v^2}{2g}',
@@ -67,82 +80,110 @@ export const LABORATORY_MODULES: LabModule[] = [
   },
   {
     id: 'reaction-engineering',
+    shortTitle: 'Reaction Engineering',
     title: 'Chemical Reaction Engineering',
     category: 'Kinetics & Reactor Design',
     status: 'Available',
     roadmapPhase: 'Phase 2.1 · Live Now',
-    duration: '50 min lab',
+    duration: '50 min',
     level: 'Undergraduate Core',
     description:
-      'Simulate isothermal, constant-density, irreversible first-order reaction kinetics ($A \\rightarrow B$) across Batch, Ideal CSTR, and Ideal PFR reactors. Compare conversion, residence time, spatial profiles, and target sizing.',
-    keyTopics: [
-      'Batch vs. CSTR vs. PFR',
-      'First-Order Kinetics ($-r_A = kC_A$)',
-      'Residence Time & Damköhler',
-      'Target Conversion Sizing',
+      'Compare Batch, CSTR, and PFR behavior under different reaction conditions.',
+    keyTopics: ['Batch', 'CSTR', 'PFR'],
+    searchKeywords: [
+      'kinetics',
+      'first-order',
+      'conversion',
+      'residence time',
+      'Damkohler',
+      'Damköhler',
+      'reactor sizing',
     ],
     governingEquation: 'Batch/PFR: X = 1 − e^(−kτ) · CSTR: X = kτ / (1 + kτ)',
-    governingEquationLatex: 'X_{\\mathrm{PFR}} = 1 - e^{-k\\tau}, \\quad X_{\\mathrm{CSTR}} = \\frac{k\\tau}{1 + k\\tau}',
+    governingEquationLatex:
+      'X_{\\mathrm{PFR}} = 1 - e^{-k\\tau}, \\quad X_{\\mathrm{CSTR}} = \\frac{k\\tau}{1 + k\\tau}',
     iconName: 'flask',
   },
   {
     id: 'distillation',
+    shortTitle: 'Distillation',
     title: 'Distillation & Separation Processes',
     category: 'Mass Transfer & Separations',
     status: 'Available',
     roadmapPhase: 'Phase 2.2 · Live Now',
-    duration: '60 min lab',
+    duration: '60 min',
     level: 'Junior / Senior',
     description:
-      'Simulate steady-state binary fractional distillation using the McCabe–Thiele method. Explore relative volatility ($\\alpha$), reflux ratio trade-offs, feed thermal condition ($q$-line), minimum reflux pinch points, and theoretical equilibrium stage requirements.',
-    keyTopics: [
-      'McCabe–Thiele Stage Stepping',
-      'Vapor–Liquid Equilibrium ($\\alpha$)',
-      'Reflux Ratio & Minimum Reflux',
-      'Feed Condition ($q$-Line) & Feed Stage',
+      'Explore vapor–liquid equilibrium, reflux ratio, and theoretical separation stages.',
+    keyTopics: ['VLE', 'Reflux', 'Theoretical Stages'],
+    searchKeywords: [
+      'McCabe-Thiele',
+      'McCabe–Thiele',
+      'relative volatility',
+      'q-line',
+      'minimum reflux',
+      'Fenske',
+      'feed stage',
     ],
     governingEquation: 'y* = αx / [1 + (α − 1)x] · y_ROL = [R/(R + 1)]x + xD/(R + 1)',
-    governingEquationLatex: 'y^* = \\frac{\\alpha x}{1 + (\\alpha - 1)x}, \\quad y_{\\mathrm{ROL}} = \\frac{R}{R+1}x + \\frac{x_D}{R+1}',
+    governingEquationLatex:
+      'y^* = \\frac{\\alpha x}{1 + (\\alpha - 1)x}, \\quad y_{\\mathrm{ROL}} = \\frac{R}{R+1}x + \\frac{x_D}{R+1}',
     iconName: 'layers',
   },
   {
     id: 'thermodynamics',
+    shortTitle: 'Thermodynamics',
     title: 'Chemical Engineering Thermodynamics',
-    category: 'Phase Equilibria & Equations of State',
+    category: 'Phase Equilibria & Real Fluids',
     status: 'Available',
     roadmapPhase: 'Phase 2.3 · Live Now',
-    duration: '55 min lab',
+    duration: '55 min',
     level: 'Sophomore / Junior',
     description:
-      'Explore pure-fluid PVT non-ideality using the Peng–Robinson cubic Equation of State ($Z = Pv/RT$, critical constants $T_c, P_c, \\omega$, and subcritical 3-root analysis) alongside isothermal binary Vapor–Liquid Equilibrium ($P\\text{–}x\\text{–}y$ and Raoult–Dalton phase envelopes).',
-    keyTopics: [
-      'Peng–Robinson Cubic EOS',
-      'Compressibility Factor ($Z$)',
-      'Raoult’s & Dalton’s Laws',
-      'Isothermal $P\\text{–}x\\text{–}y$ Diagrams',
+      'Compare ideal and real-fluid behavior and explore binary vapor–liquid equilibrium.',
+    keyTopics: ['Real-Gas PVT', 'Peng–Robinson', 'Binary VLE'],
+    searchKeywords: [
+      'Equations of State',
+      'compressibility',
+      'cubic EOS',
+      'Raoult',
+      'Dalton',
+      'P-x-y',
+      'bubble point',
+      'dew point',
+      'critical',
     ],
-    governingEquation: 'P = RT/(v − b) − aα/[v(v + b) + b(v − b)] · P_bubble = xA·PA^sat + xB·PB^sat',
-    governingEquationLatex: 'P = \\frac{RT}{v - b} - \\frac{a\\alpha}{v(v + b) + b(v - b)}, \\quad P_{\\mathrm{bubble}} = x_A P_A^{\\mathrm{sat}} + x_B P_B^{\\mathrm{sat}}',
+    governingEquation:
+      'P = RT/(v − b) − aα/[v(v + b) + b(v − b)] · P_bubble = xA·PA^sat + xB·PB^sat',
+    governingEquationLatex:
+      'P = \\frac{RT}{v - b} - \\frac{a\\alpha}{v(v + b) + b(v - b)}, \\quad P_{\\mathrm{bubble}} = x_A P_A^{\\mathrm{sat}} + x_B P_B^{\\mathrm{sat}}',
     iconName: 'gauge',
   },
   {
     id: 'process-control',
+    shortTitle: 'Process Control',
     title: 'Process Dynamics & Control',
     category: 'Dynamics & Feedback Automation',
     status: 'Available',
     roadmapPhase: 'Phase 2.4 · Live Now',
-    duration: '55 min lab',
+    duration: '55 min',
     level: 'Senior / Advanced',
     description:
-      'Simulate first-order-plus-dead-time (FOPDT) process dynamics ($\\tau \\frac{dy}{dt} + y = K_p u(t - \\theta)$) and tune P, PI, and PID feedback controllers. Investigate setpoint tracking, load disturbance rejection, actuator saturation, and integral anti-windup.',
-    keyTopics: [
-      'FOPDT Dynamics ($K_p, \\tau, \\theta$)',
-      'P, PI & Filtered PID Control',
-      'Setpoint vs. Disturbance Rejection',
-      'Actuator Saturation & Anti-Windup',
+      'Explore process responses and tune P, PI, and PID controllers.',
+    keyTopics: ['PID Control', 'Disturbances', 'Response Metrics'],
+    searchKeywords: [
+      'FOPDT',
+      'dead time',
+      'setpoint',
+      'anti-windup',
+      'overshoot',
+      'saturation',
+      'feedback',
     ],
-    governingEquation: 'τ dy/dt + y = Kp·u(t − θ) · u_cmd = U0 + Kc[e + (1/τI)∫e dt − Df]',
-    governingEquationLatex: '\\tau \\frac{dy}{dt} + y = K_p u(t - \\theta), \\quad G_c(s) = K_c\\left(1 + \\frac{1}{\\tau_I s} + \\frac{\\tau_D s}{\\alpha_D \\tau_D s + 1}\\right)',
+    governingEquation:
+      'τ dy/dt + y = Kp·u(t − θ) · u_cmd = U0 + Kc[e + (1/τI)∫e dt − Df]',
+    governingEquationLatex:
+      '\\tau \\frac{dy}{dt} + y = K_p u(t - \\theta), \\quad G_c(s) = K_c\\left(1 + \\frac{1}{\\tau_I s} + \\frac{\\tau_D s}{\\alpha_D \\tau_D s + 1}\\right)',
     iconName: 'sliders',
   },
 ];
@@ -2422,13 +2463,24 @@ export const DEVELOPMENT_ROADMAP: RoadmapPhaseItem[] = [
   {
     phase: 'Phase 2.5.2',
     title: 'Official Logo Integration & Brand Asset Implementation',
-    status: 'Current Phase',
+    status: 'Implemented',
     summary:
-      'Active milestone: reconstructed the approved Entrolume geometric E-mark and lowercase wordmark into production vector SVG assets, coordinated light/dark/icon/monochrome variants, and square favicon.',
+      'Reconstructed the approved Entrolume geometric E-mark and lowercase wordmark into production vector SVG assets, coordinated light/dark/icon/monochrome variants, and square favicon.',
     items: [
       'Production SVG vector suite: entrolume-logo.svg, entrolume-logo-dark.svg, entrolume-icon.svg, entrolume-monochrome.svg, and favicon.svg',
       'Centralized EntrolumeLogo component supporting primary, dark, icon-only, and monochrome variants with accessible semantics',
       'Integrated across desktop/mobile navigation, dark pedagogical section, footer, and OpenGraph/favicon browser metadata',
+    ],
+  },
+  {
+    phase: 'Phase 2.5.3',
+    title: 'Content Simplification, Visual Hierarchy & Learning Experience Refinement',
+    status: 'Current Phase',
+    summary:
+      'In progress: incremental refinement of scientific consistency, progressive disclosure, landing page clarity, and laboratory directory scannability.',
+    items: [
+      'Batch 1: Distillation guided inquiry alignment, collapsed default equation tables, and responsive input/schematic fixes',
+      'Batch 2: Streamlined landing hero, compact 6-lab launcher, concise directory cards, and collapsible release history',
     ],
   },
   {

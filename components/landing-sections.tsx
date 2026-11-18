@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { LABORATORY_MODULES, DEVELOPMENT_ROADMAP, LabModule } from '@/lib/labs-data';
 import { ActiveView } from './navbar';
-import { MathBlock, MathInline, MathText } from '@/components/lab-shared';
+import { MathBlock, MathInline } from '@/components/lab-shared';
 import { EntrolumeLogo } from './entrolume-logo';
 
 interface LandingSectionsProps {
@@ -156,6 +156,10 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
   const [selectedPreviewIndex, setSelectedPreviewIndex] = useState(0);
   const activePreview = HERO_PREVIEW_LABS[selectedPreviewIndex];
 
+  const historicalMilestones = DEVELOPMENT_ROADMAP.filter(
+    (stage) => stage.status === 'Implemented' || stage.status === 'Current Phase'
+  );
+
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
@@ -164,38 +168,37 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
   };
 
   return (
-    <div className="space-y-24 pb-20">
+    <div className="space-y-16 lg:space-y-20 pb-16">
       {/* 1. HERO SECTION */}
-      <section className="relative pt-10 pb-14 lg:pt-14 lg:pb-20 border-b border-slate-200/80 bg-gradient-to-b from-white via-white to-[#F8FAFC] overflow-hidden">
+      <section className="relative pt-8 pb-12 lg:pt-12 lg:pb-16 border-b border-slate-200/80 bg-gradient-to-b from-white via-white to-[#F8FAFC] overflow-hidden">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_55%,transparent_100%)] opacity-45"
         />
 
         <div className="relative max-w-[1360px] mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             {/* Left Column: Entrolume Brand Positioning & Primary Actions */}
-            <div className="lg:col-span-6 space-y-6">
+            <div className="lg:col-span-6 space-y-5">
               <div className="text-xs font-semibold uppercase tracking-widest text-teal-700">
                 Entrolume · Explore. Simulate. Understand.
               </div>
 
-              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 leading-[1.1]">
+              <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-900 leading-[1.12] text-balance">
                 Explore Chemical Engineering Through Interactive Simulations.
               </h1>
 
               <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl">
-                Learn complex engineering principles through virtual laboratories,
-                real-time scientific calculations, and guided experiments. Built for
-                undergraduate chemical engineering students, instructors, and academic
-                programs.
+                Manipulate operating variables, observe real-time engineering responses,
+                and explore six core chemical engineering disciplines.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3.5 pt-1">
+              {/* Simplified Primary & Secondary Hero CTAs */}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button
                   type="button"
                   onClick={onOpenDirectory}
-                  className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl text-sm font-semibold bg-teal-700 hover:bg-teal-600 text-white transition-all shadow-sm cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold bg-teal-700 hover:bg-teal-600 text-white transition-colors shadow-2xs cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                   data-testid="hero-browse-directory"
                 >
                   Explore Laboratories
@@ -204,43 +207,31 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
 
                 <button
                   type="button"
-                  onClick={() => onOpenLab('heat-exchanger')}
-                  className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl text-sm font-semibold bg-slate-900 hover:bg-slate-800 text-white transition-colors cursor-pointer"
-                  data-testid="hero-launch-heat-exchanger"
-                >
-                  Launch Heat Exchanger Lab
-                </button>
-
-                <button
-                  type="button"
                   onClick={() => scrollToSection('how-it-works-section')}
-                  className="inline-flex items-center gap-2 px-4 py-3.5 rounded-xl text-sm font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
                   data-testid="hero-how-it-works"
                 >
                   How It Works
                 </button>
               </div>
 
-              {/* Unboxed Curriculum Summary Metadata */}
-              <div className="pt-5 border-t border-slate-200/90 grid grid-cols-3 gap-6 max-w-lg">
-                <div>
-                  <div className="text-xs font-medium text-slate-500">Live Simulators</div>
-                  <div className="text-lg font-bold font-mono text-slate-900 mt-0.5 tabular-nums">
-                    6 Core Labs
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-slate-500">Calculation Basis</div>
-                  <div className="text-lg font-bold font-mono text-slate-900 mt-0.5">
-                    First-Principles SI
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-slate-500">Pedagogy</div>
-                  <div className="text-lg font-bold font-mono text-teal-800 mt-0.5">
-                    44 Guided Checks
-                  </div>
-                </div>
+              {/* Clean, Unboxed Single-Line-Friendly Metadata Strip */}
+              <div className="pt-4 border-t border-slate-200/90 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm text-slate-600">
+                <span className="font-mono font-semibold text-slate-900 whitespace-nowrap">
+                  6 Core Labs
+                </span>
+                <span aria-hidden="true" className="text-slate-300">
+                  ·
+                </span>
+                <span className="font-mono font-semibold text-slate-900 whitespace-nowrap">
+                  First-Principles SI
+                </span>
+                <span aria-hidden="true" className="text-slate-300">
+                  ·
+                </span>
+                <span className="font-mono font-semibold text-teal-800 whitespace-nowrap">
+                  Guided Inquiry
+                </span>
               </div>
             </div>
 
@@ -276,7 +267,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                           role="tab"
                           aria-selected={isSelected}
                           onClick={() => setSelectedPreviewIndex(idx)}
-                          className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-left flex items-center gap-1.5 cursor-pointer ${
+                          className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-left flex items-center gap-1.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-teal-400 ${
                             isSelected
                               ? 'bg-teal-600 text-white font-semibold shadow-2xs'
                               : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800'
@@ -293,7 +284,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                 </div>
 
                 {/* Active Lab Preview Body */}
-                <div className="p-5 sm:p-6 space-y-5">
+                <div className="p-5 sm:p-6 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <div className="text-xs font-medium text-teal-300">
@@ -306,7 +297,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                   </div>
 
                   {/* Governing Equation Box */}
-                  <div className="rounded-xl bg-slate-950 border border-slate-800 px-4 py-3 overflow-x-auto [&_.katex]:!text-slate-100 [&_.katex-display]:!text-slate-100">
+                  <div className="rounded-xl bg-slate-950 border border-slate-800 px-4 py-2.5 overflow-x-auto [&_.katex]:!text-slate-100 [&_.katex-display]:!text-slate-100">
                     <div className="text-[10px] font-mono uppercase tracking-wider text-teal-400/90 mb-1">
                       Governing Mathematical Relation
                     </div>
@@ -321,11 +312,11 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                     {activePreview.metrics.map((metric) => (
                       <div
                         key={metric.label}
-                        className="rounded-xl bg-slate-800/60 border border-slate-700/70 p-3.5"
+                        className="rounded-xl bg-slate-800/60 border border-slate-700/70 p-3"
                       >
                         <div className="text-[11px] text-slate-400">{metric.label}</div>
                         <div
-                          className={`text-lg font-mono font-semibold mt-0.5 tabular-nums ${metric.accent}`}
+                          className={`text-base sm:text-lg font-mono font-semibold mt-0.5 tabular-nums ${metric.accent}`}
                         >
                           {metric.value}
                         </div>
@@ -345,7 +336,8 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                     <button
                       type="button"
                       onClick={() => onOpenLab(activePreview.id)}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-teal-500 hover:bg-teal-400 text-slate-950 transition-colors cursor-pointer shrink-0"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-teal-500 hover:bg-teal-400 text-slate-950 transition-colors cursor-pointer shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
+                      data-testid="hero-preview-launch"
                     >
                       Open {activePreview.shortTitle} Lab
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -358,98 +350,69 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
         </div>
       </section>
 
-      {/* 2. FEATURED VIRTUAL LABORATORIES SECTION (All 6 Core Labs) */}
+      {/* 2. COMPACT LABORATORY LAUNCHER (All 6 Core Labs) */}
       <section
         id="featured-labs-section"
-        className="scroll-mt-32 max-w-[1360px] mx-auto px-4 sm:px-6 space-y-8"
+        className="scroll-mt-32 max-w-[1360px] mx-auto px-4 sm:px-6 space-y-6"
       >
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
-          <div className="space-y-2 max-w-2xl">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-5">
+          <div className="space-y-1.5 max-w-2xl">
             <div className="text-xs font-semibold uppercase tracking-widest text-teal-700">
-              Complete Core Curriculum · 6 Interactive Simulators
+              Virtual Laboratories
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              Virtual Chemical Engineering Laboratories
+              Interactive Simulation Suite
             </h2>
             <p className="text-sm sm:text-base text-slate-600">
-              Every Entrolume laboratory pairs a deterministic numerical calculation engine
-              with interactive process schematics, parametric sensitivity charts, scenario
-              comparison tables, and guided student inquiry.
+              Six interactive laboratories spanning heat transfer, fluid flow, reactions,
+              separations, thermodynamics, and process control.
             </p>
           </div>
           <button
             type="button"
             onClick={onOpenDirectory}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-700 hover:text-teal-800 cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-700 hover:text-teal-800 cursor-pointer shrink-0 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
           >
             Open Filterable Directory
             <Compass className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Compact 6-Lab Launcher Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {LABORATORY_MODULES.map((module, idx) => (
             <article
               key={module.id}
-              className="rounded-2xl border border-slate-200/90 bg-white p-6 flex flex-col justify-between transition-all hover:border-teal-600/60 hover:shadow-md"
               data-testid={`landing-lab-card-${module.id}`}
+              className="rounded-xl border border-slate-200/90 bg-white transition-colors hover:border-teal-600/70 hover:bg-slate-50/60"
             >
-              <div className="space-y-4">
-                {/* Top Icon & Unboxed Subject Metadata */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-teal-50/80 border border-teal-200/70 flex items-center justify-center shrink-0">
+              <button
+                type="button"
+                onClick={() => onOpenLab(module.id)}
+                data-testid={`launch-lab-${module.id}`}
+                className="w-full p-4 flex items-center justify-between gap-3.5 text-left cursor-pointer rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 group"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-teal-50/80 border border-teal-200/70 flex items-center justify-center shrink-0 group-hover:bg-teal-100/70 transition-colors">
                     {getModuleIcon(module.iconName)}
                   </div>
-                  <div className="text-right text-xs font-mono text-slate-500">
-                    Lab 0{idx + 1} · {module.level} · {module.duration}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-500">
+                      <span className="font-semibold text-teal-800">0{idx + 1}</span>
+                      <span aria-hidden="true">·</span>
+                      <span className="truncate">{module.category}</span>
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-teal-800 transition-colors truncate mt-0.5">
+                      {module.shortTitle}
+                    </h3>
                   </div>
                 </div>
 
-                <div>
-                  <div className="text-xs font-semibold text-teal-700">
-                    {module.category}
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mt-0.5">
-                    {module.title}
-                  </h3>
-                  <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                    <MathText text={module.description} />
-                  </p>
-                </div>
-
-                {/* Governing Equation Preview */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 overflow-x-auto">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                    Governing Relation
-                  </div>
-                  <div className="text-slate-800 text-xs">
-                    <MathInline latex={module.governingEquationLatex} />
-                  </div>
-                </div>
-
-                {/* Unboxed Key Concepts */}
-                <div className="text-xs text-slate-500 leading-relaxed">
-                  <span className="font-semibold text-slate-700">Core Concepts: </span>
-                  {module.keyTopics.map((topic, topicIdx) => (
-                    <React.Fragment key={topic}>
-                      {topicIdx > 0 && <span className="mx-1.5 text-slate-300">·</span>}
-                      <MathText text={topic} />
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-5 mt-5 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => onOpenLab(module.id)}
-                  className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-teal-700 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                  data-testid={`launch-lab-${module.id}`}
-                >
-                  Launch Laboratory
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-teal-700 group-hover:translate-x-0.5 transition-transform shrink-0">
+                  <span className="hidden sm:inline">Launch</span>
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              </button>
             </article>
           ))}
         </div>
@@ -458,77 +421,75 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
       {/* 3. HOW ENTROLUME WORKS (4-STEP WORKFLOW) */}
       <section
         id="how-it-works-section"
-        className="scroll-mt-32 bg-slate-900 text-white py-16 lg:py-20 border-y border-slate-800"
+        className="scroll-mt-32 bg-slate-900 text-white py-12 lg:py-16 border-y border-slate-800"
       >
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 space-y-12">
-          <div className="max-w-3xl space-y-3">
-            <div className="flex items-center gap-3">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 space-y-8">
+          <div className="max-w-2xl space-y-2">
+            <div className="flex items-center gap-2.5">
               <EntrolumeLogo variant="dark" size="xs" decorative />
               <span className="text-xs font-semibold uppercase tracking-widest text-teal-400">
-                · Pedagogical Framework
+                · Four-Step Learning Workflow
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              A Structured Four-Stage Engineering Inquiry Workflow
+              How Each Virtual Laboratory Works
             </h2>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              Every virtual laboratory in Entrolume follows the same consistent four-step
-              structure so students spend zero time learning new interfaces and 100% of
-              their focus on physical intuition and mathematical relationships.
+            <p className="text-slate-300 text-sm sm:text-base">
+              Every simulation follows a consistent four-stage inquiry loop designed around
+              physical intuition.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="rounded-2xl bg-slate-800/60 border border-slate-700/80 p-6 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="rounded-xl bg-slate-800/60 border border-slate-700/80 p-5 space-y-2">
               <div className="text-xs font-mono font-bold text-teal-400">
-                STEP 01 · CONFIGURE
+                01 · CONFIGURE
               </div>
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-base font-bold text-white">
                 Set Operating Conditions
               </h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Select a curated engineering scenario preset or adjust process parameters
-                with synchronized SI sliders and direct numerical inputs.
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Load a curated engineering preset or adjust process variables using
+                synchronized SI sliders and numeric inputs.
               </p>
             </div>
 
-            <div className="rounded-2xl bg-slate-800/60 border border-slate-700/80 p-6 space-y-3">
+            <div className="rounded-xl bg-slate-800/60 border border-slate-700/80 p-5 space-y-2">
               <div className="text-xs font-mono font-bold text-teal-400">
-                STEP 02 · SIMULATE
+                02 · SIMULATE
               </div>
-              <h3 className="text-lg font-bold text-white">
-                Execute Verified Solvers
+              <h3 className="text-base font-bold text-white">
+                Observe Real-Time Outputs
               </h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Real-time first-principles solvers compute outlet states, regime
-                classifications, and conservation residuals with explicit physical bounds
-                checking.
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Deterministic solvers immediately compute outlet states, regime transitions,
+                and conservation checks.
               </p>
             </div>
 
-            <div className="rounded-2xl bg-slate-800/60 border border-slate-700/80 p-6 space-y-3">
+            <div className="rounded-xl bg-slate-800/60 border border-slate-700/80 p-5 space-y-2">
               <div className="text-xs font-mono font-bold text-teal-400">
-                STEP 03 · ANALYZE
+                03 · ANALYZE
               </div>
-              <h3 className="text-lg font-bold text-white">
-                Inspect Schematics & Curves
+              <h3 className="text-base font-bold text-white">
+                Compare Schematics & Curves
               </h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Examine annotated process flow diagrams, parametric sensitivity sweeps,
-                and side-by-side saved scenario comparison tables, or export CSV datasets.
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Inspect interactive diagrams, sensitivity plots, and side-by-side scenario
+                tables, or export CSV data.
               </p>
             </div>
 
-            <div className="rounded-2xl bg-slate-800/60 border border-slate-700/80 p-6 space-y-3">
+            <div className="rounded-xl bg-slate-800/60 border border-slate-700/80 p-5 space-y-2">
               <div className="text-xs font-mono font-bold text-teal-400">
-                STEP 04 · REFLECT
+                04 · REFLECT
               </div>
-              <h3 className="text-lg font-bold text-white">
-                Verify Conceptual Mastery
+              <h3 className="text-base font-bold text-white">
+                Test Conceptual Mastery
               </h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Test physical hypotheses through guided laboratory prompts, multiple-choice
-                conceptual checks, and textbook-grade KaTeX mathematical derivations.
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Answer guided engineering questions, verify predictions, and expand
+                textbook-grade derivations on demand.
               </p>
             </div>
           </div>
@@ -538,130 +499,113 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
       {/* 4. FOR STUDENTS & FOR EDUCATORS SECTION */}
       <section
         id="educators-section"
-        className="scroll-mt-32 max-w-[1360px] mx-auto px-4 sm:px-6 space-y-10"
+        className="scroll-mt-32 max-w-[1360px] mx-auto px-4 sm:px-6 space-y-6"
       >
-        <div className="max-w-3xl space-y-2">
+        <div className="max-w-2xl space-y-1.5">
           <div className="text-xs font-semibold uppercase tracking-widest text-teal-700">
-            Academic Utility · Built for University Curricula
+            Academic Utility
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            Designed for Undergraduate Students and Engineering Faculty
+            Built for Students and Engineering Faculty
           </h2>
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Entrolume bridges the gap between static textbook derivations and physical
-            unit-operations laboratories.
+          <p className="text-slate-600 text-sm sm:text-base">
+            Connect classroom derivations to interactive unit-operations behavior.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* For Students Card */}
-          <div className="rounded-2xl bg-white border border-slate-200 p-7 sm:p-8 space-y-6 shadow-2xs">
+          <div className="rounded-2xl bg-white border border-slate-200 p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
-                <GraduationCap className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 shrink-0">
+                <GraduationCap className="w-5 h-5" />
               </div>
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wider text-teal-700">
                   For Students
                 </div>
-                <h3 className="text-xl font-bold text-slate-900">
-                  Build Physical Intuition Beyond Plug-and-Chug Algebra
+                <h3 className="text-lg font-bold text-slate-900">
+                  Visual Intuition & Self-Study Verification
                 </h3>
               </div>
             </div>
 
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Instead of treating equations as isolated formulas to memorize, manipulate
-              operating variables directly and watch how physical driving forces, pinch
-              points, and non-linear regimes respond in real time.
-            </p>
-
-            <ul className="space-y-3 text-sm text-slate-700">
+            <ul className="space-y-2.5 text-xs sm:text-sm text-slate-700">
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
                 <span>
                   <strong className="font-semibold text-slate-900">
-                    Parameter Experimentation:
+                    Safe Limit Testing:
                   </strong>{' '}
-                  Test extreme operating limits (e.g., <MathInline latex="C_r = 1" />,
-                  minimum reflux <MathInline latex="R \to R_{\min}" />, or dead-time
-                  instability) safely and instantaneously.
+                  Explore pinch points, minimum reflux (<MathInline latex="R_{\min}" />),
+                  and controller instability interactively.
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
                 <span>
                   <strong className="font-semibold text-slate-900">
-                    Homework & Design Verification:
+                    Calculation Checks:
                   </strong>{' '}
-                  Cross-check hand calculations against verified SI unit solvers with
-                  transparent intermediate variables.
+                  Verify homework and design problems against transparent SI unit outputs.
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
                 <span>
                   <strong className="font-semibold text-slate-900">
-                    Lab Report CSV Exports:
+                    Lab Report Data:
                   </strong>{' '}
-                  Save multiple simulation runs to comparison tables and export complete
-                  CSV datasets for external plotting or lab reports.
+                  Save scenario comparisons and download CSV results for external analysis.
                 </span>
               </li>
             </ul>
           </div>
 
           {/* For Educators Card */}
-          <div className="rounded-2xl bg-white border border-slate-200 p-7 sm:p-8 space-y-6 shadow-2xs">
+          <div className="rounded-2xl bg-white border border-slate-200 p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-800">
-                <BookOpen className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-800 shrink-0">
+                <BookOpen className="w-5 h-5" />
               </div>
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                   For Educators & Departments
                 </div>
-                <h3 className="text-xl font-bold text-slate-900">
-                  Interactive Classroom Demonstrations & Pre-Lab Preparation
+                <h3 className="text-lg font-bold text-slate-900">
+                  Lecture Demonstrations & Pre-Lab Preparation
                 </h3>
               </div>
             </div>
 
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Project Entrolume during lectures to demonstrate why doubling heat exchanger
-              area does not double heat transfer, how feed thermal quality rotates the
-              McCabe–Thiele <MathInline latex="q" />-line, or why integral windup occurs.
-            </p>
-
-            <ul className="space-y-3 text-sm text-slate-700">
+            <ul className="space-y-2.5 text-xs sm:text-sm text-slate-700">
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
                 <span>
                   <strong className="font-semibold text-slate-900">
-                    Available Today — Ready-to-Use Curated Presets:
+                    Available Today — Curated Scenarios:
                   </strong>{' '}
-                  Each laboratory includes 5 to 10 pre-configured engineering scenarios
-                  and guided inquiry questions with one-click condition loading.
+                  One-click engineering presets and guided conceptual checks ready for live
+                  classroom projection.
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
                 <span>
                   <strong className="font-semibold text-slate-900">
-                    Available Today — Explicit Model Scope & Assumptions:
+                    Available Today — Documented Scope:
                   </strong>{' '}
-                  Every simulator documents its exact governing equations, numerical
-                  method, and simplifying assumptions so students learn model limitations.
+                  Explicit model assumptions and progressive derivations inside each
+                  workspace.
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
                 <span>
                   <strong className="font-semibold text-slate-900">
-                    Planned (Phase 5) — Cohort & Assignment Management:
+                    Planned (Phase 5) — Classroom Management:
                   </strong>{' '}
-                  Instructor course dashboards, custom assignment links, and automated
-                  student submission grading are scheduled on the Phase 5 roadmap.
+                  Instructor course dashboards, assignment links, and cohort submissions.
                 </span>
               </li>
             </ul>
@@ -672,171 +616,156 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
       {/* 5. FUTURE CAPABILITIES & PHASED ROADMAP */}
       <section
         id="roadmap-section"
-        className="scroll-mt-32 max-w-[1360px] mx-auto px-4 sm:px-6 space-y-12"
+        className="scroll-mt-32 max-w-[1360px] mx-auto px-4 sm:px-6 space-y-6"
       >
-        <div className="max-w-3xl space-y-2">
+        <div className="max-w-2xl space-y-1.5">
           <div className="text-xs font-semibold uppercase tracking-widest text-teal-700">
-            Simulation-First Architecture · Platform Roadmap
+            Platform Roadmap
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            Future Capabilities & Phased Development Roadmap
+            Upcoming Capabilities
           </h2>
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Entrolume follows a strict simulation-first engineering philosophy: all six
-            core chemical engineering virtual laboratories and the unified design system
-            are established and unit-tested before layering AI tutoring, machine learning
-            workspaces, and institutional SaaS management.
+          <p className="text-slate-600 text-sm sm:text-base">
+            Future capabilities layered onto Entrolume’s six core simulation engines.
           </p>
         </div>
 
-        {/* 3 Future Capability Pillars (Explicitly Labeled as Planned) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-2xl bg-slate-50 border border-slate-200/90 p-6 space-y-3">
+        {/* 3 Future Capability Cards (Phases 3, 4, 5 — Explicitly Labeled as Planned/Upcoming) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div
+            className="rounded-2xl bg-white border border-slate-200/90 p-5 space-y-2.5"
+            data-testid="roadmap-card-phase-3"
+          >
             <div className="flex items-center justify-between text-xs font-mono text-slate-500">
               <span className="inline-flex items-center gap-1.5 font-semibold text-teal-800">
                 <Sparkles className="w-4 h-4 text-teal-700" />
-                Phase 3 · Upcoming
+                Phase 3
               </span>
-              <span>Planned Capability</span>
+              <span className="text-teal-700 font-medium">Upcoming · Planned</span>
             </div>
             <h3 className="text-base font-bold text-slate-900">
-              AI Engineering Tutor
+              Phase 3 — Gemini AI Engineering Tutor
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Context-aware Socratic tutoring grounded strictly in the live numerical
-              outputs of Entrolume’s verified solvers—helping students diagnose pinch
-              points, regime transitions, and design trade-offs without hallucinated
-              math.
+              Context-aware Socratic tutoring grounded strictly in live solver outputs to
+              help students diagnose pinch points, regime transitions, and design
+              trade-offs.
             </p>
           </div>
 
-          <div className="rounded-2xl bg-slate-50 border border-slate-200/90 p-6 space-y-3">
+          <div
+            className="rounded-2xl bg-white border border-slate-200/90 p-5 space-y-2.5"
+            data-testid="roadmap-card-phase-4"
+          >
             <div className="flex items-center justify-between text-xs font-mono text-slate-500">
               <span className="inline-flex items-center gap-1.5 font-semibold text-slate-800">
                 <Cpu className="w-4 h-4 text-slate-700" />
-                Phase 4 · Planned
+                Phase 4
               </span>
-              <span>Planned Capability</span>
+              <span>Planned</span>
             </div>
             <h3 className="text-base font-bold text-slate-900">
-              Machine Learning Workspace
+              Phase 4 — Machine Learning Workspace
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Hands-on surrogate modeling and regression workspace where students compare
-              data-driven predictions against first-principles conservation laws using
-              exported laboratory datasets.
+              Interactive regression and surrogate-modeling workspace comparing empirical
+              predictions against first-principles conservation laws.
             </p>
           </div>
 
-          <div className="rounded-2xl bg-slate-50 border border-slate-200/90 p-6 space-y-3">
+          <div
+            className="rounded-2xl bg-white border border-slate-200/90 p-5 space-y-2.5"
+            data-testid="roadmap-card-phase-5"
+          >
             <div className="flex items-center justify-between text-xs font-mono text-slate-500">
               <span className="inline-flex items-center gap-1.5 font-semibold text-slate-800">
                 <Building2 className="w-4 h-4 text-slate-700" />
-                Phase 5 · Planned
+                Phase 5
               </span>
-              <span>Planned Capability</span>
+              <span>Planned</span>
             </div>
             <h3 className="text-base font-bold text-slate-900">
-              Academic SaaS & Classroom Tools
+              Phase 5 — Academic SaaS Features
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              University department accounts, student authentication, saved cloud
-              experiment portfolios, and instructor assignment dashboards for undergraduate
-              courses.
+              Department accounts, student authentication, saved cloud experiment
+              portfolios, and instructor assignment dashboards.
             </p>
           </div>
         </div>
 
-        {/* Full Chronological Engineering Milestones Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {DEVELOPMENT_ROADMAP.map((stage) => {
-            const isImplemented = stage.status === 'Implemented';
-            const isCurrent = stage.status === 'Current Phase';
-            return (
-              <div
-                key={stage.phase}
-                className={`rounded-2xl p-5 border flex flex-col justify-between ${
-                  isCurrent
-                    ? 'bg-teal-950 text-white border-teal-700 shadow-md'
-                    : isImplemented
-                    ? 'bg-white border-slate-200/90'
-                    : 'bg-slate-50/70 border-slate-200/70'
-                }`}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-2 text-xs font-mono">
+        {/* Collapsible Historical Engineering Milestones (Phases 1 through 2.5.2 + 2.5.3 In Progress) */}
+        <details
+          className="group rounded-xl border border-slate-200/90 bg-slate-50/70 overflow-hidden"
+          data-testid="roadmap-release-history"
+        >
+          <summary className="px-5 py-3.5 flex items-center justify-between gap-4 cursor-pointer list-none select-none text-xs sm:text-sm font-semibold text-slate-800 hover:bg-slate-100/80 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-teal-700">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+              <span>Engineering Release History</span>
+              <span className="text-xs font-mono font-normal text-slate-500">
+                (Phases 1 – 2.5.2 Completed · Phase 2.5.3 In Progress)
+              </span>
+            </div>
+            <span className="text-xs font-mono text-teal-700 group-open:rotate-180 transition-transform shrink-0">
+              ▼
+            </span>
+          </summary>
+
+          <div className="p-5 pt-3 border-t border-slate-200/80 bg-white grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {historicalMilestones.map((stage) => {
+              const isInProgress = stage.status === 'Current Phase';
+              return (
+                <div
+                  key={stage.phase}
+                  className={`rounded-xl p-4 border space-y-2 ${
+                    isInProgress
+                      ? 'bg-teal-950 text-white border-teal-800'
+                      : 'bg-slate-50/60 border-slate-200/80'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2 text-[11px] font-mono">
                     <span
                       className={
-                        isCurrent
+                        isInProgress
                           ? 'text-teal-300 font-bold'
-                          : isImplemented
-                          ? 'text-teal-700 font-semibold'
-                          : 'text-slate-500'
+                          : 'text-teal-700 font-semibold'
                       }
                     >
                       {stage.phase}
                     </span>
                     <span
                       className={
-                        isCurrent
-                          ? 'text-teal-200 font-semibold'
-                          : isImplemented
-                          ? 'text-emerald-700 font-medium'
-                          : 'text-slate-500'
+                        isInProgress ? 'text-teal-200 font-medium' : 'text-emerald-700'
                       }
                     >
-                      {stage.status}
+                      {isInProgress ? 'In Progress' : 'Completed'}
                     </span>
                   </div>
-
-                  <h3
-                    className={`text-base font-bold ${
-                      isCurrent ? 'text-white' : 'text-slate-900'
+                  <h4
+                    className={`text-sm font-bold ${
+                      isInProgress ? 'text-white' : 'text-slate-900'
                     }`}
                   >
                     {stage.title}
-                  </h3>
-
+                  </h4>
                   <p
                     className={`text-xs leading-relaxed ${
-                      isCurrent ? 'text-slate-200' : 'text-slate-600'
+                      isInProgress ? 'text-slate-200' : 'text-slate-600'
                     }`}
                   >
                     {stage.summary}
                   </p>
                 </div>
-
-                <ul className="space-y-1.5 pt-4 mt-4 border-t border-slate-200/20">
-                  {stage.items.map((item) => (
-                    <li
-                      key={item}
-                      className={`text-xs flex items-start gap-2 ${
-                        isCurrent ? 'text-slate-200' : 'text-slate-600'
-                      }`}
-                    >
-                      <CheckCircle2
-                        className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${
-                          isCurrent
-                            ? 'text-teal-400'
-                            : isImplemented
-                            ? 'text-teal-700'
-                            : 'text-slate-400'
-                        }`}
-                      />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </details>
       </section>
 
       {/* 6. FOOTER */}
-      <footer className="max-w-[1360px] mx-auto px-4 sm:px-6 pt-12 border-t border-slate-200">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10">
-          <div className="md:col-span-5 space-y-3">
+      <footer className="max-w-[1360px] mx-auto px-4 sm:px-6 pt-10 border-t border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-8">
+          <div className="md:col-span-5 space-y-2.5">
             <EntrolumeLogo
               variant="primary"
               size="md"
@@ -846,8 +775,8 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
               Explore. Simulate. Understand.
             </p>
             <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
-              Interactive chemical engineering learning platform and virtual laboratory
-              suite powered by deterministic first-principles SI calculation engines.
+              Interactive chemical engineering learning and simulation platform for
+              undergraduate students and faculty.
             </p>
           </div>
 
@@ -863,7 +792,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                   onClick={() => onOpenLab(lab.id)}
                   className="text-left hover:text-teal-700 transition-colors py-0.5 cursor-pointer"
                 >
-                  0{idx + 1}. {lab.title.replace(' Virtual Laboratory', '')}
+                  0{idx + 1}. {lab.shortTitle}
                 </button>
               ))}
             </div>
@@ -900,19 +829,19 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                 onClick={() => scrollToSection('roadmap-section')}
                 className="text-left hover:text-teal-700 transition-colors cursor-pointer"
               >
-                Development Roadmap
+                Platform Roadmap
               </button>
             </div>
           </div>
         </div>
 
-        <div className="pt-6 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <div className="pt-5 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
           <div>
-            © {new Date().getFullYear()} Entrolume · Chemical Engineering Virtual
-            Laboratories (Phase 2.5.2 Release)
+            © {new Date().getFullYear()} Entrolume · Interactive Chemical Engineering
+            Virtual Laboratories
           </div>
           <div className="font-mono text-[11px] text-slate-500">
-            6 Verified Simulators · 85 Automated Tests · SI Standard
+            Explore. Simulate. Understand. · SI Units Standard
           </div>
         </div>
       </footer>
