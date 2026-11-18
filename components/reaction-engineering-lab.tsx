@@ -335,9 +335,9 @@ export function ReactionEngineeringLab() {
   const handleDownloadCsv = () => {
     if (!results.isValid) return;
     const active = results.activeReactor;
-    downloadSimulationCsv('chemeng-reaction-engineering-run', [
+    downloadSimulationCsv('entrolume-reaction-engineering-run', [
       {
-        title: 'Chemical Reaction Engineering — Operating Inputs (SI)',
+        title: 'Entrolume — Chemical Reaction Engineering Operating Inputs (SI)',
         headers: ['Parameter', 'Symbol', 'Value', 'Unit'],
         rows: [
           ['Selected Reactor Type', 'Reactor', inputs.reactorType.toUpperCase(), 'ideal'],

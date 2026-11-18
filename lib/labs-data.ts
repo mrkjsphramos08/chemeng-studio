@@ -2362,9 +2362,9 @@ export const DEVELOPMENT_ROADMAP: RoadmapPhaseItem[] = [
   {
     phase: 'Phase 2.4',
     title: 'Process Dynamics & Control',
-    status: 'Current Phase',
+    status: 'Implemented',
     summary:
-      'Active milestone: completed the sixth core virtual laboratory covering SISO FOPDT process dynamics, P/PI/PID feedback control, disturbance rejection, saturation, and anti-windup.',
+      'Completed the sixth core virtual laboratory covering SISO FOPDT process dynamics, P/PI/PID feedback control, disturbance rejection, saturation, and anti-windup.',
     items: [
       'Exact ZOH FOPDT numerical simulator with fractional dead-time interpolation and analytical benchmark',
       'Open-Loop, P, PI, and filtered derivative-on-measurement PID controllers with clamping anti-windup',
@@ -2373,22 +2373,22 @@ export const DEVELOPMENT_ROADMAP: RoadmapPhaseItem[] = [
   },
   {
     phase: 'Phase 2.5',
-    title: 'Platform-wide UI/UX Overhaul',
-    status: 'Upcoming',
+    title: 'Entrolume Rebranding & UI/UX Overhaul',
+    status: 'Current Phase',
     summary:
-      'Next milestone: comprehensive visual design, navigation ergonomics, and interactive learning refinement across all six core laboratories prior to AI integration.',
+      'Active milestone: rebranded the platform as Entrolume with a unified design system, 3-zone navigation architecture, subject-categorized directory, and standardized Configure → Simulate → Analyze → Reflect workflows across all six laboratories.',
     items: [
-      'Unified multi-laboratory navigation and streamlined workspace density',
-      'Enhanced interactive process diagrams and visual hierarchy polish',
-      'Accessibility, mobile responsiveness, and cross-lab consistency audit',
+      'Entrolume vector brand identity, tagline ("Explore. Simulate. Understand."), and semantic design tokens',
+      'Streamlined 3-zone top navigation bar paired with a 1-click 6-laboratory switcher strip',
+      'Standardized student orientation guides, collapsible parameter decks, and WCAG AA accessibility across all 6 labs',
     ],
   },
   {
     phase: 'Phase 3',
     title: 'Gemini AI Engineering Tutor',
-    status: 'Planned',
+    status: 'Upcoming',
     summary:
-      'After completing all six core virtual laboratories and Phase 2.5 UI refinement, introduce an AI tutor grounded in verified calculations.',
+      'Next milestone: introduce an AI engineering tutor grounded strictly in verified Entrolume simulation calculations.',
     items: [
       'Context-aware engineering explanations tied to live simulation state',
       'Guided reasoning and concept reinforcement without fabricating numbers',

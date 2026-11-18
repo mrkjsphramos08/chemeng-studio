@@ -215,10 +215,10 @@ export function ThermodynamicsLab() {
   const handleExportCsv = () => {
     if (activeModule === 'real-gas-pvt') {
       downloadSimulationCsv(
-        `chemeng-studio-thermo-pvt-${pvtResults.fluid.id.toLowerCase()}`,
+        `entrolume-thermo-pvt-${pvtResults.fluid.id.toLowerCase()}`,
         [
           {
-            title: 'Pure-Fluid PVT & Peng-Robinson EOS Operating State',
+            title: 'Entrolume — Pure-Fluid PVT & Peng-Robinson EOS Operating State',
             headers: ['Parameter', 'Value', 'Units'],
             rows: [
               ['Fluid Name & Formula', `${pvtResults.fluid.name} (${pvtResults.fluid.id})`, '-'],
@@ -248,9 +248,9 @@ export function ThermodynamicsLab() {
         ]
       );
     } else {
-      downloadSimulationCsv('chemeng-studio-thermo-binary-vle', [
+      downloadSimulationCsv('entrolume-thermo-binary-vle', [
         {
-          title: 'Ideal Binary VLE (Raoult & Dalton) Operating State',
+          title: 'Entrolume — Ideal Binary VLE (Raoult & Dalton) Operating State',
           headers: ['Parameter', 'Value', 'Units'],
           rows: [
             ['Liquid Mole Fraction x_A', vleResults.xA.toFixed(4), 'mol/mol'],

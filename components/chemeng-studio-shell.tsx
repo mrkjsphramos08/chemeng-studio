@@ -2,13 +2,7 @@
 
 import React, { useState } from 'react';
 import { Navbar, ActiveView } from '@/components/navbar';
-import {
-  HeroSection,
-  InteractiveLearningSection,
-  PlatformRoadmapSection,
-  StudentsAndEducatorsSection,
-  Footer,
-} from '@/components/landing-sections';
+import { LandingSections } from '@/components/landing-sections';
 import { LabsDirectory, AvailableLabId } from '@/components/labs-directory';
 import { HeatExchangerLab } from '@/components/heat-exchanger-lab';
 import { FluidMechanicsLab } from '@/components/fluid-mechanics-lab';
@@ -40,8 +34,9 @@ export function ChemEngStudioShell({ initialView }: ChemEngStudioShellProps) {
     }
   };
 
-  const handleOpenLab = (labId: AvailableLabId) => {
-    handleSelectView(labId);
+  const handleOpenLab = (labId?: string) => {
+    const validLabId = (labId ?? 'heat-exchanger') as AvailableLabId;
+    handleSelectView(validLabId);
   };
 
   return (
@@ -50,22 +45,10 @@ export function ChemEngStudioShell({ initialView }: ChemEngStudioShellProps) {
 
       <main className="flex-1 min-w-0">
         {activeView === 'overview' && (
-          <>
-            <HeroSection
-              onOpenLab={handleOpenLab}
-              onExploreDirectory={() =>
-                handleSelectView('overview', 'laboratories-directory')
-              }
-            />
-            <InteractiveLearningSection />
-            <div className="border-b border-slate-200">
-              <LabsDirectory onOpenLab={handleOpenLab} />
-            </div>
-            <PlatformRoadmapSection
-              onExploreDirectory={() => handleSelectView('directory')}
-            />
-            <StudentsAndEducatorsSection onOpenLab={handleOpenLab} />
-          </>
+          <LandingSections
+            onOpenLab={handleOpenLab}
+            onOpenDirectory={() => handleSelectView('directory')}
+          />
         )}
 
         {activeView === 'directory' && (
@@ -84,8 +67,6 @@ export function ChemEngStudioShell({ initialView }: ChemEngStudioShellProps) {
 
         {activeView === 'process-control' && <ProcessControlLab />}
       </main>
-
-      <Footer onSelectView={handleSelectView} />
     </div>
   );
 }

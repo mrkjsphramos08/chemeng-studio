@@ -334,9 +334,9 @@ export function FluidMechanicsLab() {
 
   const handleDownloadCsv = () => {
     if (!results.isValid) return;
-    downloadSimulationCsv('chemeng-fluid-mechanics-run', [
+    downloadSimulationCsv('entrolume-fluid-mechanics-run', [
       {
-        title: 'Fluid Flow & Pipe Hydraulics — Operating Inputs (SI)',
+        title: 'Entrolume — Fluid Flow & Pipe Hydraulics Operating Inputs (SI)',
         headers: ['Parameter', 'Symbol', 'Value', 'Unit'],
         rows: [
           ['Volumetric Flow Rate', 'Q', inputs.flowRate_L_s, 'L/s'],

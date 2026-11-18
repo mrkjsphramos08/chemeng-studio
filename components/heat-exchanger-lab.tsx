@@ -258,9 +258,9 @@ export function HeatExchangerLab() {
 
   const handleDownloadCsv = () => {
     if (!results.isValid) return;
-    downloadSimulationCsv('chemeng-heat-exchanger-run', [
+    downloadSimulationCsv('entrolume-heat-exchanger-run', [
       {
-        title: 'Countercurrent Heat Exchanger — Operating Inputs (SI)',
+        title: 'Entrolume — Countercurrent Heat Exchanger Operating Inputs (SI)',
         headers: ['Parameter', 'Symbol', 'Value', 'Unit'],
         rows: [
           ['Hot Inlet Temperature', 'Th,in', inputs.Th_in, 'degC'],

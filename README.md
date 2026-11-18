@@ -1,19 +1,24 @@
-# ChemEng Studio
+# Entrolume — Explore. Simulate. Understand.
 
-ChemEng Studio helps chemical engineering students understand engineering principles through interactive virtual laboratories and scientifically grounded simulations.
+Entrolume (formerly ChemEng Studio) is an interactive chemical engineering learning platform and virtual laboratory suite that helps undergraduate students, instructors, and academic programs understand complex engineering principles through scientifically grounded simulations.
 
-Designed for undergraduate chemical engineering students, professors, and university departments, the platform follows a **simulation-first architecture**: verifying conservation laws, numerical stability, and pedagogical workflows before layering AI tutoring and machine learning tools on top.
+Designed for university chemical engineering curricula, Entrolume follows a **simulation-first architecture**: verifying conservation laws, numerical stability, unified design systems, and pedagogical workflows across six core virtual laboratories before layering AI tutoring, machine learning workspaces, and institutional SaaS management on top.
 
 ---
 
-## Implemented Capabilities (Phases 1, 1.1, 1.2, 2.1, 2.2, 2.2.1, 2.3 & 2.4)
+## Implemented Capabilities (Phases 1 through 2.5)
 
-- **Platform Landing & Directory (`/` & `/?view=directory`)**: Overview of ChemEng Studio's learning workflow, target academic audiences, and the complete 6-module core chemical engineering directory (all 6 laboratories live).
+- **Entrolume Brand Identity & Design System (`components/entrolume-logo.tsx`, `app/globals.css`, `app/icon.svg`)**:
+  - Custom scalable vector SVG logo and wordmark representing unit-operation geometry, thermodynamic/transport state trajectories, and conceptual illumination ("lume").
+  - Semantic design tokens (`--entrolume-navy`, `--entrolume-teal`, `--entrolume-bg`), WCAG 2.2 AA contrast, visible keyboard focus rings, and tabular numeral typography.
+- **Streamlined 3-Zone Navigation & Subject-Categorized Directory (`components/navbar.tsx`, `components/landing-sections.tsx`, `components/labs-directory.tsx`)**:
+  - 3-zone top bar paired with a 1-click 6-laboratory quick-switcher strip and mobile navigation drawer.
+  - Interactive 6-laboratory scientific preview card in the Landing Hero, 4-step pedagogical workflow (*Configure, Simulate, Analyze, Reflect*), dedicated *For Students* and *For Educators* sections, and discipline-filtered Virtual Laboratories Directory.
 - **Centralized KaTeX Mathematical Typography & Accessibility (`lib/katex-render.ts` & `components/lab-shared/math/*`)**:
   - Textbook-quality mathematical equation rendering across all laboratories, directory cards, and guided derivations using KaTeX `output: 'htmlAndMathml'` (`trust: false`, `throwOnError: false`), providing both semantic `<math>` MathML for assistive technologies and `.katex-html` (`aria-hidden="true"`) for visual typography.
-- **Shared Virtual Laboratory Framework (`components/lab-shared/*` & `lib/lab-download.ts`)**:
-  - Reusable workspace header (`LabWorkspaceHeader`) with scenario presets, snapshot button, **Export CSV** download, learning objectives, and 4-step workflow strip.
-  - Typed parameter slider/number control deck (`LabParameterPanel<T>`), validation/advisory alert banners (`LabValidationAlerts`), metric/chart cards (`LabMetricCard`, `LabChartCard`), and educational cards (`LabAssumptionsCard`, `LabTheoryDisclosureCard`, `LabGuidedInquiryCard`).
+- **Standardized Virtual Laboratory Framework (`components/lab-shared/*` & `lib/lab-download.ts`)**:
+  - Reusable workspace header (`LabWorkspaceHeader`) with Entrolume branding, explicit **User Inputs vs. Calculated Simulation Outputs vs. Model Assumptions** orientation legend, collapsible learning objectives, scenario presets, snapshot button, and **Export CSV** download.
+  - Collapsible parameter control groups (`LabParameterPanel<T>`), validation/advisory alert banners (`LabValidationAlerts`), standardized KPI and chart cards (`LabMetricCard`, `LabChartCard`), and educational cards (`LabAssumptionsCard`, `LabTheoryDisclosureCard`, `LabGuidedInquiryCard`).
 - **Countercurrent Heat Exchanger Virtual Laboratory (`/?view=heat-exchanger` or `/?view=lab`)**:
   - **Independent SI Calculation Engine (`lib/heat-exchanger.ts`)**: Pure TypeScript $\varepsilon\text{–NTU}$ solver decoupled from React UI components.
   - **4-Step Student Workflow**: Presets, live schematic, axial profiles, sensitivity curves, multi-scenario comparisons, CSV export, 3 guided inquiry questions with self-checks, and progressive derivation disclosure.

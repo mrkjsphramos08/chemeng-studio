@@ -1,20 +1,17 @@
 'use client';
 
-import React from 'react';
-import { RotateCcw, Sliders } from 'lucide-react';
-import { MathInline, MathText } from '@/components/lab-shared/math';
-
-export interface LabControlGroup {
-  id: string;
-  title: string;
-}
+import React, { useState } from 'react';
+import { RotateCcw, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
+import { MathInline, MathText } from './math';
 
 export interface LabSliderControlConfig<K extends string = string> {
   key: K;
   label: string;
   symbol: string;
+  /** Optional LaTeX string for the parameter symbol (e.g. "T_{h,\\mathrm{in}}") */
   symbolLatex?: string;
   unit: string;
+  /** Optional LaTeX string for the engineering unit (e.g. "\\mathrm{kJ/(kg\\cdot K)}") */
   unitLatex?: string;
   min: number;
   max: number;
@@ -23,161 +20,191 @@ export interface LabSliderControlConfig<K extends string = string> {
   inputMax?: number;
   inputStep?: number | 'any';
   group: string;
+  helpText?: string;
   helperText?: string;
 }
 
-interface LabParameterPanelProps<T extends object> {
+export interface LabControlGroup {
+  id: string;
+  title: string;
+}
+
+export interface LabParameterPanelProps<T extends object> {
   title?: string;
-  subtitle: string;
+  subtitle?: string;
   groups: LabControlGroup[];
   controls: LabSliderControlConfig<Extract<keyof T, string>>[];
   values: T;
   onChange: (key: Extract<keyof T, string>, rawValue: string) => void;
   onReset: () => void;
   topSlot?: React.ReactNode;
+  headerSlot?: React.ReactNode;
   footerContent?: React.ReactNode;
 }
 
 export function LabParameterPanel<T extends object>({
-  title = 'Step 1 · Configure Parameters',
-  subtitle,
+  title = 'Operating Parameters',
+  subtitle = 'User-configurable SI inputs (real-time recalculation)',
   groups,
   controls,
   values,
   onChange,
   onReset,
   topSlot,
+  headerSlot,
   footerContent,
 }: LabParameterPanelProps<T>) {
+  const [collapsedGroupIds, setCollapsedGroupIds] = useState<Record<string, boolean>>(
+    {}
+  );
+
+  const toggleGroup = (groupId: string) => {
+    setCollapsedGroupIds((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
+  };
+
   return (
-    <div
-      className="lg:col-span-4 min-w-0 bg-white border border-slate-200 rounded-xl p-5 space-y-5"
-      data-testid="parameter-controls-panel"
-    >
-      <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+    <div className="lg:col-span-4 min-w-0 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-5 lg:sticky lg:top-28">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 gap-2">
         <div>
-          <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-teal-800 shrink-0" />
-            <h2 className="text-base font-bold text-slate-900">
-              <MathText text={title} />
-            </h2>
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-teal-700">
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span>01. Configure · User Inputs</span>
           </div>
-          <p className="text-xs text-slate-600 mt-0.5">
+          <h2 className="text-base font-bold text-slate-900 mt-0.5">{title}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">
             <MathText text={subtitle} />
           </p>
         </div>
-
         <button
           type="button"
           onClick={onReset}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+          className="text-xs font-semibold text-teal-700 hover:text-teal-800 inline-flex items-center gap-1 cursor-pointer shrink-0"
+          data-testid="panel-reset-button"
         >
-          <RotateCcw className="w-3 h-3" />
+          <RotateCcw className="w-3.5 h-3.5" />
           Reset
         </button>
       </div>
 
-      {topSlot && <div className="pb-2 border-b border-slate-100">{topSlot}</div>}
+      {(topSlot || headerSlot) && <div className="pb-1">{topSlot ?? headerSlot}</div>}
 
-      <div className="space-y-6">
-        {groups.map((group, gIdx) => {
+      <div className="space-y-4">
+        {groups.map((group) => {
           const groupControls = controls.filter((c) => c.group === group.id);
           if (groupControls.length === 0) return null;
+          const isCollapsed = Boolean(collapsedGroupIds[group.id]);
 
           return (
             <div
               key={group.id}
-              className={`space-y-4 ${gIdx > 0 ? 'pt-4 border-t border-slate-100' : ''}`}
+              className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 space-y-3"
             >
-              <div className="text-xs font-bold uppercase tracking-wider text-teal-900">
-                <MathText text={group.title} />
-              </div>
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.id)}
+                className="w-full flex items-center justify-between text-left gap-2 cursor-pointer"
+                aria-expanded={!isCollapsed}
+              >
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  {group.title}
+                </span>
+                <span className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-400">
+                  <span>{groupControls.length} params</span>
+                  {isCollapsed ? (
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                  ) : (
+                    <ChevronUp className="w-3.5 h-3.5 text-slate-500" />
+                  )}
+                </span>
+              </button>
 
-              <div className="space-y-4">
-                {groupControls.map((ctrl) => {
-                  const rawVal = values[ctrl.key as keyof T];
-                  const numValue = typeof rawVal === 'number' ? rawVal : Number(rawVal ?? 0);
-                  const sliderVal = Number.isFinite(numValue)
-                    ? Math.min(ctrl.max, Math.max(ctrl.min, numValue))
-                    : ctrl.min;
+              {!isCollapsed && (
+                <div className="space-y-3.5 pt-1">
+                  {groupControls.map((ctrl) => {
+                    const currentVal = Number(
+                      (values as Record<string, unknown>)[ctrl.key] ?? 0
+                    );
+                    const effectiveHelp = ctrl.helpText ?? ctrl.helperText;
+                    return (
+                      <div
+                        key={ctrl.key}
+                        className="bg-white rounded-lg border border-slate-200/70 p-2.5 space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <label
+                            htmlFor={`input-${ctrl.key}`}
+                            className="text-xs font-semibold text-slate-800 leading-snug"
+                          >
+                            <MathText text={ctrl.label} />{' '}
+                            <span className="text-slate-500 font-normal">
+                              (
+                              {ctrl.symbolLatex ? (
+                                <MathInline latex={ctrl.symbolLatex} />
+                              ) : (
+                                <span className="font-mono">{ctrl.symbol}</span>
+                              )}
+                              )
+                            </span>
+                          </label>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <input
+                              id={`input-${ctrl.key}`}
+                              type="number"
+                              min={ctrl.inputMin}
+                              max={ctrl.inputMax}
+                              step={ctrl.inputStep ?? ctrl.step}
+                              value={currentVal}
+                              onChange={(e) => onChange(ctrl.key, e.target.value)}
+                              className="w-20 px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
+                              data-testid={`number-${ctrl.key}`}
+                            />
+                            <span className="text-[11px] text-slate-500 w-16 truncate">
+                              {ctrl.unitLatex ? (
+                                <MathInline latex={ctrl.unitLatex} />
+                              ) : (
+                                <span className="font-mono">{ctrl.unit}</span>
+                              )}
+                            </span>
+                          </div>
+                        </div>
 
-                  return (
-                    <div key={ctrl.key} className="space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <label
-                          htmlFor={`input-${ctrl.key}`}
-                          className="text-xs font-medium text-slate-800 flex items-baseline gap-1.5"
-                        >
-                          <span>
-                            <MathText text={ctrl.label} />
-                          </span>
-                          <span className="text-slate-600 font-medium">
-                            (
-                            {ctrl.symbolLatex ? (
-                              <MathInline latex={ctrl.symbolLatex} />
-                            ) : (
-                              <span className="font-mono">{ctrl.symbol}</span>
-                            )}
-                            )
-                          </span>
-                        </label>
+                        <input
+                          type="range"
+                          aria-label={`${ctrl.label} (${ctrl.symbol}) slider`}
+                          min={ctrl.min}
+                          max={ctrl.max}
+                          step={ctrl.step}
+                          value={Math.min(Math.max(currentVal, ctrl.min), ctrl.max)}
+                          onChange={(e) => onChange(ctrl.key, e.target.value)}
+                          className="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer accent-teal-700"
+                          data-testid={`slider-${ctrl.key}`}
+                        />
 
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <input
-                            id={`input-${ctrl.key}`}
-                            type="number"
-                            min={ctrl.inputMin ?? ctrl.min}
-                            max={ctrl.inputMax ?? ctrl.max}
-                            step={ctrl.inputStep ?? ctrl.step}
-                            value={Number.isNaN(numValue) ? '' : numValue}
-                            onChange={(e) => onChange(ctrl.key, e.target.value)}
-                            className="w-24 px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus-visible:outline-2 focus-visible:outline-teal-700 tabular-nums"
-                          />
-                          <span className="text-[11px] font-mono text-slate-600 w-16 truncate">
-                            {ctrl.unitLatex ? (
-                              <MathInline latex={ctrl.unitLatex} />
-                            ) : (
-                              ctrl.unit
-                            )}
-                          </span>
+                        <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tabular-nums">
+                          <span>Min: {ctrl.min}</span>
+                          {effectiveHelp && (
+                            <span className="font-sans text-slate-500 truncate max-w-[160px]">
+                              <MathText text={effectiveHelp} />
+                            </span>
+                          )}
+                          <span>Max: {ctrl.max}</span>
                         </div>
                       </div>
-
-                      <input
-                        type="range"
-                        aria-label={`${ctrl.label} (${ctrl.symbol}) slider`}
-                        min={ctrl.min}
-                        max={ctrl.max}
-                        step={ctrl.step}
-                        value={sliderVal}
-                        onChange={(e) => onChange(ctrl.key, e.target.value)}
-                        className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-700"
-                      />
-
-                      <div className="flex justify-between items-center text-[10px] font-mono text-slate-500">
-                        <span>
-                          {ctrl.min} {ctrl.unit}
-                        </span>
-                        <span>
-                          {ctrl.max} {ctrl.unit}
-                        </span>
-                      </div>
-
-                      {ctrl.helperText && (
-                        <p className="text-[11px] text-slate-600 leading-snug pt-0.5">
-                          <MathText text={ctrl.helperText} />
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {footerContent && <div className="pt-3 border-t border-slate-100">{footerContent}</div>}
+      {footerContent && (
+        <div className="pt-3 border-t border-slate-100 text-xs">{footerContent}</div>
+      )}
     </div>
   );
 }

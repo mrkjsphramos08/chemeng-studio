@@ -120,10 +120,10 @@ export function ProcessControlLab() {
   const handleExportCsv = () => {
     if (!results.isValid) return;
     const { metrics } = results;
-    downloadSimulationCsv('chemeng-studio-process-control-fopdt-pid', [
+    downloadSimulationCsv('entrolume-process-control-fopdt-pid', [
       {
         title:
-          'Simulated Process Dynamics & Control — Model Configuration & Assumptions (Educational Simulation Only)',
+          'Entrolume — Simulated Process Dynamics & Control Model Configuration & Assumptions (Educational Simulation Only)',
         headers: ['Parameter', 'Value', 'Units / Notes'],
         rows: [
           ['Simulation Data Type', 'Numerically Simulated SISO FOPDT Trajectory', 'Not physical plant telemetry'],

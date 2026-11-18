@@ -320,9 +320,9 @@ export function DistillationLab() {
     const { materialBalance, internalFlows, operatingLines, minimumReflux, stageCalculation } =
       results;
 
-    downloadSimulationCsv('chemeng-binary-distillation-mccabe-thiele', [
+    downloadSimulationCsv('entrolume-binary-distillation-mccabe-thiele', [
       {
-        title: 'ChemEng Studio — Binary Distillation Simulation Report (Generated Simulation Data, Not Experimental Measurements)',
+        title: 'Entrolume — Binary Distillation Simulation Report (Generated Simulation Data, Not Experimental Measurements)',
         headers: ['Assumption / Convention', 'Specification'],
         rows: [
           ['Thermodynamic Model', 'Hypothetical binary mixture (A more volatile than B), Constant Relative Volatility alpha'],

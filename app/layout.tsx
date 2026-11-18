@@ -16,20 +16,20 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ChemEng Studio — Interactive Chemical Engineering Virtual Laboratories',
+  title: 'Entrolume — Explore. Simulate. Understand. | Chemical Engineering Virtual Laboratories',
   description:
-    'Interactive chemical engineering learning platform and virtual laboratory workspace featuring a countercurrent heat exchanger simulator using the effectiveness-NTU method.',
+    'Entrolume is an interactive chemical engineering learning platform featuring virtual laboratories for heat transfer, fluid mechanics, reaction engineering, distillation, thermodynamics, and process control.',
   openGraph: {
-    title: 'ChemEng Studio — Interactive Chemical Engineering Virtual Laboratories',
+    title: 'Entrolume — Explore. Simulate. Understand.',
     description:
-      'Interactive chemical engineering learning platform and virtual laboratory workspace featuring a countercurrent heat exchanger simulator using the effectiveness-NTU method.',
+      'Learn complex chemical engineering principles through interactive virtual laboratories, real-time scientific calculations, and guided experiments.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChemEng Studio — Interactive Chemical Engineering Virtual Laboratories',
+    title: 'Entrolume — Explore. Simulate. Understand.',
     description:
-      'Interactive chemical engineering learning platform and virtual laboratory workspace featuring a countercurrent heat exchanger simulator using the effectiveness-NTU method.',
+      'Interactive chemical engineering virtual laboratories with real-time scientific solvers and guided student inquiry.',
   },
 };
 
