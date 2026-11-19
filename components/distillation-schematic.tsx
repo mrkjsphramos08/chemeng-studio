@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { DistillationInputs, DistillationResults } from '@/lib/distillation';
 import { formatDistillationMobileLabels } from '@/lib/schematic-formatting';
+import { LabModelScopeDisclosure, MathInline } from '@/components/lab-shared';
 
 interface DistillationSchematicProps {
   inputs: DistillationInputs;
@@ -67,13 +68,18 @@ export function DistillationSchematic({ inputs, results }: DistillationSchematic
         </div>
       </div>
 
-      {/* Scope Banner */}
-      <div className="bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-xs text-slate-700 leading-relaxed">
+      {/* Scope Banner (Progressive Disclosure) */}
+      <LabModelScopeDisclosure
+        badge="Ideal Binary CMO Model"
+        summary={`Constant molar overflow & constant relative volatility ($\\alpha = ${alpha.toFixed(2)}$).`}
+        id="dist-model-scope"
+      >
         <strong className="text-slate-900">Column Model Scope:</strong> Hypothetical binary mixture
-        (Light Component A, Heavy Component B) under Constant Molar Overflow (CMO) and constant
-        relative volatility α = {alpha.toFixed(2)}. Stage temperatures, column pressures, and tray
-        hydraulics are not modeled in this McCabe–Thiele solver.
-      </div>
+        (Light Component <MathInline latex="A" />, Heavy Component <MathInline latex="B" />) under
+        Constant Molar Overflow (CMO) and constant relative volatility{' '}
+        <MathInline latex={`\\alpha = ${alpha.toFixed(2)}`} />. Stage temperatures, column
+        pressures, and tray hydraulics are not modeled in this McCabe–Thiele solver.
+      </LabModelScopeDisclosure>
 
       {/* Mobile Compact Vertical Column Schematic (< 640px) — Zero Horizontal Scrolling */}
       <div
@@ -345,7 +351,8 @@ export function DistillationSchematic({ inputs, results }: DistillationSchematic
           type="button"
           onClick={() => setShowDesktopOnMobile((prev) => !prev)}
           aria-expanded={showDesktopOnMobile}
-          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+          aria-controls="distillation-desktop-schematic"
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
         >
           <span>
             {showDesktopOnMobile
@@ -353,15 +360,16 @@ export function DistillationSchematic({ inputs, results }: DistillationSchematic
               : 'Inspect Detailed Desktop Blueprint (Scrollable)'}
           </span>
           {showDesktopOnMobile ? (
-            <ChevronUp className="w-3.5 h-3.5 text-teal-700" />
+            <ChevronUp className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
           ) : (
-            <ChevronDown className="w-3.5 h-3.5 text-teal-700" />
+            <ChevronDown className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
           )}
         </button>
       </div>
 
       {/* Tablet & Desktop Full SVG Process Flow Diagram (>= 640px, or expanded on mobile) */}
       <div
+        id="distillation-desktop-schematic"
         className={
           showDesktopOnMobile
             ? 'mt-3 sm:mt-0 w-full overflow-x-auto'

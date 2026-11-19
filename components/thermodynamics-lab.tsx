@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   GAS_CONSTANT_R,
   ReferenceFluidId,
@@ -21,6 +21,7 @@ import {
   THERMO_VLE_GUIDED_QUESTIONS,
 } from '@/lib/labs-data';
 import { downloadSimulationCsv } from '@/lib/lab-download';
+import { getNextTabIndex } from '@/lib/numeric-input';
 import {
   LabAdditionalMetricsDisclosure,
   LabAssumptionsCard,
@@ -30,6 +31,7 @@ import {
   LabValidationAlerts,
   LabWorkspaceHeader,
   MathInline,
+  NumericDraftInput,
 } from '@/components/lab-shared';
 import {
   PureFluidPVTSchematic,
@@ -109,6 +111,7 @@ const VLE_MODEL_ASSUMPTIONS = [
 
 export function ThermodynamicsLab() {
   const [activeModule, setActiveModule] = useState<ThermoActiveModule>('real-gas-pvt');
+  const moduleTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Module A State (Real-Gas PVT)
   const [pvtInputs, setPvtInputs] = useState<PureFluidPVTInputs>(DEFAULT_PVT_INPUTS);
@@ -305,33 +308,57 @@ export function ThermodynamicsLab() {
                 aria-label="Thermodynamics Laboratory Modules"
               >
                 <button
+                  ref={(el) => {
+                    moduleTabRefs.current[0] = el;
+                  }}
                   type="button"
                   role="tab"
                   id="tab-real-gas-pvt"
                   aria-selected={activeModule === 'real-gas-pvt'}
+                  aria-controls="panel-real-gas-pvt"
+                  tabIndex={activeModule === 'real-gas-pvt' ? 0 : -1}
                   onClick={() => setActiveModule('real-gas-pvt')}
-                  className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                  onKeyDown={(e) => {
+                    const nextIdx = getNextTabIndex(0, 2, e.key);
+                    if (nextIdx === null) return;
+                    e.preventDefault();
+                    setActiveModule(nextIdx === 0 ? 'real-gas-pvt' : 'binary-vle');
+                    moduleTabRefs.current[nextIdx]?.focus();
+                  }}
+                  className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-teal-700 ${
                     activeModule === 'real-gas-pvt'
                       ? 'bg-white text-teal-800 shadow-2xs ring-1 ring-slate-200/80'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Gauge className="h-3.5 w-3.5 text-teal-700 shrink-0" />
+                  <Gauge className="h-3.5 w-3.5 text-teal-700 shrink-0" aria-hidden="true" />
                   <span>Module A · Real-Gas PVT (PR EOS)</span>
                 </button>
                 <button
+                  ref={(el) => {
+                    moduleTabRefs.current[1] = el;
+                  }}
                   type="button"
                   role="tab"
                   id="tab-binary-vle"
                   aria-selected={activeModule === 'binary-vle'}
+                  aria-controls="panel-binary-vle"
+                  tabIndex={activeModule === 'binary-vle' ? 0 : -1}
                   onClick={() => setActiveModule('binary-vle')}
-                  className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                  onKeyDown={(e) => {
+                    const nextIdx = getNextTabIndex(1, 2, e.key);
+                    if (nextIdx === null) return;
+                    e.preventDefault();
+                    setActiveModule(nextIdx === 0 ? 'real-gas-pvt' : 'binary-vle');
+                    moduleTabRefs.current[nextIdx]?.focus();
+                  }}
+                  className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-teal-700 ${
                     activeModule === 'binary-vle'
                       ? 'bg-white text-teal-800 shadow-2xs ring-1 ring-slate-200/80'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Layers className="h-3.5 w-3.5 text-teal-700 shrink-0" />
+                  <Layers className="h-3.5 w-3.5 text-teal-700 shrink-0" aria-hidden="true" />
                   <span>Module B · Binary VLE (Raoult–Dalton)</span>
                 </button>
               </div>
@@ -478,7 +505,12 @@ export function ThermodynamicsLab() {
             MODULE A: PURE-FLUID PVT BEHAVIOR & PENG–ROBINSON EOS
            ===================================================================== */}
         {activeModule === 'real-gas-pvt' && (
-          <div className="space-y-6" role="tabpanel" aria-labelledby="tab-real-gas-pvt">
+          <div
+            className="space-y-6"
+            role="tabpanel"
+            id="panel-real-gas-pvt"
+            aria-labelledby="tab-real-gas-pvt"
+          >
             <LabValidationAlerts
               issues={[
                 ...pvtResults.validationErrors.map((message) => ({
@@ -572,36 +604,37 @@ export function ThermodynamicsLab() {
                 </div>
 
                 {/* Group 2: Thermodynamic State Controls (T, P, n) */}
-                <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 space-y-3">
-                  <div className="text-xs font-bold tracking-wide text-slate-700">
+                <div className="pt-3.5 border-t border-slate-200/80 space-y-2">
+                  <div className="rounded-lg bg-slate-50/90 px-2.5 py-1.5 text-xs font-bold tracking-wide text-slate-800">
                     2. Operating State Variables
                   </div>
 
+                  <div className="divide-y divide-slate-100 px-0.5">
                   {/* Temperature T [K] */}
-                  <div className="bg-white rounded-lg border border-slate-200/70 p-2.5 space-y-1.5">
+                  <div className="py-2.5 first:pt-1 space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <label htmlFor="pvt-temp-input" className="text-xs font-semibold text-slate-800 leading-snug">
-                        Temperature <span className="text-slate-500 font-normal">(<MathInline latex="T" />)</span>
+                        Temperature{' '}
+                        <span className="text-slate-600 font-normal whitespace-nowrap inline-flex items-baseline">
+                          (<MathInline latex="T" />)
+                        </span>
                       </label>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <input
+                        <NumericDraftInput
                           id="pvt-temp-input"
-                          type="number"
                           aria-label="Absolute Temperature (T, K) numeric input"
                           min={80}
                           max={1000}
                           step={1}
                           value={pvtInputs.temperature_K}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!Number.isFinite(val)) return;
+                          onCommit={(val) => {
                             setPvtInputs((prev) => ({ ...prev, temperature_K: val }));
                             setActivePvtPresetId('custom');
                           }}
                           className="w-24 min-w-[6rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
                           data-testid="number-thermo-temperature"
                         />
-                        <span className="text-[11px] font-mono text-slate-500">K</span>
+                        <span className="text-[11px] font-mono text-slate-600">K</span>
                       </div>
                     </div>
                     <input
@@ -622,40 +655,40 @@ export function ThermodynamicsLab() {
                       className="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer accent-teal-700"
                       data-testid="slider-thermo-temperature"
                     />
-                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tabular-nums">
+                    <div className="flex justify-between items-center text-[11px] font-mono text-slate-600 tabular-nums">
                       <span>Min: 120 K</span>
-                      <span className="text-slate-500">
-                        {(pvtInputs.temperature_K - 273.15).toFixed(1)} °C · T_c={pvtResults.fluid.Tc_K.toFixed(1)} K
+                      <span className="text-slate-700">
+                        {(pvtInputs.temperature_K - 273.15).toFixed(1)} °C · <MathInline latex={`T_c = ${pvtResults.fluid.Tc_K.toFixed(1)}`} /> K
                       </span>
                       <span>Max: 600 K</span>
                     </div>
                   </div>
 
                   {/* Pressure P [bar] */}
-                  <div className="bg-white rounded-lg border border-slate-200/70 p-2.5 space-y-1.5">
+                  <div className="py-2.5 space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <label htmlFor="pvt-pressure-input" className="text-xs font-semibold text-slate-800 leading-snug">
-                        Pressure <span className="text-slate-500 font-normal">(<MathInline latex="P" />)</span>
+                        Pressure{' '}
+                        <span className="text-slate-600 font-normal whitespace-nowrap inline-flex items-baseline">
+                          (<MathInline latex="P" />)
+                        </span>
                       </label>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <input
+                        <NumericDraftInput
                           id="pvt-pressure-input"
-                          type="number"
                           aria-label="Absolute Pressure (P, bar) numeric input"
                           min={0.5}
                           max={500}
                           step={0.5}
                           value={Number((pvtInputs.pressure_Pa / 1e5).toFixed(2))}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!Number.isFinite(val)) return;
+                          onCommit={(val) => {
                             setPvtInputs((prev) => ({ ...prev, pressure_Pa: val * 1e5 }));
                             setActivePvtPresetId('custom');
                           }}
                           className="w-24 min-w-[6rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
                           data-testid="number-thermo-pressure"
                         />
-                        <span className="text-[11px] font-mono text-slate-500">bar</span>
+                        <span className="text-[11px] font-mono text-slate-600">bar</span>
                       </div>
                     </div>
                     <input
@@ -676,39 +709,39 @@ export function ThermodynamicsLab() {
                       className="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer accent-teal-700"
                       data-testid="slider-thermo-pressure"
                     />
-                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tabular-nums">
+                    <div className="flex justify-between items-center text-[11px] font-mono text-slate-600 tabular-nums">
                       <span>Min: 1 bar</span>
-                      <span className="text-slate-500">
-                        {(pvtInputs.pressure_Pa / 1e6).toFixed(2)} MPa · P_c={pvtResults.fluid.Pc_bar.toFixed(1)} bar
+                      <span className="text-slate-700">
+                        {(pvtInputs.pressure_Pa / 1e6).toFixed(2)} MPa · <MathInline latex={`P_c = ${pvtResults.fluid.Pc_bar.toFixed(1)}`} /> bar
                       </span>
                       <span>Max: 300 bar</span>
                     </div>
                   </div>
 
                   {/* Moles n [mol] */}
-                  <div className="bg-white rounded-lg border border-slate-200/70 p-2.5 space-y-1.5">
+                  <div className="py-2.5 last:pb-0.5 space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <label htmlFor="pvt-moles-input" className="text-xs font-semibold text-slate-800 leading-snug">
-                        Molar Amount <span className="text-slate-500 font-normal">(<MathInline latex="n" />)</span>
+                        Molar Amount{' '}
+                        <span className="text-slate-600 font-normal whitespace-nowrap inline-flex items-baseline">
+                          (<MathInline latex="n" />)
+                        </span>
                       </label>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <input
+                        <NumericDraftInput
                           id="pvt-moles-input"
-                          type="number"
                           aria-label="Molar Amount (n, mol) numeric input"
                           min={0.1}
                           max={50}
                           step={0.5}
                           value={pvtInputs.moles_n ?? 1.0}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!Number.isFinite(val)) return;
+                          onCommit={(val) => {
                             setPvtInputs((prev) => ({ ...prev, moles_n: val }));
                           }}
                           className="w-24 min-w-[6rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
                           data-testid="number-thermo-moles"
                         />
-                        <span className="text-[11px] font-mono text-slate-500">mol</span>
+                        <span className="text-[11px] font-mono text-slate-600">mol</span>
                       </div>
                     </div>
                     <input
@@ -728,18 +761,22 @@ export function ThermodynamicsLab() {
                       className="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer accent-teal-700"
                       data-testid="slider-thermo-moles"
                     />
-                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tabular-nums">
+                    <div className="flex justify-between items-center text-[11px] font-mono text-slate-600 tabular-nums">
                       <span>Min: 0.5</span>
                       <span>Max: 10</span>
                     </div>
                   </div>
+                  </div>
                 </div>
 
                 {/* Group 3: Multi-Root Branch Selector */}
-                <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 space-y-2">
+                <div className="pt-3.5 border-t border-slate-200/80 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-slate-800">
-                      3. Cubic Root Branch (<MathInline latex="Z > B" />)
+                      3. Cubic Root Branch{' '}
+                      <span className="whitespace-nowrap inline-flex items-baseline">
+                        (<MathInline latex="Z > B" />)
+                      </span>
                     </span>
                     <span className="rounded bg-white px-2 py-0.5 font-mono text-[10px] font-semibold text-slate-700 border border-slate-200">
                       {pvtResults.rootDiagnosis.hasMultipleValidRoots
@@ -867,12 +904,12 @@ export function ThermodynamicsLab() {
                     <LabMetricCard
                       label="Reduced Coordinates ($T_r, P_r$)"
                       value={`${pvtResults.reducedTemperature_Tr.toFixed(3)} / ${pvtResults.reducedPressure_Pr.toFixed(3)}`}
-                      subtext={`α(T_r, ω) = ${pvtResults.alpha.toFixed(4)}, κ = ${pvtResults.kappa.toFixed(4)}`}
+                      subtext={`$\\alpha(T_r, \\omega)$ = ${pvtResults.alpha.toFixed(4)}, $\\kappa$ = ${pvtResults.kappa.toFixed(4)}`}
                     />
                     <LabMetricCard
                       label="Dimensionless PR Groups ($A, B$)"
                       value={`${pvtResults.dimensionless_A.toFixed(4)} / ${pvtResults.dimensionless_B.toFixed(4)}`}
-                      subtext={`Max cubic residual |f(Z)| = ${pvtResults.rootDiagnosis.maxResidual.toExponential(1)}`}
+                      subtext={`Max cubic residual $|f(Z)|$ = ${pvtResults.rootDiagnosis.maxResidual.toExponential(1)}`}
                     />
                   </div>
                 </LabAdditionalMetricsDisclosure>
@@ -1068,7 +1105,12 @@ export function ThermodynamicsLab() {
             MODULE B: IDEAL BINARY VAPOR–LIQUID EQUILIBRIUM (RAOULT & DALTON)
            ===================================================================== */}
         {activeModule === 'binary-vle' && (
-          <div className="space-y-6" role="tabpanel" aria-labelledby="tab-binary-vle">
+          <div
+            className="space-y-6"
+            role="tabpanel"
+            id="panel-binary-vle"
+            aria-labelledby="tab-binary-vle"
+          >
             <LabValidationAlerts
               issues={[
                 ...vleResults.validationErrors.map((message) => ({
@@ -1104,36 +1146,37 @@ export function ThermodynamicsLab() {
                 </div>
 
                 {/* Group 1: Mixture Composition & Vapor Pressures */}
-                <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 space-y-3">
-                  <div className="text-xs font-bold tracking-wide text-slate-700">
+                <div className="space-y-2">
+                  <div className="rounded-lg bg-slate-50/90 px-2.5 py-1.5 text-xs font-bold tracking-wide text-slate-800">
                     1. Composition &amp; Pure Vapor Pressures
                   </div>
 
+                  <div className="divide-y divide-slate-100 px-0.5">
                   {/* Liquid Mole Fraction x_A */}
-                  <div className="bg-white rounded-lg border border-slate-200/70 p-2.5 space-y-1.5">
+                  <div className="py-2.5 first:pt-1 space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <label htmlFor="vle-xa-input" className="text-xs font-semibold text-slate-800 leading-snug">
-                        Liquid Mole Fraction <span className="text-slate-500 font-normal">(<MathInline latex="x_A" />)</span>
+                        Liquid Mole Fraction{' '}
+                        <span className="text-slate-600 font-normal whitespace-nowrap inline-flex items-baseline">
+                          (<MathInline latex="x_A" />)
+                        </span>
                       </label>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <input
+                        <NumericDraftInput
                           id="vle-xa-input"
-                          type="number"
                           aria-label="Liquid Mole Fraction (x_A, mol/mol) numeric input"
                           min={0}
                           max={1}
                           step={0.01}
                           value={vleInputs.liquidMoleFraction_xA}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!Number.isFinite(val)) return;
+                          onCommit={(val) => {
                             setVleInputs((prev) => ({ ...prev, liquidMoleFraction_xA: val }));
                             setActiveVlePresetId('custom');
                           }}
-                          className="w-20 min-w-[5rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
+                          className="w-24 min-w-[6rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
                           data-testid="number-vle-xa"
                         />
-                        <span className="text-[11px] font-mono text-slate-500">frac</span>
+                        <span className="text-[11px] font-mono text-slate-600">frac</span>
                       </div>
                     </div>
                     <input
@@ -1154,40 +1197,40 @@ export function ThermodynamicsLab() {
                       className="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer accent-teal-700"
                       data-testid="slider-vle-xa"
                     />
-                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tabular-nums">
+                    <div className="flex justify-between items-center text-[11px] font-mono text-slate-600 tabular-nums">
                       <span>Min: 0.00</span>
-                      <span className="text-slate-500">
-                        x_B = {(1 - vleInputs.liquidMoleFraction_xA).toFixed(2)}
+                      <span className="text-slate-700">
+                        <MathInline latex={`x_B = ${(1 - vleInputs.liquidMoleFraction_xA).toFixed(2)}`} />
                       </span>
                       <span>Max: 1.00</span>
                     </div>
                   </div>
 
                   {/* Saturation Vapor Pressure P_A^sat [kPa] */}
-                  <div className="bg-white rounded-lg border border-slate-200/70 p-2.5 space-y-1.5">
+                  <div className="py-2.5 space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <label htmlFor="vle-psata-input" className="text-xs font-semibold text-slate-800 leading-snug">
-                        Pure A Saturation <span className="text-slate-500 font-normal">(<MathInline latex="P_A^{\mathrm{sat}}" />)</span>
+                        Pure A Saturation{' '}
+                        <span className="text-slate-600 font-normal whitespace-nowrap inline-flex items-baseline">
+                          (<MathInline latex="P_A^{\mathrm{sat}}" />)
+                        </span>
                       </label>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <input
+                        <NumericDraftInput
                           id="vle-psata-input"
-                          type="number"
                           aria-label="Pure A Saturation Pressure (P_A^sat, kPa) numeric input"
                           min={5}
                           max={500}
                           step={1}
                           value={vleInputs.psatA_kPa}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!Number.isFinite(val)) return;
+                          onCommit={(val) => {
                             setVleInputs((prev) => ({ ...prev, psatA_kPa: val }));
                             setActiveVlePresetId('custom');
                           }}
-                          className="w-20 min-w-[5rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
+                          className="w-24 min-w-[6rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
                           data-testid="number-vle-psata"
                         />
-                        <span className="text-[11px] font-mono text-slate-500">kPa</span>
+                        <span className="text-[11px] font-mono text-slate-600">kPa</span>
                       </div>
                     </div>
                     <input
@@ -1208,37 +1251,37 @@ export function ThermodynamicsLab() {
                       className="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer accent-teal-700"
                       data-testid="slider-vle-psata"
                     />
-                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tabular-nums">
+                    <div className="flex justify-between items-center text-[11px] font-mono text-slate-600 tabular-nums">
                       <span>Min: 20</span>
                       <span>Max: 250</span>
                     </div>
                   </div>
 
                   {/* Saturation Vapor Pressure P_B^sat [kPa] */}
-                  <div className="bg-white rounded-lg border border-slate-200/70 p-2.5 space-y-1.5">
+                  <div className="py-2.5 last:pb-0.5 space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <label htmlFor="vle-psatb-input" className="text-xs font-semibold text-slate-800 leading-snug">
-                        Pure B Saturation <span className="text-slate-500 font-normal">(<MathInline latex="P_B^{\mathrm{sat}}" />)</span>
+                        Pure B Saturation{' '}
+                        <span className="text-slate-600 font-normal whitespace-nowrap inline-flex items-baseline">
+                          (<MathInline latex="P_B^{\mathrm{sat}}" />)
+                        </span>
                       </label>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <input
+                        <NumericDraftInput
                           id="vle-psatb-input"
-                          type="number"
                           aria-label="Pure B Saturation Pressure (P_B^sat, kPa) numeric input"
                           min={5}
                           max={500}
                           step={1}
                           value={vleInputs.psatB_kPa}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!Number.isFinite(val)) return;
+                          onCommit={(val) => {
                             setVleInputs((prev) => ({ ...prev, psatB_kPa: val }));
                             setActiveVlePresetId('custom');
                           }}
-                          className="w-20 min-w-[5rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
+                          className="w-24 min-w-[6rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
                           data-testid="number-vle-psatb"
                         />
-                        <span className="text-[11px] font-mono text-slate-500">kPa</span>
+                        <span className="text-[11px] font-mono text-slate-600">kPa</span>
                       </div>
                     </div>
                     <input
@@ -1259,43 +1302,44 @@ export function ThermodynamicsLab() {
                       className="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer accent-teal-700"
                       data-testid="slider-vle-psatb"
                     />
-                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tabular-nums">
+                    <div className="flex justify-between items-center text-[11px] font-mono text-slate-600 tabular-nums">
                       <span>Min: 15</span>
                       <span>Max: 200</span>
                     </div>
                   </div>
+                  </div>
                 </div>
 
                 {/* Group 2: Operating Cell Pressure P_sys [kPa] */}
-                <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 space-y-2.5">
-                  <div className="text-xs font-bold tracking-wide text-slate-700">
+                <div className="pt-3.5 border-t border-slate-200/80 space-y-2">
+                  <div className="rounded-lg bg-slate-50/90 px-2.5 py-1.5 text-xs font-bold tracking-wide text-slate-800">
                     2. Flash Cell Pressure
                   </div>
 
-                  <div className="bg-white rounded-lg border border-slate-200/70 p-2.5 space-y-1.5">
+                  <div className="py-1.5 px-0.5 space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <label htmlFor="vle-psys-input" className="text-xs font-semibold text-slate-800 leading-snug">
-                        Cell Pressure <span className="text-slate-500 font-normal">(<MathInline latex="P_{\mathrm{sys}}" />)</span>
+                        Cell Pressure{' '}
+                        <span className="text-slate-600 font-normal whitespace-nowrap inline-flex items-baseline">
+                          (<MathInline latex="P_{\mathrm{sys}}" />)
+                        </span>
                       </label>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <input
+                        <NumericDraftInput
                           id="vle-psys-input"
-                          type="number"
                           aria-label="Cell Operating Pressure (P_sys, kPa) numeric input"
                           min={5}
                           max={500}
                           step={0.5}
                           value={vleInputs.systemPressure_kPa}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value);
-                            if (!Number.isFinite(val)) return;
+                          onCommit={(val) => {
                             setVleInputs((prev) => ({ ...prev, systemPressure_kPa: val }));
                             setActiveVlePresetId('custom');
                           }}
-                          className="w-20 min-w-[5rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
+                          className="w-24 min-w-[6rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
                           data-testid="number-vle-psys"
                         />
-                        <span className="text-[11px] font-mono text-slate-500">kPa</span>
+                        <span className="text-[11px] font-mono text-slate-600">kPa</span>
                       </div>
                     </div>
                     <input
@@ -1316,11 +1360,11 @@ export function ThermodynamicsLab() {
                       className="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer accent-teal-700"
                       data-testid="slider-vle-psys"
                     />
-                    <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tabular-nums">
+                    <div className="flex justify-between items-center text-[11px] font-mono text-slate-600 tabular-nums">
                       <span>Min: 15</span>
                       <span>Max: 250</span>
                     </div>
-                    <p className="text-[11px] font-sans text-slate-500 leading-snug pt-0.5 border-t border-slate-100">
+                    <p className="text-[11px] font-sans text-slate-600 leading-snug pt-0.5">
                       Two-phase window: <MathInline latex="P_{\mathrm{dew}} \le P_{\mathrm{sys}} \le P_{\mathrm{bubble}}" />{' '}
                       ({vleResults.dewPressureAtComposition_kPa.toFixed(1)}–{vleResults.bubblePressure_kPa.toFixed(1)} kPa).
                     </p>

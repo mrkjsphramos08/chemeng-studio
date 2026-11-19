@@ -243,7 +243,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           aria-label="Virtual Laboratories Switcher"
           className="max-w-[1360px] mx-auto px-4 sm:px-6 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar"
         >
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap mr-1.5 hidden lg:inline">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 whitespace-nowrap mr-1.5 hidden lg:inline">
             Virtual Labs:
           </span>
           {LAB_SWITCHER_ITEMS.map((item) => {
@@ -262,7 +262,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer ${
                   isSelected
                     ? 'bg-teal-700 text-white font-semibold shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
+                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-200/70'
                 }`}
               >
                 <Icon
@@ -270,7 +270,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
                     isSelected ? 'text-teal-200' : 'text-teal-700'
                   }`}
                 />
-                <span className="font-mono text-[10px] opacity-75">
+                <span className="font-mono text-[11px] opacity-90">
                   {item.code}
                 </span>
                 <span>{item.shortLabel}</span>
@@ -296,7 +296,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           data-testid="nav-mobile-drawer"
         >
           <div className="space-y-1">
-            <div className="px-2 pb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <div className="px-2 pb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
               <EntrolumeLogo variant="icon-only" size="xs" decorative />
               <span>Entrolume Platform</span>
             </div>
@@ -348,7 +348,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           </div>
 
           <div className="border-t border-slate-200 pt-3 space-y-1">
-            <div className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <div className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
               Launch Virtual Laboratory
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -372,7 +372,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
                         isSelected ? 'text-teal-200' : 'text-teal-700'
                       }`}
                     />
-                    <span className="font-mono text-[11px] opacity-75">
+                    <span className="font-mono text-[11px] opacity-90">
                       {item.code}
                     </span>
                     <span className="truncate">{item.label}</span>

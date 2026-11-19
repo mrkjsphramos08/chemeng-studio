@@ -67,6 +67,8 @@ export function ProcessControlSchematic({ results }: ProcessControlSchematicProp
       <div
         className="sm:hidden rounded-xl border border-slate-800 bg-slate-950 p-3.5 text-xs text-slate-100 space-y-2.5"
         data-testid="process-control-mobile-schematic"
+        role="region"
+        aria-label={`Process control mobile signal-flow schematic in ${inputs.controllerMode} mode: process gain Kp = ${inputs.processGain_Kp.toFixed(2)}, time constant tau = ${inputs.timeConstant_tau_s.toFixed(1)} s, dead time theta = ${inputs.deadTime_theta_s.toFixed(1)} s, final output Y = ${metrics.finalOutput_Y.toFixed(2)}%, status ${metrics.stabilityStatus}.`}
       >
         {/* Step 1: Setpoint & Comparator */}
         <div className="rounded-lg border border-sky-500/40 bg-slate-900/90 p-2.5 flex items-center justify-between gap-2">
@@ -99,7 +101,7 @@ export function ProcessControlSchematic({ results }: ProcessControlSchematicProp
             </div>
           </div>
           <div className="text-right font-mono text-[11px] shrink-0">
-            <div className="text-slate-400">u_cmd</div>
+            <div className="text-slate-300"><MathInline latex="u_{\mathrm{cmd}}" /></div>
             <div className="text-sky-300 font-semibold">
               {lastPt.unconstrainedCommand_Ucmd.toFixed(1)}%
             </div>
@@ -130,7 +132,7 @@ export function ProcessControlSchematic({ results }: ProcessControlSchematicProp
                 ? `Δd = ${inputs.disturbanceMagnitude_d >= 0 ? '+' : ''}${inputs.disturbanceMagnitude_d.toFixed(1)}%`
                 : 'd(t) = 0.0% (None)'}
             </div>
-            <div className="font-mono text-[10px] text-slate-400 mt-0.5">
+            <div className="font-mono text-[11px] text-slate-300 mt-0.5">
               @ t = {inputs.disturbanceTime_s.toFixed(0)} s
             </div>
           </div>

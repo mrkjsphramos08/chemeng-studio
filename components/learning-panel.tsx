@@ -122,7 +122,9 @@ export function LearningPanel({ results, onApplyInputs }: LearningPanelProps) {
           <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 font-mono tabular-nums">
             <span>
               Energy Balance Residual <MathInline latex="|Q_h - Q_c|" /> ={' '}
-              {results.energyBalanceResidual_W.toExponential(2)} W
+              <span className="whitespace-nowrap">
+                {results.energyBalanceResidual_W.toExponential(2)} W
+              </span>
             </span>
             <span>First Law Verified (Adiabatic Steady-State)</span>
           </div>

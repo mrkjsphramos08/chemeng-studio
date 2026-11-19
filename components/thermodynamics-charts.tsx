@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -21,6 +21,7 @@ import {
   BinaryPxyPoint,
 } from '@/lib/thermodynamics';
 import { MathInline } from '@/components/lab-shared/math';
+import { getNextTabIndex } from '@/lib/numeric-input';
 import { Trash2 } from 'lucide-react';
 
 export interface SavedPVTScenario {
@@ -65,6 +66,7 @@ export function PureFluidPVTCharts({
   renderSection = 'all',
 }: PureFluidPVTChartsProps) {
   const [activeTab, setActiveTab] = useState<PVTChartTab>('z-vs-p');
+  const pvtTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const showCharts = renderSection === 'all' || renderSection === 'charts';
   const showSaved = renderSection === 'all' || renderSection === 'saved';
 
@@ -97,61 +99,55 @@ export function PureFluidPVTCharts({
             role="tablist"
             aria-label="Real-Gas PVT Visualization Tabs"
           >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'z-vs-p'}
-              onClick={() => setActiveTab('z-vs-p')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                activeTab === 'z-vs-p'
-                  ? 'bg-white text-teal-800 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              1. Z vs. P
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'volume-comparison'}
-              onClick={() => setActiveTab('volume-comparison')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                activeTab === 'volume-comparison'
-                  ? 'bg-white text-teal-800 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              2. Molar Volume v(P)
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'pv-isotherms'}
-              onClick={() => setActiveTab('pv-isotherms')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                activeTab === 'pv-isotherms'
-                  ? 'bg-white text-teal-800 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              3. P–v Isotherms
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'deviation'}
-              onClick={() => setActiveTab('deviation')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                activeTab === 'deviation'
-                  ? 'bg-white text-teal-800 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              4. Ideal Deviation (%)
-            </button>
+            {(
+              [
+                { id: 'z-vs-p', label: '1. Z vs. P' },
+                { id: 'volume-comparison', label: '2. Molar Volume v(P)' },
+                { id: 'pv-isotherms', label: '3. P–v Isotherms' },
+                { id: 'deviation', label: '4. Ideal Deviation (%)' },
+              ] as const
+            ).map((tab, idx, arr) => {
+              const isSelected = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  ref={(el) => {
+                    pvtTabRefs.current[idx] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`thermo-pvt-tab-${tab.id}`}
+                  aria-selected={isSelected}
+                  aria-controls={`thermo-pvt-panel-${tab.id}`}
+                  tabIndex={isSelected ? 0 : -1}
+                  onClick={() => setActiveTab(tab.id)}
+                  onKeyDown={(e) => {
+                    const nextIdx = getNextTabIndex(idx, arr.length, e.key);
+                    if (nextIdx === null) return;
+                    e.preventDefault();
+                    setActiveTab(arr[nextIdx].id);
+                    pvtTabRefs.current[nextIdx]?.focus();
+                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-teal-700 ${
+                    isSelected
+                      ? 'bg-white text-teal-800 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
+        <div
+          role="tabpanel"
+          id={`thermo-pvt-panel-${activeTab}`}
+          aria-labelledby={`thermo-pvt-tab-${activeTab}`}
+          tabIndex={0}
+          className="focus-visible:outline-2 focus-visible:outline-teal-600 rounded-lg"
+        >
         {/* Chart 1: Z vs Pressure */}
         {activeTab === 'z-vs-p' && (
           <div>
@@ -498,6 +494,7 @@ export function PureFluidPVTCharts({
           </div>
         )}
         </div>
+        </div>
       )}
 
       {/* Saved PVT Scenarios Comparison Table */}
@@ -508,7 +505,7 @@ export function PureFluidPVTCharts({
         >
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
-              <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+              <span className="text-[11px] font-bold tracking-wider text-slate-600 uppercase">
                 Scenario Comparison Workspace
               </span>
               <h4 className="text-sm font-bold text-slate-900">
@@ -657,6 +654,7 @@ export function BinaryVLECharts({
   renderSection = 'all',
 }: BinaryVLEChartsProps) {
   const [activeTab, setActiveTab] = useState<VLEChartTab>('pxy-diagram');
+  const vleTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const showCharts = renderSection === 'all' || renderSection === 'charts';
   const showSaved = renderSection === 'all' || renderSection === 'saved';
 
@@ -676,12 +674,31 @@ export function BinaryVLECharts({
               Ideal Binary Phase Equilibrium · Raoult&apos;s &amp; Dalton&apos;s Laws
             </span>
             <h3 className="text-base font-bold text-slate-900">
-              {activeTab === 'pxy-diagram' &&
-                `Isothermal P–x–y Phase Equilibrium Diagram (α_AB = ${results.relativeVolatility_alphaAB.toFixed(2)})`}
-              {activeTab === 'yx-diagram' &&
-                `Vapor vs. Liquid Equilibrium Composition (y_A vs. x_A)`}
-              {activeTab === 'partial-pressures' &&
-                `Raoult's Law Partial Pressures (p_A, p_B) & Total Bubble Pressure vs. x_A`}
+              {activeTab === 'pxy-diagram' && (
+                <>
+                  Isothermal <MathInline latex="P\text{–}x\text{–}y" /> Phase Equilibrium Diagram{' '}
+                  <span className="whitespace-nowrap inline-flex items-baseline">
+                    (<MathInline latex={`\\alpha_{AB} = ${results.relativeVolatility_alphaAB.toFixed(2)}`} />)
+                  </span>
+                </>
+              )}
+              {activeTab === 'yx-diagram' && (
+                <>
+                  Vapor vs. Liquid Equilibrium Composition{' '}
+                  <span className="whitespace-nowrap inline-flex items-baseline">
+                    (<MathInline latex="y_A" /> vs. <MathInline latex="x_A" />)
+                  </span>
+                </>
+              )}
+              {activeTab === 'partial-pressures' && (
+                <>
+                  Raoult&apos;s Law Partial Pressures{' '}
+                  <span className="whitespace-nowrap inline-flex items-baseline">
+                    (<MathInline latex="p_A, p_B" />)
+                  </span>{' '}
+                  &amp; Total Bubble Pressure vs. <MathInline latex="x_A" />
+                </>
+              )}
             </h3>
           </div>
 
@@ -690,48 +707,64 @@ export function BinaryVLECharts({
             role="tablist"
             aria-label="Binary VLE Visualization Tabs"
           >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'pxy-diagram'}
-              onClick={() => setActiveTab('pxy-diagram')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                activeTab === 'pxy-diagram'
-                  ? 'bg-white text-teal-800 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              1. P–x–y Phase Diagram
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'yx-diagram'}
-              onClick={() => setActiveTab('yx-diagram')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                activeTab === 'yx-diagram'
-                  ? 'bg-white text-teal-800 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              2. y_A vs. x_A Curve
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'partial-pressures'}
-              onClick={() => setActiveTab('partial-pressures')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                activeTab === 'partial-pressures'
-                  ? 'bg-white text-teal-800 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              3. Partial Pressures (p_A, p_B)
-            </button>
+            {(
+              [
+                { id: 'pxy-diagram', content: <>1. <MathInline latex="P\text{–}x\text{–}y" /> Phase Diagram</> },
+                { id: 'yx-diagram', content: <>2. <MathInline latex="y_A" /> vs. <MathInline latex="x_A" /> Curve</> },
+                {
+                  id: 'partial-pressures',
+                  content: (
+                    <>
+                      3. Partial Pressures{' '}
+                      <span className="whitespace-nowrap inline-flex items-baseline">
+                        (<MathInline latex="p_A, p_B" />)
+                      </span>
+                    </>
+                  ),
+                },
+              ] as const
+            ).map((tab, idx, arr) => {
+              const isSelected = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  ref={(el) => {
+                    vleTabRefs.current[idx] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`thermo-vle-tab-${tab.id}`}
+                  aria-selected={isSelected}
+                  aria-controls={`thermo-vle-panel-${tab.id}`}
+                  tabIndex={isSelected ? 0 : -1}
+                  onClick={() => setActiveTab(tab.id)}
+                  onKeyDown={(e) => {
+                    const nextIdx = getNextTabIndex(idx, arr.length, e.key);
+                    if (nextIdx === null) return;
+                    e.preventDefault();
+                    setActiveTab(arr[nextIdx].id);
+                    vleTabRefs.current[nextIdx]?.focus();
+                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-teal-700 ${
+                    isSelected
+                      ? 'bg-white text-teal-800 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {tab.content}
+                </button>
+              );
+            })}
           </div>
         </div>
 
+        <div
+          role="tabpanel"
+          id={`thermo-vle-panel-${activeTab}`}
+          aria-labelledby={`thermo-vle-tab-${activeTab}`}
+          tabIndex={0}
+          className="focus-visible:outline-2 focus-visible:outline-teal-600 rounded-lg"
+        >
         {/* Tab 1: Centerpiece P-x-y Diagram */}
         {activeTab === 'pxy-diagram' && (
           <div>
@@ -1050,6 +1083,7 @@ export function BinaryVLECharts({
           </div>
         )}
         </div>
+        </div>
       )}
 
       {/* Saved VLE Scenarios Table */}
@@ -1060,7 +1094,7 @@ export function BinaryVLECharts({
         >
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
-              <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+              <span className="text-[11px] font-bold tracking-wider text-slate-600 uppercase">
                 Scenario Comparison Workspace
               </span>
               <h4 className="text-sm font-bold text-slate-900">

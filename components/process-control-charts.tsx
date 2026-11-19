@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -21,6 +21,7 @@ import {
 } from '@/lib/process-control';
 import { MathInline } from '@/components/lab-shared/math';
 import { formatSignedZero } from '@/lib/navigation';
+import { getNextTabIndex } from '@/lib/numeric-input';
 import { RotateCcw, Trash2 } from 'lucide-react';
 
 export interface SavedControlScenario {
@@ -67,6 +68,7 @@ export function ProcessControlCharts({
   renderSection = 'all',
 }: ProcessControlChartsProps) {
   const [activeTab, setActiveTab] = useState<ControlChartTab>('response');
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const { inputs, timeSeries, metrics } = results;
 
   const tabs: { id: ControlChartTab; label: string; subtitle: string }[] = [
@@ -140,25 +142,48 @@ export function ProcessControlCharts({
             role="tablist"
             aria-label="Process Control Chart Tabs"
           >
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={activeTab === tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
-                  activeTab === tab.id
-                    ? 'border-teal-600 bg-teal-600 text-white shadow-2xs'
-                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-white'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            {tabs.map((tab, idx) => {
+              const isSelected = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  ref={(el) => {
+                    tabRefs.current[idx] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`pc-chart-tab-${tab.id}`}
+                  aria-selected={isSelected}
+                  aria-controls={`pc-chart-panel-${tab.id}`}
+                  tabIndex={isSelected ? 0 : -1}
+                  onClick={() => setActiveTab(tab.id)}
+                  onKeyDown={(e) => {
+                    const nextIdx = getNextTabIndex(idx, tabs.length, e.key);
+                    if (nextIdx === null) return;
+                    e.preventDefault();
+                    setActiveTab(tabs[nextIdx].id);
+                    tabRefs.current[nextIdx]?.focus();
+                  }}
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-teal-700 ${
+                    isSelected
+                      ? 'border-teal-600 bg-teal-600 text-white shadow-2xs'
+                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
+        <div
+          role="tabpanel"
+          id={`pc-chart-panel-${activeTab}`}
+          aria-labelledby={`pc-chart-tab-${activeTab}`}
+          tabIndex={0}
+          className="focus-visible:outline-2 focus-visible:outline-teal-600 rounded-lg"
+        >
         {/* Tab 1: Process Response Y(t) vs Time */}
         {activeTab === 'response' && (
           <div>
@@ -725,6 +750,7 @@ export function ProcessControlCharts({
             </div>
           </div>
         )}
+        </div>
         </div>
       )}
 

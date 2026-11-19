@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { RotateCcw, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
 import { MathInline, MathText } from './math';
+import { NumericDraftInput } from './numeric-draft-input';
 
 export interface LabSliderControlConfig<K extends string = string> {
   key: K;
@@ -66,63 +67,65 @@ export function LabParameterPanel<T extends object>({
   };
 
   return (
-    <div className="lg:col-span-4 min-w-0 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-5 lg:sticky lg:top-28 lg:self-start">
+    <div
+      className="lg:col-span-4 min-w-0 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-4 lg:sticky lg:top-28 lg:self-start"
+      data-testid="lab-parameter-panel"
+    >
       <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 gap-2">
         <div>
           <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-teal-700">
-            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <SlidersHorizontal className="w-3.5 h-3.5" aria-hidden="true" />
             <span>01. Configure · User Inputs</span>
           </div>
           <h2 className="text-base font-bold text-slate-900 mt-0.5">{title}</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-600 mt-0.5">
             <MathText text={subtitle} />
           </p>
         </div>
         <button
           type="button"
           onClick={onReset}
-          className="text-xs font-semibold text-teal-700 hover:text-teal-800 inline-flex items-center gap-1 cursor-pointer shrink-0"
+          className="text-xs font-semibold text-teal-700 hover:text-teal-800 inline-flex items-center gap-1 cursor-pointer shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 rounded-md px-1.5 py-1"
           data-testid="panel-reset-button"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
+          <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
           Reset
         </button>
       </div>
 
       {(topSlot || headerSlot) && <div className="pb-1">{topSlot ?? headerSlot}</div>}
 
-      <div className="space-y-4">
+      <div className="divide-y divide-slate-200/80">
         {groups.map((group) => {
           const groupControls = controls.filter((c) => c.group === group.id);
           if (groupControls.length === 0) return null;
           const isCollapsed = Boolean(collapsedGroupIds[group.id]);
+          const groupBodyId = `param-group-${group.id}`;
 
           return (
-            <div
-              key={group.id}
-              className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 space-y-3"
-            >
+            <div key={group.id} className="py-3.5 first:pt-0 last:pb-0 space-y-2.5">
               <button
                 type="button"
                 onClick={() => toggleGroup(group.id)}
-                className="w-full flex items-center justify-between text-left gap-2 cursor-pointer"
+                className="w-full flex items-center justify-between text-left gap-2 rounded-lg bg-slate-50/90 px-2.5 py-1.5 hover:bg-slate-100/80 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-teal-600"
                 aria-expanded={!isCollapsed}
+                aria-controls={groupBodyId}
               >
-                <span className="text-xs font-bold tracking-wide text-slate-700">
+                <span className="text-xs font-bold tracking-wide text-slate-800">
                   <MathText text={group.title} />
                 </span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-400 shrink-0 whitespace-nowrap">
+                <span className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-600 shrink-0 whitespace-nowrap">
                   <span>{groupControls.length} params</span>
                   {isCollapsed ? (
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-600" aria-hidden="true" />
                   ) : (
-                    <ChevronUp className="w-3.5 h-3.5 text-slate-500" />
+                    <ChevronUp className="w-3.5 h-3.5 text-slate-600" aria-hidden="true" />
                   )}
                 </span>
               </button>
 
               {!isCollapsed && (
-                <div className="space-y-3.5 pt-1">
+                <div id={groupBodyId} className="divide-y divide-slate-100 px-0.5">
                   {groupControls.map((ctrl) => {
                     const currentVal = Number(
                       (values as Record<string, unknown>)[ctrl.key] ?? 0
@@ -130,17 +133,14 @@ export function LabParameterPanel<T extends object>({
                     const effectiveHelp = ctrl.helpText ?? ctrl.helperText;
                     const plainLabel = ctrl.label.replace(/\$[^$]*\$/g, '').trim();
                     return (
-                      <div
-                        key={ctrl.key}
-                        className="bg-white rounded-lg border border-slate-200/70 p-2.5 space-y-1.5"
-                      >
+                      <div key={ctrl.key} className="py-2.5 first:pt-1 last:pb-0.5 space-y-1.5">
                         <div className="flex items-center justify-between gap-2">
                           <label
                             htmlFor={`input-${ctrl.key}`}
                             className="text-xs font-semibold text-slate-800 leading-snug"
                           >
                             <MathText text={ctrl.label} />{' '}
-                            <span className="text-slate-500 font-normal">
+                            <span className="text-slate-600 font-normal whitespace-nowrap inline-flex items-baseline">
                               (
                               {ctrl.symbolLatex ? (
                                 <MathInline latex={ctrl.symbolLatex} />
@@ -151,19 +151,18 @@ export function LabParameterPanel<T extends object>({
                             </span>
                           </label>
                           <div className="flex items-center gap-1.5 shrink-0">
-                            <input
+                            <NumericDraftInput
                               id={`input-${ctrl.key}`}
-                              type="number"
                               aria-label={`${plainLabel} (${ctrl.symbol}, ${ctrl.unit}) numeric input`}
                               min={ctrl.inputMin}
                               max={ctrl.inputMax}
                               step={ctrl.inputStep ?? ctrl.step}
                               value={currentVal}
-                              onChange={(e) => onChange(ctrl.key, e.target.value)}
+                              onCommit={(_num, rawStr) => onChange(ctrl.key, rawStr)}
                               className="w-24 min-w-[6rem] px-2 py-1 text-right text-xs font-mono font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600 focus:bg-white tabular-nums"
                               data-testid={`number-${ctrl.key}`}
                             />
-                            <span className="text-[11px] text-slate-500 shrink-0 whitespace-nowrap">
+                            <span className="text-[11px] text-slate-600 shrink-0 whitespace-nowrap">
                               {ctrl.unitLatex ? (
                                 <MathInline latex={ctrl.unitLatex} />
                               ) : (
@@ -185,12 +184,12 @@ export function LabParameterPanel<T extends object>({
                           data-testid={`slider-${ctrl.key}`}
                         />
 
-                        <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tabular-nums">
+                        <div className="flex justify-between items-center text-[11px] font-mono text-slate-600 tabular-nums">
                           <span>Min: {ctrl.min}</span>
                           <span>Max: {ctrl.max}</span>
                         </div>
                         {effectiveHelp && (
-                          <div className="text-[11px] font-sans text-slate-500 leading-snug pt-0.5 border-t border-slate-100">
+                          <div className="text-[11px] font-sans text-slate-600 leading-snug pt-0.5">
                             <MathText text={effectiveHelp} />
                           </div>
                         )}

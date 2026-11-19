@@ -279,10 +279,11 @@ export function ReactionEngineeringLab() {
     if (key === 'reactorType') return;
     const numericKey = key as ReactionNumericField;
     const parsed = parseFloat(rawValue);
+    if (!Number.isFinite(parsed)) return;
     setSelectedPresetId('custom');
     setInputs((prev) => ({
       ...prev,
-      [numericKey]: Number.isNaN(parsed) ? 0 : parsed,
+      [numericKey]: parsed,
     }));
   };
 

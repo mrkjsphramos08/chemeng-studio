@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Navbar, ActiveView } from '@/components/navbar';
 import { LandingSections } from '@/components/landing-sections';
 import { LabsDirectory, AvailableLabId } from '@/components/labs-directory';
@@ -18,6 +18,7 @@ interface ChemEngStudioShellProps {
 
 export function ChemEngStudioShell({ initialView }: ChemEngStudioShellProps) {
   const [activeView, setActiveView] = useState<ActiveView>(initialView);
+  const mainRef = useRef<HTMLElement | null>(null);
 
   // Sync with browser URL on mount and browser Back / Forward (popstate)
   useEffect(() => {
@@ -62,11 +63,34 @@ export function ChemEngStudioShell({ initialView }: ChemEngStudioShellProps) {
     handleSelectView(validLabId);
   };
 
+  const handleSkipToMain = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const mainEl = mainRef.current ?? document.getElementById('main-content');
+    if (mainEl) {
+      mainEl.focus({ preventScroll: false });
+      mainEl.scrollIntoView({ block: 'start' });
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 overflow-x-clip">
+      <a
+        href="#main-content"
+        onClick={handleSkipToMain}
+        data-testid="skip-to-main-link"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:inline-flex focus:items-center focus:rounded-lg focus:bg-slate-900 focus:px-4 focus:py-2.5 focus:text-xs focus:font-semibold focus:text-white focus:shadow-lg focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:outline-none"
+      >
+        Skip to main content
+      </a>
+
       <Navbar activeView={activeView} onSelectView={handleSelectView} />
 
-      <main className="flex-1 min-w-0">
+      <main
+        id="main-content"
+        ref={mainRef}
+        tabIndex={-1}
+        className="flex-1 min-w-0 focus:outline-none"
+      >
         {activeView === 'overview' && (
           <LandingSections
             onOpenLab={handleOpenLab}

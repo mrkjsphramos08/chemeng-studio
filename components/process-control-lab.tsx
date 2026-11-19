@@ -23,6 +23,7 @@ import {
   LabWorkspaceHeader,
   MathInline,
   MathText,
+  NumericDraftInput,
 } from '@/components/lab-shared';
 import { ProcessControlSchematic } from './process-control-schematic';
 import {
@@ -349,8 +350,9 @@ export function ProcessControlLab() {
                   <button
                     key={m.id}
                     type="button"
+                    aria-pressed={inputs.controllerMode === m.id}
                     onClick={() => updateInput('controllerMode', m.id)}
-                    className={`rounded-lg px-2 py-2 text-xs font-bold transition ${
+                    className={`rounded-lg px-2 py-2 text-xs font-bold transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-teal-700 ${
                       inputs.controllerMode === m.id
                         ? 'bg-slate-900 text-white shadow-2xs'
                         : 'text-slate-700 hover:bg-white/70'
@@ -369,7 +371,10 @@ export function ProcessControlLab() {
                       htmlFor="ctrl-kc"
                       className="font-semibold text-slate-800"
                     >
-                      Controller Gain (<MathInline latex="K_c" />)
+                      Controller Gain{' '}
+                      <span className="whitespace-nowrap inline-flex items-baseline">
+                        (<MathInline latex="K_c" />)
+                      </span>
                     </label>
                     <span className="font-mono font-bold text-teal-800">
                       {inputs.controllerGain_Kc.toFixed(2)} %/%
@@ -390,18 +395,15 @@ export function ProcessControlLab() {
                       }
                       className="w-full accent-teal-600"
                     />
-                    <input
-                      type="number"
+                    <NumericDraftInput
                       aria-label="Controller Gain (Kc, %MV/%PV) numeric input"
                       min={0.05}
                       max={20}
                       step={0.1}
                       disabled={isOpenLoop}
                       value={inputs.controllerGain_Kc}
-                      onChange={(e) =>
-                        updateInput('controllerGain_Kc', Number(e.target.value))
-                      }
-                      className="w-20 rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('controllerGain_Kc', val)}
+                      className="w-24 min-w-[6rem] rounded-md border border-slate-300 px-2 py-1 text-right font-mono text-xs text-slate-900 tabular-nums"
                     />
                   </div>
                 </div>
@@ -413,7 +415,10 @@ export function ProcessControlLab() {
                       htmlFor="ctrl-ti"
                       className="font-semibold text-slate-800"
                     >
-                      Integral Time (<MathInline latex="\tau_I" />)
+                      Integral Time{' '}
+                      <span className="whitespace-nowrap inline-flex items-baseline">
+                        (<MathInline latex="\tau_I" />)
+                      </span>
                     </label>
                     <span className="font-mono font-bold text-teal-800">
                       {isPIorPID
@@ -436,18 +441,15 @@ export function ProcessControlLab() {
                       }
                       className="w-full accent-teal-600"
                     />
-                    <input
-                      type="number"
+                    <NumericDraftInput
                       aria-label="Integral Time (tau_I, s) numeric input"
                       min={0.5}
                       max={200}
                       step={0.5}
                       disabled={!isPIorPID}
                       value={inputs.integralTime_Ti_s}
-                      onChange={(e) =>
-                        updateInput('integralTime_Ti_s', Number(e.target.value))
-                      }
-                      className="w-20 rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('integralTime_Ti_s', val)}
+                      className="w-24 min-w-[6rem] rounded-md border border-slate-300 px-2 py-1 text-right font-mono text-xs text-slate-900 tabular-nums"
                     />
                   </div>
                 </div>
@@ -459,7 +461,10 @@ export function ProcessControlLab() {
                       htmlFor="ctrl-td"
                       className="font-semibold text-slate-800"
                     >
-                      Derivative Time (<MathInline latex="\tau_D" />)
+                      Derivative Time{' '}
+                      <span className="whitespace-nowrap inline-flex items-baseline">
+                        (<MathInline latex="\tau_D" />)
+                      </span>
                     </label>
                     <span className="font-mono font-bold text-teal-800">
                       {isPID
@@ -485,21 +490,15 @@ export function ProcessControlLab() {
                       }
                       className="w-full accent-teal-600"
                     />
-                    <input
-                      type="number"
+                    <NumericDraftInput
                       aria-label="Derivative Time (tau_D, s) numeric input"
                       min={0}
                       max={60}
                       step={0.25}
                       disabled={!isPID}
                       value={inputs.derivativeTime_Td_s}
-                      onChange={(e) =>
-                        updateInput(
-                          'derivativeTime_Td_s',
-                          Number(e.target.value)
-                        )
-                      }
-                      className="w-20 rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('derivativeTime_Td_s', val)}
+                      className="w-24 min-w-[6rem] rounded-md border border-slate-300 px-2 py-1 text-right font-mono text-xs text-slate-900 tabular-nums"
                     />
                   </div>
                 </div>
@@ -555,21 +554,15 @@ export function ProcessControlLab() {
                       >
                         Min Signal <MathInline latex="U_{\min}" /> (%)
                       </label>
-                      <input
+                      <NumericDraftInput
                         id="ctrl-umin"
-                        type="number"
                         aria-label="Minimum Actuator Signal (U_min, %MV)"
                         min={-50}
                         max={90}
                         step={5}
                         value={inputs.actuatorMin_Umin}
-                        onChange={(e) =>
-                          updateInput(
-                            'actuatorMin_Umin',
-                            Number(e.target.value)
-                          )
-                        }
-                        className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                        onCommit={(val) => updateInput('actuatorMin_Umin', val)}
+                        className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900 tabular-nums"
                       />
                     </div>
                     <div>
@@ -579,21 +572,15 @@ export function ProcessControlLab() {
                       >
                         Max Signal <MathInline latex="U_{\max}" /> (%)
                       </label>
-                      <input
+                      <NumericDraftInput
                         id="ctrl-umax"
-                        type="number"
                         aria-label="Maximum Actuator Signal (U_max, %MV)"
                         min={10}
                         max={150}
                         step={5}
                         value={inputs.actuatorMax_Umax}
-                        onChange={(e) =>
-                          updateInput(
-                            'actuatorMax_Umax',
-                            Number(e.target.value)
-                          )
-                        }
-                        className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                        onCommit={(val) => updateInput('actuatorMax_Umax', val)}
+                        className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900 tabular-nums"
                       />
                     </div>
                   </div>
@@ -638,7 +625,10 @@ export function ProcessControlLab() {
                       htmlFor="proc-kp"
                       className="font-semibold text-slate-800"
                     >
-                      Process Gain (<MathInline latex="K_p" />)
+                      Process Gain{' '}
+                      <span className="whitespace-nowrap inline-flex items-baseline">
+                        (<MathInline latex="K_p" />)
+                      </span>
                     </label>
                     <span className="font-mono font-bold text-slate-900">
                       {inputs.processGain_Kp.toFixed(2)} %PV/%MV
@@ -658,17 +648,14 @@ export function ProcessControlLab() {
                       }
                       className="w-full accent-teal-600"
                     />
-                    <input
-                      type="number"
+                    <NumericDraftInput
                       aria-label="Process Gain (Kp, %PV/%MV) numeric input"
                       min={0.1}
                       max={10}
                       step={0.1}
                       value={inputs.processGain_Kp}
-                      onChange={(e) =>
-                        updateInput('processGain_Kp', Number(e.target.value))
-                      }
-                      className="w-20 rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('processGain_Kp', val)}
+                      className="w-24 min-w-[6rem] rounded-md border border-slate-300 px-2 py-1 text-right font-mono text-xs text-slate-900 tabular-nums"
                     />
                   </div>
                 </div>
@@ -680,7 +667,10 @@ export function ProcessControlLab() {
                       htmlFor="proc-tau"
                       className="font-semibold text-slate-800"
                     >
-                      Time Constant (<MathInline latex="\tau" />)
+                      Time Constant{' '}
+                      <span className="whitespace-nowrap inline-flex items-baseline">
+                        (<MathInline latex="\tau" />)
+                      </span>
                     </label>
                     <span className="font-mono font-bold text-slate-900">
                       {inputs.timeConstant_tau_s.toFixed(1)} s
@@ -703,20 +693,14 @@ export function ProcessControlLab() {
                       }
                       className="w-full accent-teal-600"
                     />
-                    <input
-                      type="number"
+                    <NumericDraftInput
                       aria-label="Process Time Constant (tau, s) numeric input"
                       min={1}
                       max={200}
                       step={1}
                       value={inputs.timeConstant_tau_s}
-                      onChange={(e) =>
-                        updateInput(
-                          'timeConstant_tau_s',
-                          Number(e.target.value)
-                        )
-                      }
-                      className="w-20 rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('timeConstant_tau_s', val)}
+                      className="w-24 min-w-[6rem] rounded-md border border-slate-300 px-2 py-1 text-right font-mono text-xs text-slate-900 tabular-nums"
                     />
                   </div>
                 </div>
@@ -728,7 +712,10 @@ export function ProcessControlLab() {
                       htmlFor="proc-theta"
                       className="font-semibold text-slate-800"
                     >
-                      Dead Time / Delay (<MathInline latex="\theta" />)
+                      Dead Time / Delay{' '}
+                      <span className="whitespace-nowrap inline-flex items-baseline">
+                        (<MathInline latex="\theta" />)
+                      </span>
                     </label>
                     <span className="font-mono font-bold text-slate-900">
                       {inputs.deadTime_theta_s.toFixed(1)} s
@@ -748,17 +735,14 @@ export function ProcessControlLab() {
                       }
                       className="w-full accent-teal-600"
                     />
-                    <input
-                      type="number"
+                    <NumericDraftInput
                       aria-label="Process Dead Time (theta, s) numeric input"
                       min={0}
                       max={100}
                       step={0.5}
                       value={inputs.deadTime_theta_s}
-                      onChange={(e) =>
-                        updateInput('deadTime_theta_s', Number(e.target.value))
-                      }
-                      className="w-20 rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('deadTime_theta_s', val)}
+                      className="w-24 min-w-[6rem] rounded-md border border-slate-300 px-2 py-1 text-right font-mono text-xs text-slate-900 tabular-nums"
                     />
                   </div>
                 </div>
@@ -772,18 +756,15 @@ export function ProcessControlLab() {
                     >
                       Initial <MathInline latex="Y_0" /> (%)
                     </label>
-                    <input
+                    <NumericDraftInput
                       id="proc-y0"
-                      type="number"
                       aria-label="Initial Process Output (Y_0, %PV)"
                       min={0}
                       max={100}
                       step={5}
                       value={inputs.initialOutput_Y0}
-                      onChange={(e) =>
-                        updateInput('initialOutput_Y0', Number(e.target.value))
-                      }
-                      className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('initialOutput_Y0', val)}
+                      className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900 tabular-nums"
                     />
                   </div>
                   <div>
@@ -793,21 +774,15 @@ export function ProcessControlLab() {
                     >
                       Horizon <MathInline latex="t_{\mathrm{sim}}" /> (s)
                     </label>
-                    <input
+                    <NumericDraftInput
                       id="proc-dur"
-                      type="number"
                       aria-label="Simulation Horizon (t_sim, s)"
                       min={20}
                       max={600}
                       step={10}
                       value={inputs.simulationDuration_s}
-                      onChange={(e) =>
-                        updateInput(
-                          'simulationDuration_s',
-                          Number(e.target.value)
-                        )
-                      }
-                      className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('simulationDuration_s', val)}
+                      className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900 tabular-nums"
                     />
                   </div>
                   <div>
@@ -817,18 +792,15 @@ export function ProcessControlLab() {
                     >
                       Step <MathInline latex="\Delta t" /> (s)
                     </label>
-                    <input
+                    <NumericDraftInput
                       id="proc-dt"
-                      type="number"
                       aria-label="Simulation Time Step (dt, s)"
                       min={0.05}
                       max={1.0}
                       step={0.05}
                       value={inputs.timeStep_dt_s}
-                      onChange={(e) =>
-                        updateInput('timeStep_dt_s', Number(e.target.value))
-                      }
-                      className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('timeStep_dt_s', val)}
+                      className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900 tabular-nums"
                     />
                   </div>
                 </div>

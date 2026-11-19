@@ -138,11 +138,11 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
           </div>
         </div>
 
-        {/* Discipline Filter Tabs */}
+        {/* Discipline Filter Controls */}
         <div className="pt-4 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div
             className="flex flex-wrap items-center gap-1.5"
-            role="tablist"
+            role="group"
             aria-label="Filter laboratories by chemical engineering discipline"
           >
             {DISCIPLINE_TABS.map((tab) => {
@@ -151,13 +151,12 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
                 <button
                   key={tab.id}
                   type="button"
-                  role="tab"
-                  aria-selected={isSelected}
+                  aria-pressed={isSelected}
                   onClick={() => setDiscipline(tab.id)}
                   className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 ${
                     isSelected
                       ? 'bg-slate-900 text-white shadow-2xs'
-                      : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
+                      : 'bg-slate-100 text-slate-700 hover:text-slate-900 hover:bg-slate-200/70'
                   }`}
                   data-testid={`directory-filter-${tab.id}`}
                 >
@@ -167,8 +166,8 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
             })}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
-            <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-slate-600 font-mono">
+            <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0" aria-hidden="true" />
             <span>Showing {filteredModules.length} of 6 Laboratories</span>
           </div>
         </div>
@@ -213,12 +212,12 @@ export function LabsDirectory({ onOpenLab }: LabsDirectoryProps) {
                         <div className="text-[11px] font-semibold text-teal-700 truncate">
                           {module.category}
                         </div>
-                        <div className="text-[11px] font-mono text-slate-500">
+                        <div className="text-[11px] font-mono text-slate-600">
                           LAB 0{labNumber} · {module.level}
                         </div>
                       </div>
                     </div>
-                    <span className="text-[11px] font-mono text-slate-400 whitespace-nowrap shrink-0">
+                    <span className="text-[11px] font-mono text-slate-600 whitespace-nowrap shrink-0">
                       {module.duration}
                     </span>
                   </div>

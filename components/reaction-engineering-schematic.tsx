@@ -7,6 +7,7 @@ import {
   ReactionEngineeringResults,
 } from '@/lib/reaction-engineering';
 import { formatReactionMobileLabels } from '@/lib/schematic-formatting';
+import { LabModelScopeDisclosure, MathInline } from '@/components/lab-shared';
 
 interface ReactionSchematicProps {
   inputs: ReactionEngineeringInputs;
@@ -55,18 +56,33 @@ export function ReactionEngineeringSchematic({
         </div>
       </div>
 
-      {/* Scope Clarification */}
-      <div className="mb-4 px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-lg text-xs text-slate-600 leading-relaxed">
+      {/* Scope Clarification (Progressive Disclosure) */}
+      <LabModelScopeDisclosure
+        badge="Ideal Isothermal Model"
+        summary="Constant-density first-order $A \to B$ ($-r_A = k C_A$)."
+        id="rxn-model-scope"
+      >
         <strong className="text-slate-800">Reaction Model Scope:</strong> Isothermal,
         constant-density, single-phase irreversible first-order reaction{' '}
-        <span className="font-mono font-semibold text-slate-800">A → B</span> with{' '}
-        <span className="font-mono font-semibold text-slate-800">−rA = k·CA</span>.{' '}
-        {reactorType === 'batch'
-          ? 'Reported batch time t represents active reaction duration only (excluding filling, emptying, cleaning, and turnaround).'
-          : reactorType === 'cstr'
-          ? 'Perfect mixing assumes vessel interior concentration everywhere equals outlet CA (no axial concentration profile).'
-          : 'Ideal plug flow assumes flat radial velocity and zero axial dispersion across volume V.'}
-      </div>
+        <MathInline latex="A \to B" /> with{' '}
+        <MathInline latex="-r_A = k C_A" />.{' '}
+        {reactorType === 'batch' ? (
+          <>
+            Reported batch time <MathInline latex="t" /> represents active reaction duration only
+            (excluding filling, emptying, cleaning, and turnaround).
+          </>
+        ) : reactorType === 'cstr' ? (
+          <>
+            Perfect mixing assumes vessel interior concentration everywhere equals outlet{' '}
+            <MathInline latex="C_A" /> (no axial concentration profile).
+          </>
+        ) : (
+          <>
+            Ideal plug flow assumes flat radial velocity and zero axial dispersion across volume{' '}
+            <MathInline latex="V" />.
+          </>
+        )}
+      </LabModelScopeDisclosure>
 
       {/* Mobile Reactor-Specific Schematic (< 640px) — Dynamically Switches Between Batch, CSTR, and PFR */}
       <div
@@ -327,7 +343,8 @@ export function ReactionEngineeringSchematic({
           type="button"
           onClick={() => setShowDesktopOnMobile((prev) => !prev)}
           aria-expanded={showDesktopOnMobile}
-          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+          aria-controls="reaction-engineering-desktop-schematic"
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
         >
           <span>
             {showDesktopOnMobile
@@ -335,15 +352,16 @@ export function ReactionEngineeringSchematic({
               : 'Inspect Detailed Desktop Blueprint (Scrollable)'}
           </span>
           {showDesktopOnMobile ? (
-            <ChevronUp className="w-3.5 h-3.5 text-teal-700" />
+            <ChevronUp className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
           ) : (
-            <ChevronDown className="w-3.5 h-3.5 text-teal-700" />
+            <ChevronDown className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
           )}
         </button>
       </div>
 
       {/* Tablet & Desktop Full SVG Schematic (>= 640px, or expanded on mobile) */}
       <div
+        id="reaction-engineering-desktop-schematic"
         className={
           showDesktopOnMobile
             ? 'mt-3 sm:mt-0 w-full overflow-x-auto'

@@ -165,14 +165,14 @@ export function PureFluidPVTSchematic({ results }: PureFluidPVTSchematicProps) {
           </g>
         </svg>
 
-        <p className="text-[10px] text-slate-400 text-center leading-snug">
-          Conceptual molar-volume comparison (molecular dots illustrate covolume b &amp; attraction aα, not simulated coordinates).
+        <p className="text-[11px] text-slate-300 text-center leading-snug">
+          Conceptual molar-volume comparison (molecular dots illustrate covolume <MathInline latex="b" /> &amp; attraction <MathInline latex="a\alpha" />, not simulated coordinates).
         </p>
 
         {/* Molecular Interaction Balance Readout Card */}
         <div className="rounded-lg border border-slate-800 bg-slate-900/90 p-2.5 space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-1 border-b border-slate-800 pb-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-teal-300">
               Molecular Interaction Balance
             </span>
             <span className="font-mono text-[11px] font-semibold text-white">
@@ -181,19 +181,19 @@ export function PureFluidPVTSchematic({ results }: PureFluidPVTSchematicProps) {
           </div>
           <div className="grid grid-cols-1 min-[350px]:grid-cols-2 gap-x-3 gap-y-1.5 font-mono text-[11px]">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-slate-400">Repulsive P_rep</span>
+              <span className="text-slate-300">Repulsive <MathInline latex="P_{\mathrm{rep}}" /></span>
               <span className="font-bold text-sky-300">{labels.repulsiveBarLabel}</span>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-slate-400">Attractive P_att</span>
-              <span className="font-bold text-rose-400">{labels.attractiveBarLabel}</span>
+              <span className="text-slate-300">Attractive <MathInline latex="P_{\mathrm{att}}" /></span>
+              <span className="font-bold text-rose-300">{labels.attractiveBarLabel}</span>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-slate-400">Covolume (v/b)</span>
+              <span className="text-slate-300">Covolume <span className="whitespace-nowrap">(<MathInline latex="v/b" />)</span></span>
               <span className="font-bold text-slate-100">{labels.covolumeRatioLabel}</span>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-slate-400">Vol. Deviation</span>
+              <span className="text-slate-300">Vol. Deviation</span>
               <span
                 className={`font-bold ${
                   results.volumeDeviationPercent < 0 ? 'text-teal-300' : 'text-amber-300'
@@ -203,7 +203,7 @@ export function PureFluidPVTSchematic({ results }: PureFluidPVTSchematicProps) {
               </span>
             </div>
             <div className="flex items-center justify-between gap-2 min-[350px]:col-span-2 pt-1 border-t border-slate-800">
-              <span className="text-slate-400">Cubic Z Roots</span>
+              <span className="text-slate-300">Cubic <MathInline latex="Z" /> Roots</span>
               <span
                 className={`font-bold ${
                   results.rootDiagnosis.hasMultipleValidRoots ? 'text-purple-300' : 'text-emerald-300'
@@ -220,7 +220,8 @@ export function PureFluidPVTSchematic({ results }: PureFluidPVTSchematicProps) {
           type="button"
           onClick={() => setShowDesktopOnMobile((prev) => !prev)}
           aria-expanded={showDesktopOnMobile}
-          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+          aria-controls="thermo-pvt-desktop-schematic"
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
         >
           <span>
             {showDesktopOnMobile
@@ -237,6 +238,7 @@ export function PureFluidPVTSchematic({ results }: PureFluidPVTSchematicProps) {
 
       {/* Tablet & Desktop Full Compression Cell SVG (>= 640px, or expanded on mobile) */}
       <div
+        id="thermo-pvt-desktop-schematic"
         className={
           showDesktopOnMobile
             ? 'mt-3 sm:mt-0 overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-950 p-3'
@@ -654,21 +656,21 @@ export function BinaryVLESchematic({ results }: BinaryVLESchematicProps) {
               Raoult&apos;s Law Pressures
             </div>
             <div className="flex justify-between gap-2 font-mono">
-              <span className="text-slate-400">P_A^sat / P_B^sat</span>
+              <span className="text-slate-300"><MathInline latex="P_A^{\mathrm{sat}} / P_B^{\mathrm{sat}}" /></span>
               <span className="text-slate-100 font-semibold">
                 {results.psatA_kPa.toFixed(0)} / {results.psatB_kPa.toFixed(0)} kPa
               </span>
             </div>
             <div className="flex justify-between gap-2 font-mono">
-              <span className="text-teal-300">Partial p_A</span>
+              <span className="text-teal-300">Partial <MathInline latex="p_A" /></span>
               <span className="text-teal-300 font-bold">{results.partialPressureA_kPa.toFixed(2)} kPa</span>
             </div>
             <div className="flex justify-between gap-2 font-mono">
-              <span className="text-sky-300">Partial p_B</span>
+              <span className="text-sky-300">Partial <MathInline latex="p_B" /></span>
               <span className="text-sky-300 font-bold">{results.partialPressureB_kPa.toFixed(2)} kPa</span>
             </div>
             <div className="flex justify-between gap-2 font-mono border-t border-slate-800 pt-1">
-              <span className="text-slate-300">P_bub / P_dew</span>
+              <span className="text-slate-300"><MathInline latex="P_{\mathrm{bub}} / P_{\mathrm{dew}}" /></span>
               <span className="text-amber-300 font-bold">
                 {results.bubblePressure_kPa.toFixed(1)} / {results.dewPressureAtComposition_kPa.toFixed(1)}
               </span>
@@ -676,29 +678,29 @@ export function BinaryVLESchematic({ results }: BinaryVLESchematicProps) {
           </div>
 
           <div className="rounded-lg border border-slate-800 bg-slate-900/90 p-2.5 space-y-1">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300">
               Dalton Enrichment
             </div>
             <div className="flex justify-between gap-2 font-mono">
-              <span className="text-slate-400">Liquid x_A/x_B</span>
+              <span className="text-slate-300">Liquid <MathInline latex="x_A/x_B" /></span>
               <span className="text-slate-100 font-semibold">
                 {results.xA.toFixed(3)} / {results.xB.toFixed(3)}
               </span>
             </div>
             <div className="flex justify-between gap-2 font-mono">
-              <span className="text-teal-300">Vapor y_A/y_B</span>
+              <span className="text-teal-300">Vapor <MathInline latex="y_A/y_B" /></span>
               <span className="text-teal-300 font-bold">
                 {results.equilibriumVapor_yA.toFixed(3)} / {results.equilibriumVapor_yB.toFixed(3)}
               </span>
             </div>
             <div className="flex justify-between gap-2 font-mono">
-              <span className="text-amber-200">Dew Liq x_A</span>
+              <span className="text-amber-200">Dew Liq <MathInline latex="x_A" /></span>
               <span className="text-amber-200 font-semibold">
                 {results.equilibriumLiquidAtDew_xA.toFixed(3)}
               </span>
             </div>
             <div className="flex justify-between gap-2 font-mono border-t border-slate-800 pt-1">
-              <span className="text-slate-300">y_A/x_A · Vol.</span>
+              <span className="text-slate-300"><MathInline latex="y_A/x_A" /> · Vol.</span>
               <span className="text-emerald-300 font-bold">
                 {labels.enrichmentLabel} ({results.moreVolatileComponent})
               </span>
@@ -711,7 +713,8 @@ export function BinaryVLESchematic({ results }: BinaryVLESchematicProps) {
           type="button"
           onClick={() => setShowDesktopOnMobile((prev) => !prev)}
           aria-expanded={showDesktopOnMobile}
-          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+          aria-controls="thermo-vle-desktop-schematic"
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
         >
           <span>
             {showDesktopOnMobile
@@ -728,6 +731,7 @@ export function BinaryVLESchematic({ results }: BinaryVLESchematicProps) {
 
       {/* Tablet & Desktop Full VLE Equilibrium Cell SVG (>= 640px, or expanded on mobile) */}
       <div
+        id="thermo-vle-desktop-schematic"
         className={
           showDesktopOnMobile
             ? 'mt-3 sm:mt-0 overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-950 p-3'

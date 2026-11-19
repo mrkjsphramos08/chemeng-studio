@@ -16,6 +16,7 @@ import {
   LabSliderControlConfig,
   LabValidationAlerts,
   LabWorkspaceHeader,
+  MathInline,
 } from '@/components/lab-shared';
 import { HeatExchangerSchematic } from './heat-exchanger-schematic';
 import { HeatExchangerCharts, SavedScenario } from './heat-exchanger-charts';
@@ -206,10 +207,11 @@ export function HeatExchangerLab() {
     rawValue: string
   ) => {
     const parsed = parseFloat(rawValue);
+    if (!Number.isFinite(parsed)) return;
     setSelectedPresetId('custom');
     setInputs((prev) => ({
       ...prev,
-      [key]: Number.isNaN(parsed) ? 0 : parsed,
+      [key]: parsed,
     }));
   };
 
@@ -350,12 +352,14 @@ export function HeatExchangerLab() {
           onReset={handleReset}
           footerContent={
             results.isValid ? (
-              <div className="flex items-center justify-between text-slate-700 bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-lg font-mono text-[11px] tabular-nums">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-slate-700 bg-slate-50 border border-slate-200 px-3 py-2.5 rounded-lg font-mono text-[11px] tabular-nums">
                 <span className="inline-flex items-center gap-1.5 font-sans font-semibold text-emerald-900">
                   <CheckCircle2 className="w-4 h-4 text-emerald-700" />
                   First Law Verified
                 </span>
-                <span>|Qh − Qc| = {results.energyBalanceResidual_W.toExponential(1)} W</span>
+                <span className="whitespace-nowrap">
+                  <MathInline latex="|Q_h - Q_c|" /> = {results.energyBalanceResidual_W.toExponential(1)} W
+                </span>
               </div>
             ) : null
           }

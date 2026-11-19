@@ -23,7 +23,7 @@ import {
   generateFlowSweepSeries,
   generateMoodySeries,
 } from '@/lib/fluid-mechanics';
-import { LabChartCard } from '@/components/lab-shared';
+import { LabChartCard, MathInline } from '@/components/lab-shared';
 import { truncateScenarioTickLabel } from '@/lib/navigation';
 import { Plus, RotateCcw, Trash2 } from 'lucide-react';
 
@@ -288,13 +288,13 @@ export function FluidMechanicsCharts({
           footer={
             <>
               <span>
-                Darcy f_D ={' '}
+                Darcy <MathInline latex="f_D" /> ={' '}
                 {results.flowRegime === 'Zero Flow'
                   ? '—'
                   : results.darcyFrictionFactor.toFixed(5)}
               </span>
               <span>
-                Fanning f_F = f_D/4 ={' '}
+                Fanning <MathInline latex="f_F = f_D/4" /> ={' '}
                 {results.flowRegime === 'Zero Flow'
                   ? '—'
                   : results.fanningFrictionFactor.toFixed(5)}
@@ -409,12 +409,16 @@ export function FluidMechanicsCharts({
         <LabChartCard
           className="lg:col-span-5"
           title="Required Pump Head ($H$) vs. Flow Rate"
-          subtitle="System head $H = \Delta z + h_f + h_m$ combines static elevation rise ($\Delta z$) with flow-dependent major and minor friction losses."
+          subtitle="Static lift plus flow-dependent friction losses ($H = \Delta z + h_f + h_m$)."
           rightMeta={`Active $H$ = ${results.requiredPumpHead_m.toFixed(2)} m`}
           footer={
             <>
-              <span>Static Elevation Δz: {inputs.elevationDiff_m.toFixed(1)} m</span>
-              <span>Shaft Power Ps: {results.shaftPower_kW.toFixed(2)} kW</span>
+              <span>
+                Static Elevation <MathInline latex="\Delta z" />: {inputs.elevationDiff_m.toFixed(1)} m
+              </span>
+              <span>
+                Shaft Power <MathInline latex="P_s" />: {results.shaftPower_kW.toFixed(2)} kW
+              </span>
             </>
           }
         >

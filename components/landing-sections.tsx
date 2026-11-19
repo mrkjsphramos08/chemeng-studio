@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ArrowRight,
   CheckCircle2,
@@ -19,8 +19,9 @@ import {
 } from 'lucide-react';
 import { LABORATORY_MODULES, DEVELOPMENT_ROADMAP, LabModule } from '@/lib/labs-data';
 import { ActiveView } from './navbar';
-import { MathBlock, MathInline } from '@/components/lab-shared';
+import { MathBlock, MathInline, MathText } from '@/components/lab-shared';
 import { EntrolumeLogo } from './entrolume-logo';
+import { getNextTabIndex } from '@/lib/numeric-input';
 
 interface LandingSectionsProps {
   onOpenLab: (labId?: string) => void;
@@ -41,47 +42,47 @@ const HERO_PREVIEW_LABS: {
     id: 'heat-exchanger',
     code: 'LAB 01',
     shortTitle: 'Heat Exchanger',
-    domain: 'Countercurrent ε–NTU Thermal Analysis',
-    presetName: 'Baseline Water–Water (A = 12.0 m², U = 850 W/m²·K)',
+    domain: 'Countercurrent $\\varepsilon\\text{–}\\mathrm{NTU}$ Thermal Analysis',
+    presetName: 'Baseline Water–Water ($A = 12.0\\,\\mathrm{m}^2$, $U = 850\\,\\mathrm{W/(m^2\\cdot K)}$)',
     equationLatex:
       '\\varepsilon = \\frac{1 - \\exp\\left[-\\mathrm{NTU}(1 - C_r)\\right]}{1 - C_r \\exp\\left[-\\mathrm{NTU}(1 - C_r)\\right]}',
     metrics: [
-      { label: 'Heat Duty (Q)', value: '397.59 kW', sub: 'Q_max = 595.65 kW', accent: 'text-white' },
-      { label: 'Effectiveness (ε)', value: '66.75%', sub: 'NTU = 1.627 · C_r = 0.750', accent: 'text-teal-300' },
-      { label: 'Hot Outlet (T_h,out)', value: '72.44 °C', sub: 'Inlet: 120.0 °C', accent: 'text-rose-300' },
-      { label: 'Cold Outlet (T_c,out)', value: '88.41 °C', sub: 'Temperature Cross Active', accent: 'text-sky-300' },
+      { label: 'Heat Duty ($Q$)', value: '397.59 kW', sub: '$Q_{\\max}$ = 595.65 kW', accent: 'text-white' },
+      { label: 'Effectiveness ($\\varepsilon$)', value: '66.75%', sub: '$\\mathrm{NTU}$ = 1.627 · $C_r$ = 0.750', accent: 'text-teal-300' },
+      { label: 'Hot Outlet ($T_{h,\\mathrm{out}}$)', value: '72.44 °C', sub: 'Inlet: 120.0 °C', accent: 'text-rose-300' },
+      { label: 'Cold Outlet ($T_{c,\\mathrm{out}}$)', value: '88.41 °C', sub: 'Temperature Cross Active', accent: 'text-sky-300' },
     ],
-    conservationNote: 'First Law Verified: |Q_h − Q_c| < 10⁻¹² W',
+    conservationNote: 'First Law Verified: $|Q_h - Q_c| < 10^{-12}\\,\\mathrm{W}$',
   },
   {
     id: 'fluid-mechanics',
     code: 'LAB 02',
     shortTitle: 'Fluid Mechanics',
     domain: 'Darcy–Weisbach & Colebrook–White Hydraulics',
-    presetName: 'Commercial Steel Pipe (Q = 25.0 L/s, D = 0.10 m, L = 120 m)',
+    presetName: 'Commercial Steel Pipe ($Q = 25.0\\,\\mathrm{L/s}$, $D = 0.10\\,\\mathrm{m}$, $L = 120\\,\\mathrm{m}$)',
     equationLatex:
       'h_f = f_D \\frac{L}{D} \\frac{v^2}{2g}, \\quad \\frac{1}{\\sqrt{f_D}} = -2.0\\log_{10}\\!\\left(\\frac{\\varepsilon/D}{3.7} + \\frac{2.51}{\\mathrm{Re}\\sqrt{f_D}}\\right)',
     metrics: [
-      { label: 'Reynolds Number (Re)', value: '317,831', sub: 'Turbulent Flow Regime', accent: 'text-teal-300' },
-      { label: 'Darcy Friction (f_D)', value: '0.01800', sub: 'ε/D = 0.00045', accent: 'text-white' },
-      { label: 'Total Friction Loss', value: '14.51 m', sub: 'ΔP_f = 142.1 kPa', accent: 'text-amber-300' },
-      { label: 'Required Pump Head', value: '29.51 m', sub: 'P_shaft = 9.63 kW (η = 75%)', accent: 'text-sky-300' },
+      { label: 'Reynolds Number ($\\mathrm{Re}$)', value: '317,831', sub: 'Turbulent Flow Regime', accent: 'text-teal-300' },
+      { label: 'Darcy Friction ($f_D$)', value: '0.01800', sub: '$\\varepsilon/D$ = 0.00045', accent: 'text-white' },
+      { label: 'Total Friction Loss', value: '14.51 m', sub: '$\\Delta P_f$ = 142.1 kPa', accent: 'text-amber-300' },
+      { label: 'Required Pump Head', value: '29.51 m', sub: '$P_{\\mathrm{shaft}}$ = 9.63 kW ($\\eta$ = 75%)', accent: 'text-sky-300' },
     ],
-    conservationNote: 'Colebrook–White Residual: < 10⁻¹²',
+    conservationNote: 'Colebrook–White Residual: $< 10^{-12}$',
   },
   {
     id: 'reaction-engineering',
     code: 'LAB 03',
     shortTitle: 'Reaction Eng.',
-    domain: 'Isothermal First-Order Reactor Design (A → B)',
-    presetName: 'CSTR vs. PFR Comparison (k = 0.15 s⁻¹, τ = 10.0 s)',
+    domain: 'Isothermal First-Order Reactor Design ($A \\to B$)',
+    presetName: 'CSTR vs. PFR Comparison ($k = 0.15\\,\\mathrm{s}^{-1}$, $\\tau = 10.0\\,\\mathrm{s}$)',
     equationLatex:
       'X_{\\mathrm{PFR}} = 1 - e^{-\\mathrm{Da}}, \\quad X_{\\mathrm{CSTR}} = \\frac{\\mathrm{Da}}{1 + \\mathrm{Da}}, \\quad \\mathrm{Da} = k\\tau',
     metrics: [
-      { label: 'Damköhler Number (Da)', value: '1.500', sub: 'k = 0.15 s⁻¹ · τ = 10.0 s', accent: 'text-white' },
-      { label: 'PFR Conversion (X_PFR)', value: '77.69%', sub: 'C_A,out = 22.31 mol/m³', accent: 'text-teal-300' },
-      { label: 'CSTR Conversion (X_CSTR)', value: '60.00%', sub: 'C_A,out = 40.00 mol/m³', accent: 'text-amber-300' },
-      { label: 'Volume Ratio (V_CSTR/V_PFR)', value: '2.26×', sub: 'At X_target = 80%', accent: 'text-sky-300' },
+      { label: 'Damköhler Number ($\\mathrm{Da}$)', value: '1.500', sub: '$k$ = 0.15 s⁻¹ · $\\tau$ = 10.0 s', accent: 'text-white' },
+      { label: 'PFR Conversion ($X_{\\mathrm{PFR}}$)', value: '77.69%', sub: '$C_{A,\\mathrm{out}}$ = 22.31 mol/m³', accent: 'text-teal-300' },
+      { label: 'CSTR Conversion ($X_{\\mathrm{CSTR}}$)', value: '60.00%', sub: '$C_{A,\\mathrm{out}}$ = 40.00 mol/m³', accent: 'text-amber-300' },
+      { label: 'Volume Ratio ($V_{\\mathrm{CSTR}}/V_{\\mathrm{PFR}}$)', value: '2.26×', sub: 'At $X_{\\mathrm{target}}$ = 80%', accent: 'text-sky-300' },
     ],
     conservationNote: 'Exact Analytical Mole Balance Solution',
   },
@@ -90,14 +91,14 @@ const HERO_PREVIEW_LABS: {
     code: 'LAB 04',
     shortTitle: 'Distillation',
     domain: 'Binary McCabe–Thiele Equilibrium Stage Stepping',
-    presetName: 'Saturated Liquid Feed (α = 2.50, z_F = 0.50, x_D = 0.95, x_B = 0.05)',
+    presetName: 'Saturated Liquid Feed ($\\alpha = 2.50$, $z_F = 0.50$, $x_D = 0.95$, $x_B = 0.05$)',
     equationLatex:
       'y^* = \\frac{\\alpha x}{1 + (\\alpha - 1)x}, \\quad y_{\\mathrm{ROL}} = \\frac{R}{R+1}x + \\frac{x_D}{R+1}',
     metrics: [
-      { label: 'Theoretical Stages (N)', value: '12 Stages', sub: '11 Trays + Partial Reboiler', accent: 'text-teal-300' },
+      { label: 'Theoretical Stages ($N$)', value: '12 Stages', sub: '11 Trays + Partial Reboiler', accent: 'text-teal-300' },
       { label: 'Optimal Feed Stage', value: 'Stage 6', sub: 'From top condenser', accent: 'text-white' },
-      { label: 'Minimum Reflux (R_min)', value: '1.169', sub: 'Operating R = 1.80 (1.54× R_min)', accent: 'text-amber-300' },
-      { label: 'Distillate / Bottoms', value: '50.0 / 50.0', sub: 'kmol/h (F = 100 kmol/h)', accent: 'text-sky-300' },
+      { label: 'Minimum Reflux ($R_{\\min}$)', value: '1.169', sub: 'Operating $R$ = 1.80 ($1.54\\times R_{\\min}$)', accent: 'text-amber-300' },
+      { label: 'Distillate / Bottoms', value: '50.0 / 50.0', sub: 'kmol/h ($F$ = 100 kmol/h)', accent: 'text-sky-300' },
     ],
     conservationNote: 'Component & Overall Molar Balance Verified',
   },
@@ -106,14 +107,14 @@ const HERO_PREVIEW_LABS: {
     code: 'LAB 05',
     shortTitle: 'Thermodynamics',
     domain: 'Peng–Robinson EOS & Binary Raoult–Dalton VLE',
-    presetName: 'Carbon Dioxide Near-Critical Compression (T = 320 K, P = 60 bar)',
+    presetName: 'Carbon Dioxide Near-Critical Compression ($T = 320\\,\\mathrm{K}$, $P = 60\\,\\mathrm{bar}$)',
     equationLatex:
       'Z^3 - (1 - B)Z^2 + (A - 2B - 3B^2)Z - (AB - B^2 - B^3) = 0',
     metrics: [
-      { label: 'PR Compressibility (Z)', value: '0.7016', sub: 'Ideal Z = 1.0000', accent: 'text-teal-300' },
-      { label: 'PR Molar Volume (v_PR)', value: '0.3111 L/mol', sub: 'v_ideal = 0.4434 L/mol', accent: 'text-white' },
+      { label: 'PR Compressibility ($Z$)', value: '0.7016', sub: 'Ideal $Z$ = 1.0000', accent: 'text-teal-300' },
+      { label: 'PR Molar Volume ($v_{\\mathrm{PR}}$)', value: '0.3111 L/mol', sub: '$v_{\\mathrm{ideal}}$ = 0.4434 L/mol', accent: 'text-white' },
       { label: 'Ideal-Gas Deviation', value: '−29.84%', sub: 'Attractive forces dominate', accent: 'text-amber-300' },
-      { label: 'Reduced State (T_r, P_r)', value: '1.052, 0.813', sub: 'Supercritical Fluid Regime', accent: 'text-sky-300' },
+      { label: 'Reduced State ($T_r, P_r$)', value: '1.052, 0.813', sub: 'Supercritical Fluid Regime', accent: 'text-sky-300' },
     ],
     conservationNote: 'NIST Reference Constants (CO₂, N₂, CH₄, C₂H₆)',
   },
@@ -122,14 +123,14 @@ const HERO_PREVIEW_LABS: {
     code: 'LAB 06',
     shortTitle: 'Process Control',
     domain: 'SISO FOPDT Dynamics & PID Feedback Control',
-    presetName: 'Balanced PI Control (K_p = 1.2, τ = 20 s, θ = 4 s, K_c = 1.8, τ_I = 18 s)',
+    presetName: 'Balanced PI Control ($K_p = 1.2$, $\\tau = 20\\,\\mathrm{s}$, $\\theta = 4\\,\\mathrm{s}$, $K_c = 1.8$, $\\tau_I = 18\\,\\mathrm{s}$)',
     equationLatex:
       '\\tau \\frac{dy(t)}{dt} + y(t) = K_p u(t - \\theta), \\quad u(t) = U_0 + K_c\\!\\left[e(t) + \\frac{1}{\\tau_I}\\int_0^t e(\\tau)\\,d\\tau\\right]',
     metrics: [
-      { label: 'Steady-State Error (e_ss)', value: '0.00 % PV', sub: 'Integral action eliminates offset', accent: 'text-teal-300' },
-      { label: '10–90% Rise Time (t_r)', value: '12.40 s', sub: 'Setpoint step +15% PV', accent: 'text-white' },
+      { label: 'Steady-State Error ($e_{\\mathrm{ss}}$)', value: '0.00 % PV', sub: 'Integral action eliminates offset', accent: 'text-teal-300' },
+      { label: '10–90% Rise Time ($t_r$)', value: '12.40 s', sub: 'Setpoint step +15% PV', accent: 'text-white' },
       { label: 'Peak Overshoot', value: '8.25%', sub: 'Well-damped closed-loop response', accent: 'text-sky-300' },
-      { label: 'Controllability (θ/τ)', value: '0.200', sub: 'Anti-windup clamping active', accent: 'text-amber-300' },
+      { label: 'Controllability ($\\theta/\\tau$)', value: '0.200', sub: 'Anti-windup clamping active', accent: 'text-amber-300' },
     ],
     conservationNote: 'Exact ZOH Step with Fractional Dead-Time Interpolation',
   },
@@ -154,7 +155,16 @@ function getModuleIcon(iconName: LabModule['iconName']) {
 
 export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsProps) {
   const [selectedPreviewIndex, setSelectedPreviewIndex] = useState(0);
+  const previewTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const activePreview = HERO_PREVIEW_LABS[selectedPreviewIndex];
+
+  const handlePreviewTabKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, idx: number) => {
+    const nextIdx = getNextTabIndex(idx, HERO_PREVIEW_LABS.length, e.key);
+    if (nextIdx === null) return;
+    e.preventDefault();
+    setSelectedPreviewIndex(nextIdx);
+    previewTabRefs.current[nextIdx]?.focus();
+  };
 
   const historicalMilestones = DEVELOPMENT_ROADMAP.filter(
     (stage) => stage.status === 'Implemented' || stage.status === 'Current Phase'
@@ -247,7 +257,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                     <span className="text-[11px] font-mono uppercase tracking-wider text-teal-400">
                       Interactive Simulation Preview · Verified Solver Output
                     </span>
-                    <span className="text-[11px] font-mono text-slate-400 whitespace-nowrap shrink-0">
+                    <span className="text-[11px] font-mono text-slate-300 whitespace-nowrap shrink-0">
                       {activePreview.code} / 06
                     </span>
                   </div>
@@ -263,17 +273,24 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                       return (
                         <button
                           key={lab.id}
+                          ref={(el) => {
+                            previewTabRefs.current[idx] = el;
+                          }}
                           type="button"
                           role="tab"
+                          id={`hero-preview-tab-${lab.id}`}
                           aria-selected={isSelected}
+                          aria-controls={`hero-preview-panel-${lab.id}`}
+                          tabIndex={isSelected ? 0 : -1}
                           onClick={() => setSelectedPreviewIndex(idx)}
+                          onKeyDown={(e) => handlePreviewTabKeyDown(e, idx)}
                           className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-left flex items-center gap-1.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-teal-400 ${
                             isSelected
                               ? 'bg-teal-600 text-white font-semibold shadow-2xs'
                               : 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800'
                           }`}
                         >
-                          <span className="font-mono text-[10px] opacity-75">
+                          <span className="font-mono text-[11px] opacity-90">
                             0{idx + 1}
                           </span>
                           <span className="truncate">{lab.shortTitle}</span>
@@ -284,21 +301,27 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                 </div>
 
                 {/* Active Lab Preview Body */}
-                <div className="p-5 sm:p-6 space-y-4">
+                <div
+                  role="tabpanel"
+                  id={`hero-preview-panel-${activePreview.id}`}
+                  aria-labelledby={`hero-preview-tab-${activePreview.id}`}
+                  tabIndex={0}
+                  className="p-5 sm:p-6 space-y-4 focus-visible:outline-2 focus-visible:outline-teal-400"
+                >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <div className="text-xs font-medium text-teal-300">
-                        {activePreview.domain}
+                      <div className="text-xs font-medium text-teal-300 [&_.katex]:!text-teal-300">
+                        <MathText text={activePreview.domain} />
                       </div>
-                      <h2 className="text-base font-bold text-white mt-0.5">
-                        {activePreview.presetName}
+                      <h2 className="text-base font-bold text-white mt-0.5 [&_.katex]:!text-white">
+                        <MathText text={activePreview.presetName} />
                       </h2>
                     </div>
                   </div>
 
                   {/* Governing Equation Box */}
                   <div className="rounded-xl bg-slate-950 border border-slate-800 px-4 py-2.5 overflow-x-auto [&_.katex]:!text-slate-100 [&_.katex-display]:!text-slate-100">
-                    <div className="text-[10px] font-mono uppercase tracking-wider text-teal-400/90 mb-1">
+                    <div className="text-[11px] font-mono uppercase tracking-wider text-teal-300 mb-1">
                       Governing Mathematical Relation
                     </div>
                     <MathBlock
@@ -312,16 +335,18 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                     {activePreview.metrics.map((metric) => (
                       <div
                         key={metric.label}
-                        className="rounded-xl bg-slate-800/60 border border-slate-700/70 p-3"
+                        className="rounded-xl bg-slate-800/70 border border-slate-700/80 p-3"
                       >
-                        <div className="text-[11px] text-slate-400">{metric.label}</div>
+                        <div className="text-[11px] text-slate-300 [&_.katex]:!text-slate-200">
+                          <MathText text={metric.label} />
+                        </div>
                         <div
                           className={`text-base sm:text-lg font-mono font-semibold mt-0.5 tabular-nums ${metric.accent}`}
                         >
                           {metric.value}
                         </div>
-                        <div className="text-[11px] font-mono text-slate-400 mt-0.5">
-                          {metric.sub}
+                        <div className="text-[11px] font-mono text-slate-300 mt-0.5 [&_.katex]:!text-slate-200">
+                          <MathText text={metric.sub} />
                         </div>
                       </div>
                     ))}
@@ -329,9 +354,11 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
 
                   {/* Footer Verification & Direct Launch Action */}
                   <div className="pt-2 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-xs text-slate-300 font-mono">
-                      <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
-                      <span>{activePreview.conservationNote}</span>
+                    <div className="flex items-center gap-2 text-xs text-slate-200 font-mono [&_.katex]:!text-slate-200">
+                      <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" aria-hidden="true" />
+                      <span>
+                        <MathText text={activePreview.conservationNote} />
+                      </span>
                     </div>
                     <button
                       type="button"
@@ -340,7 +367,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
                       data-testid="hero-preview-launch"
                     >
                       Open {activePreview.shortTitle} Lab
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
                   </div>
                 </div>

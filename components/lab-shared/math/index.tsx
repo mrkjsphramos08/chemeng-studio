@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderLatexToHtml, parseMathTextSegments } from '@/lib/katex-render';
+import { renderLatexToHtml, parseMathTextDisplayTokens } from '@/lib/katex-render';
 
 export interface MathInlineProps {
   latex: string;
@@ -57,7 +57,7 @@ export function MathBlock({
         dangerouslySetInnerHTML={{ __html: html }}
       />
       {equationNumber && (
-        <span className="shrink-0 font-mono text-xs font-medium text-slate-400 select-none">
+        <span className="shrink-0 font-mono text-xs font-medium text-slate-600 select-none">
           ({equationNumber})
         </span>
       )}
@@ -95,8 +95,8 @@ export function EquationDefinition({
         <span className="shrink-0 font-medium text-slate-900">
           <MathInline latex={symbolLatex} />
         </span>
-        <span className="text-slate-400 select-none">—</span>
-        <span className=" leading-snug text-slate-600">
+        <span className="text-slate-500 select-none" aria-hidden="true">—</span>
+        <span className="leading-snug text-slate-700">
           <MathText text={description} />
         </span>
       </div>
@@ -151,7 +151,7 @@ export function EngineeringEquation({
       {(label || badge || equationNumber) && (
         <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
           {label ? (
-            <span className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
+            <span className="text-[11px] font-semibold tracking-wider text-slate-600 uppercase">
               <MathText text={label} />
             </span>
           ) : (
@@ -159,12 +159,12 @@ export function EngineeringEquation({
           )}
           <div className="flex items-center gap-1.5">
             {badge && (
-              <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-600">
+              <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-slate-700">
                 <MathText text={badge} />
               </span>
             )}
             {equationNumber && (
-              <span className="font-mono text-[11px] font-medium text-slate-400">
+              <span className="font-mono text-[11px] font-medium text-slate-600">
                 ({equationNumber})
               </span>
             )}
@@ -182,7 +182,7 @@ export function EngineeringEquation({
 
       {definitions && definitions.length > 0 && (
         <div className="mt-2 border-t border-slate-100 pt-2">
-          <div className="mb-1 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+          <div className="mb-1 text-[11px] font-semibold tracking-wider text-slate-600 uppercase">
             Where
           </div>
           <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
@@ -263,7 +263,7 @@ export function EquationCard({
 
       {definitions && definitions.length > 0 && (
         <div className="mt-3 border-t border-slate-200/80 pt-2.5">
-          <div className="mb-1.5 text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
+          <div className="mb-1.5 text-[11px] font-semibold tracking-wider text-slate-600 uppercase">
             Nomenclature &amp; Units
           </div>
           <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
@@ -297,21 +297,37 @@ export function MathText({ text, className = '' }: MathTextProps) {
     return <>{text}</>;
   }
 
-  if (!text.includes('$')) {
+  const tokens = parseMathTextDisplayTokens(text);
+  if (tokens.length === 1 && tokens[0].type === 'text') {
     return className ? <span className={className}>{text}</span> : <>{text}</>;
   }
 
-  const segments = parseMathTextSegments(text);
   return (
     <span className={className}>
-      {segments.map((seg, idx) => {
-        if (seg.type === 'inline-math') {
-          return <MathInline key={idx} latex={seg.content} className="mx-0.5" />;
+      {tokens.map((tok, idx) => {
+        if (tok.type === 'nowrap-inline-math') {
+          return (
+            <span key={idx} className="whitespace-nowrap inline-flex items-baseline">
+              <span>{tok.prefix}</span>
+              <MathInline latex={tok.content} className="mx-0.5" />
+              <span>{tok.suffix}</span>
+            </span>
+          );
         }
-        if (seg.type === 'block-math') {
-          return <MathBlock key={idx} latex={seg.content} className="my-1.5" />;
+        if (tok.type === 'nowrap-text') {
+          return (
+            <span key={idx} className="whitespace-nowrap">
+              {tok.content}
+            </span>
+          );
         }
-        return <React.Fragment key={idx}>{seg.content}</React.Fragment>;
+        if (tok.type === 'inline-math') {
+          return <MathInline key={idx} latex={tok.content} className="mx-0.5" />;
+        }
+        if (tok.type === 'block-math') {
+          return <MathBlock key={idx} latex={tok.content} className="my-1.5" />;
+        }
+        return <React.Fragment key={idx}>{tok.content}</React.Fragment>;
       })}
     </span>
   );

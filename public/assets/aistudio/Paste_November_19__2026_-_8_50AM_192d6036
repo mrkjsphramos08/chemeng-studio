@@ -1,0 +1,990 @@
+# ENTROLUME — PHASE 2.5.3 / BATCH 5B
+## Accessibility, Mathematical Typography & Final UI/UX Refinement
+
+You are continuing development of **Entrolume**, an existing chemical engineering educational SaaS platform built with Next.js, TypeScript, Tailwind CSS, Recharts, KaTeX, modular scientific calculation engines, and SVG engineering schematics.
+
+This is **Batch 5B**, the final implementation batch of Phase 2.5.3: Content Simplification, Visual Hierarchy & Learning Experience Refinement.
+
+**Do not rebuild the application. Do not introduce new major features. Preserve all previously completed improvements.**
+
+---
+
+# 0. PROJECT CONTEXT
+
+Entrolume contains six implemented virtual laboratories:
+
+1. Heat Exchanger
+2. Fluid Mechanics
+3. Chemical Reaction Engineering
+4. Distillation & Separation Processes
+5. Chemical Engineering Thermodynamics
+6. Process Dynamics & Control
+
+### Previous implementation milestones
+
+**Batch 1 — Scientific Consistency & Critical Fixes**
+
+Corrected Distillation guided inquiry numerical inconsistencies, default equation disclosure behavior, tablet navigation overflow, numeric precision visibility, and identified SVG/mobile comparison clipping.
+
+**Batch 2 — Landing Page & Directory Simplification**
+
+Reduced redundant content, simplified laboratory cards, shortened descriptions, created compact laboratory launchers, and collapsed engineering release history.
+
+**Batch 3 — Shared Laboratory Workspace Refinement**
+
+Introduced compact workspace headers, unified Scenario selectors, simulation-first visualization ordering, and progressive disclosure of secondary KPI metrics.
+
+**Batch 4 — Thermodynamics & Process Control Refinement**
+
+Aligned Labs 05–06 with the simulation-first experience, consolidated specialized controls, removed redundant preset cards, and improved chart visibility.
+
+**Batch 5A — Mobile Scientific Schematics**
+
+Introduced dedicated mobile schematics for Labs 01–05, preserved desktop SVG diagrams, supported optional detailed blueprint inspection, and added solver-linked mobile formatting tests.
+
+The latest Batch 5A report recorded:
+
+- 94/94 automated tests passing
+- TypeScript validation passing
+- ESLint passing
+- Production build succeeding
+- Zero reported console errors
+- Successful responsive verification across six viewport sizes
+
+These are historical results from the preceding batch. Re-run the relevant checks after Batch 5B.
+
+### Manual Git workflow
+
+The project owner manages all Git commits and GitHub synchronization manually.
+
+**Do not run Git commands.**
+
+Do not commit, push, pull, merge, reset, checkout, initialize, or alter repository history.
+
+Implement the requested changes, verify them, and submit a detailed completion report.
+
+The project owner will manually commit after reviewing the implementation.
+
+---
+
+# 1. PRIMARY OBJECTIVE
+
+AGY's original comprehensive audit identified several remaining accessibility, mathematical typography, and interface-polish issues.
+
+Earlier batches addressed major structural problems.
+
+Batch 5B must resolve the remaining high-value refinements without destabilizing those improvements.
+
+Priorities:
+
+1. Keyboard accessibility and navigation
+2. Accessible interactive tabs and disclosures
+3. Text contrast and readability
+4. Mathematical typography
+5. Numeric input editing behavior
+6. Chart and comparison-table ergonomics
+7. Redundant visual containers and explanatory copy
+8. Final cross-laboratory responsive consistency
+
+**Guiding principle: Improve clarity and accessibility without removing scientific depth or rebuilding working components.**
+
+Do not make changes purely for decoration.
+
+---
+
+# TASK 1 — Add Global Skip-to-Content Navigation
+
+**Potential files:**
+
+- `components/navbar.tsx`
+- `app/layout.tsx`
+- Main view/layout components, only where necessary
+- `app/globals.css`
+
+AGY identified that keyboard users must navigate through numerous header links and laboratory switcher buttons before reaching the main content.
+
+## Required implementation
+
+Add an accessible skip link:
+
+**Skip to main content**
+
+The link must:
+
+- Appear before repeated header navigation in keyboard tab order.
+- Be visually hidden until keyboard-focused.
+- Become clearly visible when focused.
+- Point to the current main content area.
+- Work on the Landing Page, Directory, and all six laboratories.
+- Remain functional when switching between `?view=...` routes.
+
+Use an appropriate target such as:
+
+`<main id="main-content">`
+
+Avoid introducing duplicate IDs.
+
+Ensure the skip link moves keyboard navigation to the main content, not merely changes the URL fragment without usable focus behavior.
+
+Where necessary, make the target programmatically focusable using `tabIndex={-1}`.
+
+Preserve existing navigation, sticky headers, and focus styles.
+
+### Acceptance criteria
+
+- First keyboard Tab reaches the skip link.
+- Skip link becomes visibly identifiable.
+- Enter moves focus to the main content.
+- Works across all eight main views.
+- No duplicate main-content IDs.
+- Existing navbar remains functional.
+
+---
+
+# TASK 2 — Correct Accessible Tabs and Panel Relationships
+
+**Potential affected components:**
+
+- `components/landing-sections.tsx`
+- `components/process-control-charts.tsx`
+- `components/process-control-lab.tsx`
+- `components/thermodynamics-lab.tsx`
+- `components/labs-directory.tsx`
+- Shared components containing tab-like controls
+
+AGY identified inconsistent ARIA tab behavior.
+
+Some controls use `role="tab"` without complete tab-to-panel relationships.
+
+## Required implementation
+
+Inspect every actual tab interface, especially:
+
+- Landing Hero scientific preview
+- Process Control's five chart views
+- Thermodynamics Module A/B selector
+- Any laboratory chart-mode selectors
+
+For interfaces using the ARIA tab pattern, ensure:
+
+- `role="tablist"` on the group
+- `role="tab"` on each tab
+- Correct `aria-selected` state
+- Stable tab IDs
+- Correct `aria-controls` relationships
+- `role="tabpanel"` on corresponding panels
+- Correct panel labeling
+- Appropriate keyboard navigation
+
+Support conventional tab keyboard interactions where applicable:
+
+- Left/Right Arrow
+- Home
+- End
+- Enter/Space when selection is manual
+
+Use appropriate focus management.
+
+If an existing control is more accurately described as a filter or ordinary button group, use native button semantics rather than forcing the ARIA tab pattern.
+
+Do not add redundant ARIA attributes to elements that already have correct native semantics.
+
+### Acceptance criteria
+
+- Tab interfaces announce their selected states correctly.
+- Tab-to-panel relationships are valid.
+- Keyboard operation is predictable.
+- All chart views remain accessible.
+- Laboratory filters and module switching remain functional.
+- No scientific data or chart functionality is removed.
+
+---
+
+# TASK 3 — Improve Text Contrast and Small-Label Readability
+
+**Potential files:**
+
+- `components/lab-shared/lab-parameter-panel.tsx`
+- `components/labs-directory.tsx`
+- `components/landing-sections.tsx`
+- Shared laboratory UI components
+- `app/globals.css`
+
+AGY identified several small labels using combinations such as:
+
+- `text-[10px]`
+- `text-[11px]`
+- `text-slate-400`
+- White or very light backgrounds
+
+Some combinations fall below WCAG AA normal-text contrast requirements.
+
+## Required implementation
+
+Inspect meaningful secondary labels across the platform.
+
+Prioritize:
+
+- Parameter labels
+- Minimum/maximum parameter values
+- Engineering units
+- Chart axis labels and captions
+- Equation numbers
+- Laboratory metadata
+- Status information
+- Scientific note headings
+- Form helper text
+
+Improve contrast where necessary.
+
+Prefer the existing accessible slate color palette, using darker tones such as `text-slate-600` when required.
+
+Use actual contrast calculations rather than assuming a particular Tailwind class always passes on every background.
+
+### Typography guidelines
+
+- Preserve the existing premium Entrolume typography.
+- Avoid excessively small text for essential information.
+- Increase small but important labels where appropriate.
+- Maintain clear visual hierarchy.
+- Avoid making all labels the same size and weight.
+- Maintain adequate spacing for readability.
+
+Target WCAG AA:
+
+- At least 4.5:1 contrast for ordinary text.
+- At least 3:1 for qualifying large text.
+- Appropriate contrast for meaningful graphical controls and indicators.
+
+Do not claim complete WCAG compliance without adequate testing.
+
+### Acceptance criteria
+
+- No known low-contrast essential labels remain.
+- Engineering units and parameter limits are readable.
+- Existing brand identity is preserved.
+- No new text overlap or clipping occurs.
+- Chart labeling remains legible.
+
+---
+
+# TASK 4 — Resolve Mathematical Typography Defects
+
+**Primary reference component:**
+
+`components/lab-shared/math/index.tsx`
+
+**Potential affected components:**
+
+- Laboratory descriptions and parameter labels
+- Scientific chart subtitles
+- KPI descriptions
+- Thermodynamics output summaries
+- Equation metadata
+
+AGY identified two recurring mathematical typography problems.
+
+## 4.1 Orphaned parentheses around inline KaTeX
+
+Some labels combine ordinary text parentheses with `<MathInline>` components.
+
+Example:
+
+`Capacity Ratio (` + inline KaTeX + `)`
+
+The inline mathematics may wrap independently, leaving orphaned parentheses.
+
+### Required fix
+
+Inspect the shared mathematical rendering and relevant usages.
+
+Ensure short parenthesized mathematical expressions wrap as a coherent unit.
+
+Possible approaches:
+
+- Group the parentheses and short inline expression using a suitable non-breaking inline wrapper.
+- Include the parentheses within the LaTeX expression where appropriate.
+- Use a small reusable mathematical-label wrapper only if justified.
+
+Avoid placing `whitespace-nowrap` on entire long paragraphs or large equations.
+
+Long equations should still be allowed to wrap or scroll appropriately.
+
+## 4.2 Scientific notation line breaks
+
+AGY observed exponent notation breaking awkwardly, such as:
+
+`1.0e-` on one line and `17` on the next.
+
+Ensure compact numerical values and their exponents remain visually intact.
+
+Handle:
+
+- Scientific notation
+- Negative exponents
+- Appropriate units
+- Engineering symbols
+- Subscripts and superscripts
+
+Do not alter numerical values or calculation precision.
+
+## 4.3 Consistent scientific notation
+
+Review identified ASCII-style mathematical fallbacks, including examples such as:
+
+- `Q_max`
+- `T_h,out`
+- `f_D`
+- `f_F`
+- `U0`
+- `TI`
+- `TD`
+
+Use established KaTeX or semantic mathematical formatting where it improves clarity.
+
+Do not change programming variable names, equation definitions, or physically meaningful notation.
+
+Preserve KaTeX's existing semantic MathML and accessibility configuration.
+
+### Acceptance criteria
+
+- No orphaned parentheses around short inline equations.
+- No split scientific exponents.
+- Mathematical labels are consistent.
+- Mathematical expressions remain accessible.
+- No KaTeX rendering regressions.
+- All scientific values remain unchanged.
+
+---
+
+# TASK 5 — Improve Numeric Input Editing Behavior
+
+**Primary file:**
+
+`components/reaction-engineering-lab.tsx`
+
+**Potential related component:**
+
+`components/lab-shared/lab-parameter-panel.tsx`
+
+AGY identified that clearing a controlled numeric field during editing can immediately coerce the temporary empty input into zero.
+
+Example:
+
+A student clears `X_target` to type a new conversion value.
+
+The UI may temporarily interpret the empty field as zero, causing distracting intermediate calculations.
+
+## Required implementation
+
+Inspect the existing numeric-input state handling.
+
+For affected fields, support temporary editing states without introducing invalid solver calculations.
+
+A suitable approach may include:
+
+- Maintaining a local editable string while the input is focused.
+- Updating scientific state when a valid number is entered.
+- Applying existing validation rules.
+- Handling empty or incomplete input on blur.
+- Restoring or normalizing invalid input according to the application's established behavior.
+
+Do not blindly convert every temporary empty string to zero.
+
+Do not defer all updates until blur if doing so would unnecessarily remove the existing responsive simulation behavior. Valid edits should still update calculations promptly.
+
+### Important constraints
+
+Preserve:
+
+- Parameter bounds
+- Existing scientific validation
+- Precision handling
+- Slider synchronization
+- Preset selection
+- Custom parameter state
+- Reset behavior
+
+Keep the implementation localized.
+
+Do not rewrite the entire parameter-state architecture.
+
+### Acceptance criteria
+
+- Clearing an input does not cause an unintended zero-value calculation.
+- Valid numbers update the simulation.
+- Invalid final values are handled safely.
+- Numeric controls remain synchronized.
+- Preset and Reset behavior remain functional.
+- No numerical calculation engine changes.
+
+---
+
+# TASK 6 — Refine Crowded Chart Headers
+
+**Primary file:**
+
+`components/fluid-mechanics-charts.tsx`
+
+AGY identified a crowded header in the:
+
+**Required Pump Head (H) vs. Flow Rate**
+
+chart.
+
+The long subtitle is squeezed beside an Active Head metric badge, producing several narrow lines.
+
+## Required implementation
+
+Simplify the chart subtitle or adjust the metric badge placement.
+
+Suggested concise description:
+
+"Static lift plus flow-dependent friction losses."
+
+Preserve the governing relationship:
+
+`H = Δz + hf + hm`
+
+Render the mathematical relationship appropriately where it helps students interpret the chart.
+
+If necessary, move the active metric underneath the title or align it in a separate responsive row.
+
+Apply similar small adjustments to other chart headers only where actual crowding is identified.
+
+Do not introduce a platform-wide chart redesign.
+
+### Acceptance criteria
+
+- Chart headings are easy to scan.
+- No narrow vertical text columns.
+- Active metric badges do not obscure descriptions.
+- Mathematical meaning is preserved.
+- Chart plots and interactions remain unchanged.
+- Desktop and mobile layouts remain clean.
+
+---
+
+# TASK 7 — Improve Distillation Scenario Comparison Usability
+
+**Primary file:**
+
+`components/distillation-charts.tsx`
+
+Batch 1 fixed clipped text in mobile comparison cards.
+
+However, AGY also identified a separate desktop usability issue:
+
+At approximately 1440px viewport width, the scenario comparison table requires internal horizontal scrolling to reach some action controls.
+
+## Required implementation
+
+Inspect the current desktop comparison table.
+
+Improve usability without removing engineering data.
+
+Potential approaches include:
+
+- Condensing overly wide columns.
+- Improving column sizing.
+- Allowing long labels to wrap.
+- Reducing unnecessary horizontal padding.
+- Keeping important action controls visible where practical.
+- Using an accessible responsive card representation at narrower widths.
+
+Prefer the smallest reliable adjustment.
+
+If internal horizontal scrolling remains necessary because of genuinely wide scientific data, make it clear and keyboard-accessible.
+
+Do not hide essential table columns or make actions inaccessible.
+
+### Preserve
+
+- Saved scenarios
+- Current live run
+- Engineering parameters
+- Numerical precision
+- Scenario comparisons
+- Load/select actions
+- Remove/delete actions
+- Existing mobile card functionality
+
+### Acceptance criteria
+
+- Desktop scenario actions are easy to locate and operate.
+- Mobile cards remain readable.
+- No clipped numerical values.
+- All comparison data remains accessible.
+- No loss of save, load, or removal behavior.
+- No new overflow outside intended scroll containers.
+
+---
+
+# TASK 8 — Reduce Remaining Unnecessary Container Nesting
+
+**Primary reference component:**
+
+`components/lab-shared/lab-parameter-panel.tsx`
+
+AGY identified repeated nested borders in parameter panels:
+
+Outer panel → inner group card → individual parameter card.
+
+This creates excessive visual weight.
+
+## Required implementation
+
+Inspect the actual current parameter components.
+
+Where safe, simplify unnecessary inner card borders and backgrounds.
+
+Prefer:
+
+- Clear section headings
+- Consistent vertical spacing
+- Subtle dividers
+- Clean parameter rows
+- Strong but restrained visual grouping
+
+Preserve the outer workspace structure.
+
+Do not remove important distinctions between parameter categories.
+
+Do not globally remove all borders.
+
+Do not rebuild LabParameterPanel.
+
+### Scientific and functional constraints
+
+Preserve:
+
+- All parameter labels
+- SI units
+- Slider tracks
+- Numeric inputs
+- Validation messages
+- Help text
+- Focus states
+- Parameter groupings
+
+Check that widening numeric inputs in Batch 1 remains effective.
+
+### Acceptance criteria
+
+- Parameter controls have less unnecessary visual nesting.
+- Inputs remain readable.
+- Group relationships remain understandable.
+- No alignment regressions.
+- All existing interactions continue working.
+
+---
+
+# TASK 9 — Improve Remaining Scientific Content Disclosure
+
+**Potential affected components:**
+
+- `components/lab-shared/lab-educational-sections.tsx`
+- Individual schematic components
+- Laboratory bottom-deck sections
+
+AGY identified several long scientific explanations that may still occupy excessive space:
+
+- Model Idealization Notes
+- Model Scope explanations
+- Documented Engineering Assumptions
+- Physical Analysis of Current State paragraphs
+
+Earlier batches already collapsed detailed governing equations and improved header disclosures.
+
+Do not undo those changes.
+
+## Required approach
+
+Review what remains persistently visible.
+
+Where content is supplementary reference material, use a compact disclosure or clearly labeled details control.
+
+Examples:
+
+**Model Assumptions**
+
+Show a concise label, with the complete assumptions available through expansion.
+
+**Idealized Model**
+
+Show a compact model-identification badge and provide the detailed caveat on demand.
+
+**Physical Interpretation**
+
+Keep a short useful summary visible, with longer explanations accessible through progressive disclosure where appropriate.
+
+### Critical scientific safeguard
+
+Do not hide essential warnings, validity limitations, or error states that students need to interpret their current result correctly.
+
+Distinguish supplementary model background from active conditions that affect result validity.
+
+Preserve all detailed assumptions, equations, and educational explanations.
+
+Do not delete content merely to reduce page height.
+
+### Acceptance criteria
+
+- Essential engineering context remains visible.
+- Full scientific explanations remain accessible.
+- Supplementary reference text creates less initial clutter.
+- Disclosures work with keyboard and touch.
+- No technical explanations are lost.
+
+---
+
+# TASK 10 — Verify Batch 5A Mobile Schematic Accessibility
+
+**Relevant components:**
+
+- `components/heat-exchanger-schematic.tsx`
+- `components/fluid-mechanics-schematic.tsx`
+- `components/reaction-engineering-schematic.tsx`
+- `components/distillation-schematic.tsx`
+- `components/thermodynamics-schematic.tsx`
+- `components/process-control-schematic.tsx`
+
+Batch 5A introduced dedicated mobile schematics.
+
+Do not redesign them again.
+
+Perform a focused verification of:
+
+- Accessible schematic titles
+- Meaningful descriptions
+- Hidden desktop/mobile variants
+- Keyboard access to detailed blueprint disclosures
+- Screen-reader duplication risks
+- Dynamic text readouts
+- Contrast and label visibility
+
+## Responsive breakpoint verification
+
+Check additional widths around Tailwind's `sm` boundary:
+
+- 639px
+- 640px
+- 767px
+- 768px
+
+These checks supplement the previously tested mobile and desktop widths.
+
+The desktop schematic may still use intentional internal scrolling where necessary.
+
+Ensure the transition between compact mobile and desktop layouts is understandable.
+
+### Acceptance criteria
+
+- Mobile and desktop versions do not create confusing duplicate screen-reader content.
+- Active schematics have appropriate accessible descriptions.
+- Detailed blueprint disclosures are keyboard-operable.
+- No new clipping near the 640px breakpoint.
+- Scientific dynamic values remain consistent.
+
+---
+
+# TASK 11 — CROSS-PLATFORM REGRESSION VERIFICATION
+
+This is the final implementation batch of Phase 2.5.3.
+
+Perform regression verification across all six laboratories and the main navigation surfaces.
+
+## 11.1 Scientific regression
+
+Do not modify the six scientific computation engines.
+
+Run existing tests covering:
+
+- Heat transfer
+- Fluid mechanics
+- Reaction engineering
+- Distillation
+- Thermodynamics
+- Process dynamics and control
+- Mathematical rendering
+- Navigation and presets
+- Schematic formatting
+
+The previous reported baseline was 94 passing tests.
+
+Report the actual number after Batch 5B.
+
+## 11.2 Functional regression
+
+Verify:
+
+- Landing Page navigation
+- Laboratory Directory search and filters
+- All six laboratory routes
+- Scenario preset selectors
+- Custom parameter states
+- Reset
+- Save Run
+- Scenario comparisons
+- CSV export
+- Additional Metrics disclosures
+- Objectives & Workflow Guide
+- Governing Equations disclosure
+- Guided inquiry
+- Interactive charts
+- Mobile scientific schematics
+
+### Laboratory-specific checks
+
+**Lab 01:** Heat-transfer response, temperature cross, and scientific advisory.
+
+**Lab 02:** Reynolds regime, viscosity precision, Moody diagram, and pump-head chart.
+
+**Lab 03:** Batch, CSTR, and PFR switching; conversion inputs; numeric editing.
+
+**Lab 04:** McCabe–Thiele stage stepper, corrected baseline stage count, reflux/pinch conditions, and comparison tables.
+
+**Lab 05:** PVT/VLE module switching, Peng–Robinson root diagnostics, state preservation, and module-specific controls.
+
+**Lab 06:** All ten presets, controller modes, five chart views, saturation/anti-windup behavior, and mobile signal-flow diagram.
+
+## 11.3 Accessibility verification
+
+Check:
+
+- Skip-to-content navigation
+- Keyboard focus order
+- Tab and panel ARIA relationships
+- Disclosure accessibility
+- Form labels
+- Text contrast
+- Chart and schematic descriptions
+- Readable scientific units
+- Heading hierarchy
+
+Use available accessibility testing tools where practical.
+
+Do not add large new dependencies solely for this audit.
+
+Clearly distinguish:
+
+- Automated accessibility checks
+- Browser DOM inspection
+- Manual keyboard testing
+- Screen-reader testing, if actually performed
+
+Do not claim full WCAG AA compliance without sufficient evidence.
+
+## 11.4 Responsive verification
+
+Test at minimum:
+
+| Viewport | Resolution |
+|---|---|
+| Narrow mobile | 320 × 720 |
+| Standard mobile | 390 × 844 |
+| Large mobile | 428 × 926 |
+| Responsive boundary | 639 × 800 |
+| Responsive boundary | 640 × 800 |
+| Responsive boundary | 767 × 1024 |
+| Tablet | 768 × 1024 |
+| Small desktop | 1024 × 900 |
+| Desktop | 1440 × 900 |
+
+Verify:
+
+- No unexpected page-level horizontal overflow
+- No clipped essential text
+- No overlapping controls
+- No inaccessible table actions
+- Readable mathematics
+- Usable touch targets
+- Functional mobile navigation
+- Correct schematic breakpoint transitions
+
+Record actual DOM measurements for issues being corrected.
+
+Inspect screenshots where available.
+
+## 11.5 Static validation
+
+Run:
+
+- TypeScript validation
+- ESLint
+- Existing automated test suite
+- Production build
+
+Perform browser interaction verification.
+
+Do not claim passing results unless commands and checks actually succeeded.
+
+---
+
+# STRICT SCOPE BOUNDARIES
+
+Do not:
+
+1. Modify scientific calculation engines.
+2. Rebuild the application.
+3. Redesign the Landing Page.
+4. Rebuild the Laboratory Directory.
+5. Reorder the laboratory simulation stages again.
+6. Refactor the scenario preset architecture.
+7. Modify the approved Entrolume logo.
+8. Replace the brand color system.
+9. Redesign mobile schematics completed in Batch 5A.
+10. Remove scientific calculations or results.
+11. Delete equations or essential assumptions.
+12. Remove physical warnings.
+13. Introduce a new component library.
+14. Install unnecessary dependencies.
+15. Add unrelated animations or decorative features.
+16. Implement Gemini AI Tutor.
+17. Implement Machine Learning Workspace.
+18. Implement academic accounts or classroom features.
+19. Perform Git operations.
+20. Begin Phase 3 development.
+
+Keep all changes proportionate to identified defects.
+
+If an issue is already resolved in the current code, verify it and report it as already resolved instead of making unnecessary changes.
+
+If a proposed cosmetic refinement risks scientific functionality, choose the safer solution and document the tradeoff.
+
+---
+
+# REQUIRED COMPLETION REPORT
+
+Produce a detailed report with the following sections.
+
+## 1. Implementation Summary
+
+Describe the actual work completed under each of the eleven tasks.
+
+Distinguish newly implemented fixes from previously resolved issues.
+
+## 2. Files Modified
+
+List exact file paths and explain the changes.
+
+Identify any shared-component modifications.
+
+## 3. AGY Audit Issue Resolution Matrix
+
+For the remaining AGY findings, provide:
+
+| Issue | Status | Fix Applied | Evidence |
+|---|---|---|---|
+| Skip-to-content | Resolved / Partial / Open | Description | Verification |
+| ARIA tab relationships | ... | ... | ... |
+| Low-contrast labels | ... | ... | ... |
+| Math wrapping | ... | ... | ... |
+| Numeric input editing | ... | ... | ... |
+| Chart header crowding | ... | ... | ... |
+| Distillation table actions | ... | ... | ... |
+| Nested parameter cards | ... | ... | ... |
+| Excessive reference text | ... | ... | ... |
+| Mobile schematic accessibility | ... | ... | ... |
+
+Do not mark an issue resolved without verification.
+
+## 4. Before-and-After Evidence
+
+Include actual observations for:
+
+- Numeric input editing behavior
+- Chart header layout
+- Table action visibility
+- Mathematical wrapping
+- Parameter-panel density
+- Responsive breakpoint behavior
+
+Where measurement is practical, include before-and-after values.
+
+## 5. Automated Testing
+
+Report:
+
+- Exact commands executed
+- Total tests
+- Passed tests
+- Failed tests
+- TypeScript result
+- ESLint result
+- Production build result
+
+## 6. Browser & Accessibility Verification
+
+Report:
+
+- Tested viewport sizes
+- Keyboard navigation findings
+- Tab interaction findings
+- Contrast verification
+- Overflow and clipping
+- Console errors
+- Any automated accessibility scan results
+
+Explicitly state if real screen-reader testing was not performed.
+
+## 7. Scientific Integrity Confirmation
+
+Confirm whether all six calculation engines remain unchanged.
+
+Verify that existing outputs, scenario presets, validation conditions, and educational calculations remain consistent.
+
+## 8. Previous Batch Preservation
+
+Verify that Batches 1, 2, 3, 4, and 5A remain intact.
+
+## 9. Remaining Issues
+
+List any unresolved defects, including severity and user impact.
+
+Distinguish:
+
+- Critical scientific defects
+- Functional defects
+- Accessibility gaps
+- Responsive problems
+- Cosmetic refinements
+- Verification limitations
+
+## 10. Batch 5B Completion Assessment
+
+State whether Batch 5B meets its acceptance criteria.
+
+Do not automatically declare the entire Phase 2.5.3 production-ready.
+
+A separate final comprehensive audit will follow.
+
+## 11. Manual Commit Handoff
+
+Provide:
+
+- Complete list of changed files
+- Suggested commit message
+- Any pre-commit warnings
+
+**Do not execute Git commands.**
+
+The project owner will manually review, commit, and synchronize after the completion report.
+
+---
+
+# FINAL INSTRUCTIONS
+
+Complete Entrolume Phase 2.5.3 / Batch 5B conservatively.
+
+Focus on accessibility, mathematical readability, interaction quality, and removing the remaining unnecessary visual clutter.
+
+Preserve all six scientific engines, existing educational features, responsive mobile schematics, and approved branding.
+
+Do not make speculative architectural changes.
+
+Run appropriate tests and browser verification.
+
+Produce an honest, evidence-based completion report.
+
+**STOP after Batch 5B. Do not begin Phase 3. Do not perform Git operations.**

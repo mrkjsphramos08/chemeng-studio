@@ -279,10 +279,11 @@ export function FluidMechanicsLab() {
     rawValue: string
   ) => {
     const parsed = parseFloat(rawValue);
+    if (!Number.isFinite(parsed)) return;
     setSelectedPresetId('custom');
     setInputs((prev) => ({
       ...prev,
-      [key]: Number.isNaN(parsed) ? 0 : parsed,
+      [key]: parsed,
     }));
   };
 

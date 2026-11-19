@@ -7,6 +7,7 @@ import {
   FluidMechanicsResults,
 } from '@/lib/fluid-mechanics';
 import { formatFluidMechanicsMobileLabels } from '@/lib/schematic-formatting';
+import { LabModelScopeDisclosure, MathInline } from '@/components/lab-shared';
 
 interface SchematicProps {
   inputs: FluidMechanicsInputs;
@@ -48,13 +49,19 @@ export function FluidMechanicsSchematic({ inputs, results }: SchematicProps) {
         </div>
       </div>
 
-      {/* Scope Clarification */}
-      <div className="mb-4 px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-lg text-xs text-slate-600 leading-relaxed">
+      {/* Scope Clarification (Progressive Disclosure) */}
+      <LabModelScopeDisclosure
+        badge="Idealized Pipe Model"
+        summary="Steady, incompressible single-phase flow ($P_1 = P_2$, $\Delta z \ge 0$)."
+        id="fm-model-scope"
+      >
         <strong className="text-slate-800">Hydraulic Model Scope:</strong> Assumes steady,
-        incompressible, isothermal single-phase flow with equal inlet and outlet gauge pressures
-        (P₁ = P₂) and elevation change Δz ≥ 0 m. Centrifugal pump H–Q performance curves and
-        NPSH cavitation margins are outside Phase 1.2 scope.
-      </div>
+        incompressible, isothermal single-phase flow with equal inlet and outlet gauge pressures{' '}
+        <span className="whitespace-nowrap">(<MathInline latex="P_1 = P_2" />)</span> and elevation
+        change <MathInline latex="\Delta z \ge 0\;\mathrm{m}" />. Centrifugal pump{' '}
+        <MathInline latex="H\text{–}Q" /> performance curves and NPSH cavitation margins are
+        outside Phase 1.2 scope.
+      </LabModelScopeDisclosure>
 
       {/* Mobile Piping & Pumping Schematic (< 640px) — Zero Horizontal Scrolling */}
       <div
@@ -260,7 +267,8 @@ export function FluidMechanicsSchematic({ inputs, results }: SchematicProps) {
           type="button"
           onClick={() => setShowDesktopOnMobile((prev) => !prev)}
           aria-expanded={showDesktopOnMobile}
-          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+          aria-controls="fluid-mechanics-desktop-schematic"
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
         >
           <span>
             {showDesktopOnMobile
@@ -268,15 +276,16 @@ export function FluidMechanicsSchematic({ inputs, results }: SchematicProps) {
               : 'Inspect Detailed Desktop Blueprint (Scrollable)'}
           </span>
           {showDesktopOnMobile ? (
-            <ChevronUp className="w-3.5 h-3.5 text-teal-700" />
+            <ChevronUp className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
           ) : (
-            <ChevronDown className="w-3.5 h-3.5 text-teal-700" />
+            <ChevronDown className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
           )}
         </button>
       </div>
 
       {/* Tablet & Desktop Full SVG Piping Schematic (>= 640px, or expanded on mobile) */}
       <div
+        id="fluid-mechanics-desktop-schematic"
         className={
           showDesktopOnMobile
             ? 'mt-3 sm:mt-0 w-full overflow-x-auto'

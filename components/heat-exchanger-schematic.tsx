@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { HeatExchangerInputs, HeatExchangerResults } from '@/lib/heat-exchanger';
 import { formatHeatExchangerMobileLabels } from '@/lib/schematic-formatting';
+import { LabModelScopeDisclosure, MathInline } from '@/components/lab-shared';
 
 interface SchematicProps {
   inputs: HeatExchangerInputs;
@@ -41,14 +42,19 @@ export function HeatExchangerSchematic({ inputs, results }: SchematicProps) {
         </div>
       </div>
 
-      {/* Idealized Flow Scope Clarification */}
-      <div className="mb-4 px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-lg text-xs text-slate-600 leading-relaxed">
+      {/* Idealized Flow Scope Clarification (Progressive Disclosure) */}
+      <LabModelScopeDisclosure
+        badge="Idealized 1D Model"
+        summary="Pure countercurrent flow (no multi-pass $F_T$ correction)."
+        id="hx-model-scope"
+      >
         <strong className="text-slate-800">Model Idealization Note:</strong> This conceptual tubular
         diagram illustrates <strong className="text-slate-800">ideal 1D pure countercurrent flow</strong>{' '}
         (such as a concentric double-pipe or ideal single-pass countercurrent unit). Real multi-pass
-        shell-and-tube exchangers with baffle cross-flow require LMTD correction factors (F_T) or
-        multi-pass ε–NTU correlations not modeled in Phase 1.1.
-      </div>
+        shell-and-tube exchangers with baffle cross-flow require LMTD correction factors{' '}
+        <span className="whitespace-nowrap">(<MathInline latex="F_T" />)</span> or
+        multi-pass <MathInline latex="\varepsilon\text{–}\mathrm{NTU}" /> correlations not modeled in Phase 1.1.
+      </LabModelScopeDisclosure>
 
       {/* Mobile Countercurrent Schematic (< 640px) — Full Visibility Without Horizontal Scrolling */}
       <div
@@ -226,7 +232,8 @@ export function HeatExchangerSchematic({ inputs, results }: SchematicProps) {
           type="button"
           onClick={() => setShowDesktopOnMobile((prev) => !prev)}
           aria-expanded={showDesktopOnMobile}
-          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+          aria-controls="heat-exchanger-desktop-schematic"
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
         >
           <span>
             {showDesktopOnMobile
@@ -234,15 +241,16 @@ export function HeatExchangerSchematic({ inputs, results }: SchematicProps) {
               : 'Inspect Detailed Desktop Blueprint (Scrollable)'}
           </span>
           {showDesktopOnMobile ? (
-            <ChevronUp className="w-3.5 h-3.5 text-teal-700" />
+            <ChevronUp className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
           ) : (
-            <ChevronDown className="w-3.5 h-3.5 text-teal-700" />
+            <ChevronDown className="w-3.5 h-3.5 text-teal-700" aria-hidden="true" />
           )}
         </button>
       </div>
 
       {/* Tablet & Desktop Full Engineering Schematic SVG (>= 640px, or expanded on mobile) */}
       <div
+        id="heat-exchanger-desktop-schematic"
         className={
           showDesktopOnMobile
             ? 'mt-3 sm:mt-0 w-full overflow-x-auto'
