@@ -18,7 +18,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { LABORATORY_MODULES, DEVELOPMENT_ROADMAP, LabModule } from '@/lib/labs-data';
-import { ActiveView } from './navbar';
+import { HERO_PREVIEW_LABS } from '@/lib/hero-preview';
 import { MathBlock, MathInline, MathText } from '@/components/lab-shared';
 import { EntrolumeLogo } from './entrolume-logo';
 import { getNextTabIndex } from '@/lib/numeric-input';
@@ -27,114 +27,6 @@ interface LandingSectionsProps {
   onOpenLab: (labId?: string) => void;
   onOpenDirectory: () => void;
 }
-
-const HERO_PREVIEW_LABS: {
-  id: ActiveView;
-  code: string;
-  shortTitle: string;
-  domain: string;
-  presetName: string;
-  equationLatex: string;
-  metrics: { label: string; value: string; sub: string; accent: string }[];
-  conservationNote: string;
-}[] = [
-  {
-    id: 'heat-exchanger',
-    code: 'LAB 01',
-    shortTitle: 'Heat Exchanger',
-    domain: 'Countercurrent $\\varepsilon\\text{–}\\mathrm{NTU}$ Thermal Analysis',
-    presetName: 'Baseline Water–Water ($A = 12.0\\,\\mathrm{m}^2$, $U = 850\\,\\mathrm{W/(m^2\\cdot K)}$)',
-    equationLatex:
-      '\\varepsilon = \\frac{1 - \\exp\\left[-\\mathrm{NTU}(1 - C_r)\\right]}{1 - C_r \\exp\\left[-\\mathrm{NTU}(1 - C_r)\\right]}',
-    metrics: [
-      { label: 'Heat Duty ($Q$)', value: '397.59 kW', sub: '$Q_{\\max}$ = 595.65 kW', accent: 'text-white' },
-      { label: 'Effectiveness ($\\varepsilon$)', value: '66.75%', sub: '$\\mathrm{NTU}$ = 1.627 · $C_r$ = 0.750', accent: 'text-teal-300' },
-      { label: 'Hot Outlet ($T_{h,\\mathrm{out}}$)', value: '72.44 °C', sub: 'Inlet: 120.0 °C', accent: 'text-rose-300' },
-      { label: 'Cold Outlet ($T_{c,\\mathrm{out}}$)', value: '88.41 °C', sub: 'Temperature Cross Active', accent: 'text-sky-300' },
-    ],
-    conservationNote: 'First Law Verified: $|Q_h - Q_c| < 10^{-12}\\,\\mathrm{W}$',
-  },
-  {
-    id: 'fluid-mechanics',
-    code: 'LAB 02',
-    shortTitle: 'Fluid Mechanics',
-    domain: 'Darcy–Weisbach & Colebrook–White Hydraulics',
-    presetName: 'Commercial Steel Pipe ($Q = 25.0\\,\\mathrm{L/s}$, $D = 0.10\\,\\mathrm{m}$, $L = 120\\,\\mathrm{m}$)',
-    equationLatex:
-      'h_f = f_D \\frac{L}{D} \\frac{v^2}{2g}, \\quad \\frac{1}{\\sqrt{f_D}} = -2.0\\log_{10}\\!\\left(\\frac{\\varepsilon/D}{3.7} + \\frac{2.51}{\\mathrm{Re}\\sqrt{f_D}}\\right)',
-    metrics: [
-      { label: 'Reynolds Number ($\\mathrm{Re}$)', value: '317,831', sub: 'Turbulent Flow Regime', accent: 'text-teal-300' },
-      { label: 'Darcy Friction ($f_D$)', value: '0.01800', sub: '$\\varepsilon/D$ = 0.00045', accent: 'text-white' },
-      { label: 'Total Friction Loss', value: '14.51 m', sub: '$\\Delta P_f$ = 142.1 kPa', accent: 'text-amber-300' },
-      { label: 'Required Pump Head', value: '29.51 m', sub: '$P_{\\mathrm{shaft}}$ = 9.63 kW ($\\eta$ = 75%)', accent: 'text-sky-300' },
-    ],
-    conservationNote: 'Colebrook–White Residual: $< 10^{-12}$',
-  },
-  {
-    id: 'reaction-engineering',
-    code: 'LAB 03',
-    shortTitle: 'Reaction Eng.',
-    domain: 'Isothermal First-Order Reactor Design ($A \\to B$)',
-    presetName: 'CSTR vs. PFR Comparison ($k = 0.15\\,\\mathrm{s}^{-1}$, $\\tau = 10.0\\,\\mathrm{s}$)',
-    equationLatex:
-      'X_{\\mathrm{PFR}} = 1 - e^{-\\mathrm{Da}}, \\quad X_{\\mathrm{CSTR}} = \\frac{\\mathrm{Da}}{1 + \\mathrm{Da}}, \\quad \\mathrm{Da} = k\\tau',
-    metrics: [
-      { label: 'Damköhler Number ($\\mathrm{Da}$)', value: '1.500', sub: '$k$ = 0.15 s⁻¹ · $\\tau$ = 10.0 s', accent: 'text-white' },
-      { label: 'PFR Conversion ($X_{\\mathrm{PFR}}$)', value: '77.69%', sub: '$C_{A,\\mathrm{out}}$ = 22.31 mol/m³', accent: 'text-teal-300' },
-      { label: 'CSTR Conversion ($X_{\\mathrm{CSTR}}$)', value: '60.00%', sub: '$C_{A,\\mathrm{out}}$ = 40.00 mol/m³', accent: 'text-amber-300' },
-      { label: 'Volume Ratio ($V_{\\mathrm{CSTR}}/V_{\\mathrm{PFR}}$)', value: '2.26×', sub: 'At $X_{\\mathrm{target}}$ = 80%', accent: 'text-sky-300' },
-    ],
-    conservationNote: 'Exact Analytical Mole Balance Solution',
-  },
-  {
-    id: 'distillation',
-    code: 'LAB 04',
-    shortTitle: 'Distillation',
-    domain: 'Binary McCabe–Thiele Equilibrium Stage Stepping',
-    presetName: 'Saturated Liquid Feed ($\\alpha = 2.50$, $z_F = 0.50$, $x_D = 0.95$, $x_B = 0.05$)',
-    equationLatex:
-      'y^* = \\frac{\\alpha x}{1 + (\\alpha - 1)x}, \\quad y_{\\mathrm{ROL}} = \\frac{R}{R+1}x + \\frac{x_D}{R+1}',
-    metrics: [
-      { label: 'Theoretical Stages ($N$)', value: '12 Stages', sub: '11 Trays + Partial Reboiler', accent: 'text-teal-300' },
-      { label: 'Optimal Feed Stage', value: 'Stage 6', sub: 'From top condenser', accent: 'text-white' },
-      { label: 'Minimum Reflux ($R_{\\min}$)', value: '1.169', sub: 'Operating $R$ = 1.80 ($1.54\\times R_{\\min}$)', accent: 'text-amber-300' },
-      { label: 'Distillate / Bottoms', value: '50.0 / 50.0', sub: 'kmol/h ($F$ = 100 kmol/h)', accent: 'text-sky-300' },
-    ],
-    conservationNote: 'Component & Overall Molar Balance Verified',
-  },
-  {
-    id: 'thermodynamics',
-    code: 'LAB 05',
-    shortTitle: 'Thermodynamics',
-    domain: 'Peng–Robinson EOS & Binary Raoult–Dalton VLE',
-    presetName: 'Carbon Dioxide Near-Critical Compression ($T = 320\\,\\mathrm{K}$, $P = 60\\,\\mathrm{bar}$)',
-    equationLatex:
-      'Z^3 - (1 - B)Z^2 + (A - 2B - 3B^2)Z - (AB - B^2 - B^3) = 0',
-    metrics: [
-      { label: 'PR Compressibility ($Z$)', value: '0.7016', sub: 'Ideal $Z$ = 1.0000', accent: 'text-teal-300' },
-      { label: 'PR Molar Volume ($v_{\\mathrm{PR}}$)', value: '0.3111 L/mol', sub: '$v_{\\mathrm{ideal}}$ = 0.4434 L/mol', accent: 'text-white' },
-      { label: 'Ideal-Gas Deviation', value: '−29.84%', sub: 'Attractive forces dominate', accent: 'text-amber-300' },
-      { label: 'Reduced State ($T_r, P_r$)', value: '1.052, 0.813', sub: 'Supercritical Fluid Regime', accent: 'text-sky-300' },
-    ],
-    conservationNote: 'NIST Reference Constants (CO₂, N₂, CH₄, C₂H₆)',
-  },
-  {
-    id: 'process-control',
-    code: 'LAB 06',
-    shortTitle: 'Process Control',
-    domain: 'SISO FOPDT Dynamics & PID Feedback Control',
-    presetName: 'Balanced PI Control ($K_p = 1.2$, $\\tau = 20\\,\\mathrm{s}$, $\\theta = 4\\,\\mathrm{s}$, $K_c = 1.8$, $\\tau_I = 18\\,\\mathrm{s}$)',
-    equationLatex:
-      '\\tau \\frac{dy(t)}{dt} + y(t) = K_p u(t - \\theta), \\quad u(t) = U_0 + K_c\\!\\left[e(t) + \\frac{1}{\\tau_I}\\int_0^t e(\\tau)\\,d\\tau\\right]',
-    metrics: [
-      { label: 'Steady-State Error ($e_{\\mathrm{ss}}$)', value: '0.00 % PV', sub: 'Integral action eliminates offset', accent: 'text-teal-300' },
-      { label: '10–90% Rise Time ($t_r$)', value: '12.40 s', sub: 'Setpoint step +15% PV', accent: 'text-white' },
-      { label: 'Peak Overshoot', value: '8.25%', sub: 'Well-damped closed-loop response', accent: 'text-sky-300' },
-      { label: 'Controllability ($\\theta/\\tau$)', value: '0.200', sub: 'Anti-windup clamping active', accent: 'text-amber-300' },
-    ],
-    conservationNote: 'Exact ZOH Step with Fractional Dead-Time Interpolation',
-  },
-];
 
 function getModuleIcon(iconName: LabModule['iconName']) {
   switch (iconName) {

@@ -260,7 +260,11 @@ export function HeatExchangerSchematic({ inputs, results }: SchematicProps) {
       >
         <svg
           viewBox="0 0 860 320"
-          className="w-full h-auto min-w-[640px] select-none"
+          className={
+            showDesktopOnMobile
+              ? 'w-full h-auto min-w-[640px] sm:min-w-0 select-none'
+              : 'w-full h-auto select-none'
+          }
           role="img"
           aria-label="Ideal countercurrent heat exchanger process schematic showing hot stream entering left and exiting right, and cold stream entering bottom right and exiting top left"
         >
@@ -490,25 +494,25 @@ export function HeatExchangerSchematic({ inputs, results }: SchematicProps) {
           </text>
 
           {/* 1. HOT INLET CALLOUT (LEFT) */}
-          <g transform="translate(14, 114)">
-            <rect width="144" height="92" rx="8" fill="#FFF1F2" stroke="#FECDD3" strokeWidth="1.5" />
-            <text x="12" y="20" className="text-[11px] font-bold fill-rose-950">
+          <g transform="translate(8, 114)" data-testid="hx-svg-hot-inlet-callout">
+            <rect width="154" height="92" rx="8" fill="#FFF1F2" stroke="#FECDD3" strokeWidth="1.5" />
+            <text x="10" y="20" className="text-[11px] font-bold fill-rose-950">
               HOT INLET (Th,in)
             </text>
-            <text x="12" y="44" className="text-[20px] font-mono font-bold fill-rose-800">
+            <text x="10" y="44" className="text-[20px] font-mono font-bold fill-rose-800">
               {inputs.Th_in.toFixed(1)} °C
             </text>
-            <text x="12" y="64" className="text-[11px] font-mono fill-rose-900">
+            <text x="10" y="64" className="text-[11px] font-mono fill-rose-900">
               mh = {inputs.mh.toFixed(2)} kg/s
             </text>
-            <text x="12" y="80" className="text-[11px] font-mono fill-rose-900">
+            <text x="10" y="80" className="text-[11px] font-mono fill-rose-900">
               Cp,h = {inputs.Cph_kJ.toFixed(2)} kJ/kg·K
             </text>
           </g>
 
           {/* 2. HOT OUTLET CALLOUT (RIGHT) */}
-          <g transform="translate(702, 114)">
-            <rect width="144" height="92" rx="8" fill="#FFFBEB" stroke="#FDE68A" strokeWidth="1.5" />
+          <g transform="translate(698, 114)" data-testid="hx-svg-hot-outlet-callout">
+            <rect width="148" height="92" rx="8" fill="#FFFBEB" stroke="#FDE68A" strokeWidth="1.5" />
             <text x="12" y="20" className="text-[11px] font-bold fill-amber-950">
               HOT OUTLET (Th,out)
             </text>
@@ -541,20 +545,22 @@ export function HeatExchangerSchematic({ inputs, results }: SchematicProps) {
           </g>
 
           {/* 4. COLD INLET CALLOUT (BOTTOM RIGHT) */}
-          <g transform="translate(636, 228)">
-            <rect width="210" height="78" rx="8" fill="#F0F9FF" stroke="#BAE6FD" strokeWidth="1.5" />
-            <text x="10" y="19" className="text-[11px] font-bold fill-sky-950">
+          <g transform="translate(624, 222)" data-testid="hx-svg-cold-inlet-callout">
+            <rect width="222" height="90" rx="8" fill="#F0F9FF" stroke="#BAE6FD" strokeWidth="1.5" />
+            <text x="12" y="18" className="text-[11px] font-bold fill-sky-950">
               COLD INLET (Tc,in)
             </text>
-            <text x="10" y="42" className="text-[18px] font-mono font-bold fill-sky-800">
+            <text x="12" y="40" className="text-[18px] font-mono font-bold fill-sky-800">
               {inputs.Tc_in.toFixed(1)} °C
             </text>
-            <text x="100" y="41" className="text-[11px] font-mono fill-sky-900">
+            <text x="100" y="39" className="text-[11px] font-mono fill-sky-900">
               mc = {inputs.mc.toFixed(2)} kg/s
             </text>
-            <text x="10" y="60" className="text-[11px] font-mono fill-sky-900">
-              Cc = {results.isValid ? results.Cc_kW_K.toFixed(2) : '0.00'} kW/K · ΔT2 ={' '}
-              {results.isValid ? `${results.approachTempColdEnd.toFixed(1)} °C` : '—'}
+            <text x="12" y="59" className="text-[11px] font-mono fill-sky-900">
+              Cc = {results.isValid ? results.Cc_kW_K.toFixed(2) : '0.00'} kW/K
+            </text>
+            <text x="12" y="76" className="text-[11px] font-mono fill-sky-900">
+              Cold-End ΔT2 = {results.isValid ? `${results.approachTempColdEnd.toFixed(1)} °C` : '—'}
             </text>
           </g>
         </svg>

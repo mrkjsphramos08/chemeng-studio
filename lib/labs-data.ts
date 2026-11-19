@@ -1,4 +1,8 @@
 import type { SharedGuidedQuestion } from '@/components/lab-shared';
+import {
+  calculateHeatExchanger,
+  type HeatExchangerInputs,
+} from '@/lib/heat-exchanger';
 import type { FluidMechanicsInputs } from '@/lib/fluid-mechanics';
 import type { ReactionEngineeringInputs } from '@/lib/reaction-engineering';
 import {
@@ -7,7 +11,11 @@ import {
   type DistillationInputs,
 } from '@/lib/distillation';
 import type { PureFluidPVTInputs, BinaryVLEInputs } from '@/lib/thermodynamics';
-import type { ProcessControlInputs } from '@/lib/process-control';
+import {
+  PROCESS_CONTROL_PRESETS,
+  simulateProcessControl,
+  type ProcessControlInputs,
+} from '@/lib/process-control';
 
 export interface LabModule {
   id: string;
@@ -216,6 +224,24 @@ export interface GuidedQuestion {
   engineeringExplanation: string;
 }
 
+const HX_Q3_INPUTS: HeatExchangerInputs = {
+  Th_in: 130,
+  Tc_in: 20,
+  mh: 1.6,
+  mc: 1.5,
+  Cph_kJ: 4.18,
+  Cpc_kJ: 4.18,
+  U: 1200,
+  A: 24.0,
+};
+const HX_Q3_RESULT = calculateHeatExchanger(HX_Q3_INPUTS);
+const HX_Q3_NTU = HX_Q3_RESULT.NTU.toFixed(3);
+const HX_Q3_EFF = HX_Q3_RESULT.effectiveness_pct.toFixed(2);
+const HX_Q3_Q_KW = HX_Q3_RESULT.Q_kW.toFixed(2);
+const HX_Q3_TC_OUT = HX_Q3_RESULT.Tc_out.toFixed(2);
+const HX_Q3_TH_OUT = HX_Q3_RESULT.Th_out.toFixed(2);
+const HX_Q3_CROSS = (HX_Q3_RESULT.Tc_out - HX_Q3_RESULT.Th_out).toFixed(2);
+
 export const GUIDED_EXPLORATION_QUESTIONS: GuidedQuestion[] = [
   {
     id: 'q1-area-saturation',
@@ -322,16 +348,7 @@ export const GUIDED_EXPLORATION_QUESTIONS: GuidedQuestion[] = [
     experimentPrompt:
       '1) Apply the High-NTU scenario below (U = 1200 W/(m²·K), A = 24.0 m²). 2) Compare Tc,out against Th,out in the schematic and verify Th(x) > Tc(x) along the axial profile chart.',
     presetActionLabel: 'Apply Temperature Cross Scenario',
-    suggestedInputs: {
-      Th_in: 130,
-      Tc_in: 20,
-      mh: 1.6,
-      mc: 1.5,
-      Cph_kJ: 4.18,
-      Cpc_kJ: 4.18,
-      U: 1200,
-      A: 24.0,
-    },
+    suggestedInputs: { ...HX_Q3_INPUTS },
     selfCheckPrompt: 'How do you interpret Tc,out > Th,out in the countercurrent results?',
     selfCheckOptions: [
       {
@@ -346,11 +363,11 @@ export const GUIDED_EXPLORATION_QUESTIONS: GuidedQuestion[] = [
         label: 'It is physically valid in countercurrent flow because at every axial location x/L, Th(x) remains strictly greater than Tc(x).',
         isCorrect: true,
         feedback:
-          'Correct! Tc,out (112.76 °C) is heated by the entering hot stream (130 °C) at x/L = 0, while Th,out (43.04 °C) is cooled by the entering cold stream (20 °C) at x/L = 1.',
+          `Correct! Tc,out (${HX_Q3_TC_OUT} °C) is heated by the entering hot stream (130 °C) at x/L = 0, while Th,out (${HX_Q3_TH_OUT} °C) is cooled by the entering cold stream (20 °C) at x/L = 1.`,
       },
     ],
     keyObservation:
-      'Yes—at NTU = 4.593 (ε = 84.33%, Q = 581.61 kW), Cold Outlet Tc,out reaches 112.76 °C while Hot Outlet Th,out cools to 43.04 °C (a 69.72 °C temperature cross), while Th(x) > Tc(x) holds at every axial position.',
+      `Yes—at NTU = ${HX_Q3_NTU} (ε = ${HX_Q3_EFF}%, Q = ${HX_Q3_Q_KW} kW), Cold Outlet Tc,out reaches ${HX_Q3_TC_OUT} °C while Hot Outlet Th,out cools to ${HX_Q3_TH_OUT} °C (a ${HX_Q3_CROSS} °C temperature cross), while Th(x) > Tc(x) holds at every axial position.`,
     engineeringExplanation:
       'In countercurrent flow, the exiting cold fluid (at x/L = 0) exchanges heat with the entering hot fluid (Th,in = 130 °C), not with the exiting hot fluid (at x/L = 1). As long as local ΔT(x) = Th(x) − Tc(x) > 0 everywhere (guaranteed for 0 < ε < 1), heat always flows down a positive thermal gradient, enabling high heat recovery impossible in cocurrent flow.',
   },
@@ -1718,6 +1735,55 @@ export const THERMO_VLE_GUIDED_QUESTIONS: SharedGuidedQuestion<BinaryVLEInputs>[
   },
 ];
 
+const PC_Q7_INPUTS: ProcessControlInputs = {
+  ...(PROCESS_CONTROL_PRESETS.find((p) => p.id === 'saturation-windup')?.inputs ??
+    PROCESS_CONTROL_PRESETS[8].inputs),
+};
+const PC_Q7_RESULT = simulateProcessControl(PC_Q7_INPUTS);
+const PC_Q7_MAX_UCMD = PC_Q7_RESULT.metrics.maxCommand_Ucmd.toFixed(1);
+const PC_Q7_PEAK_Y = PC_Q7_RESULT.metrics.peakOutput_Y.toFixed(2);
+const PC_Q7_OS = (PC_Q7_RESULT.metrics.overshootPercent ?? 0).toFixed(1);
+const PC_Q7_TS =
+  PC_Q7_RESULT.metrics.settlingTime_2pct_s !== null
+    ? PC_Q7_RESULT.metrics.settlingTime_2pct_s.toFixed(1)
+    : 'Unsettled';
+const PC_Q7_SAT_S = PC_Q7_RESULT.metrics.saturationDuration_s.toFixed(1);
+const PC_Q7_IAE = PC_Q7_RESULT.metrics.iae.toFixed(1);
+
+const PC_Q8_INPUTS: ProcessControlInputs = {
+  ...(PROCESS_CONTROL_PRESETS.find((p) => p.id === 'anti-windup-protected')?.inputs ??
+    PROCESS_CONTROL_PRESETS[9].inputs),
+};
+const PC_Q8_RESULT = simulateProcessControl(PC_Q8_INPUTS);
+const PC_Q8_MAX_UCMD = PC_Q8_RESULT.metrics.maxCommand_Ucmd.toFixed(1);
+const PC_Q8_PEAK_Y = PC_Q8_RESULT.metrics.peakOutput_Y.toFixed(2);
+const PC_Q8_OS = (PC_Q8_RESULT.metrics.overshootPercent ?? 0).toFixed(1);
+const PC_Q8_TS =
+  PC_Q8_RESULT.metrics.settlingTime_2pct_s !== null
+    ? PC_Q8_RESULT.metrics.settlingTime_2pct_s.toFixed(1)
+    : 'Unsettled';
+const PC_Q8_SAT_S = PC_Q8_RESULT.metrics.saturationDuration_s.toFixed(1);
+const PC_Q8_IAE = PC_Q8_RESULT.metrics.iae.toFixed(1);
+
+const PC_Q10_PID_INPUTS: ProcessControlInputs = {
+  ...(PROCESS_CONTROL_PRESETS.find((p) => p.id === 'pid-filtered-derivative')?.inputs ??
+    PROCESS_CONTROL_PRESETS[5].inputs),
+};
+const PC_Q10_PID_RESULT = simulateProcessControl(PC_Q10_PID_INPUTS);
+const PC_Q10_OSC_INPUTS: ProcessControlInputs = {
+  ...(PROCESS_CONTROL_PRESETS.find((p) => p.id === 'poorly-tuned-oscillatory')?.inputs ??
+    PROCESS_CONTROL_PRESETS[6].inputs),
+};
+const PC_Q10_OSC_RESULT = simulateProcessControl(PC_Q10_OSC_INPUTS);
+const PC_Q10_OSC_TR = (PC_Q10_OSC_RESULT.metrics.riseTime_10_90_s ?? 0).toFixed(2);
+const PC_Q10_OSC_OS = (PC_Q10_OSC_RESULT.metrics.overshootPercent ?? 0).toFixed(1);
+const PC_Q10_OSC_TV = PC_Q10_OSC_RESULT.metrics.controlEffort_TV.toFixed(1);
+const PC_Q10_PID_TV = PC_Q10_PID_RESULT.metrics.controlEffort_TV.toFixed(1);
+const PC_Q10_TV_RATIO = (
+  PC_Q10_OSC_RESULT.metrics.controlEffort_TV /
+  PC_Q10_PID_RESULT.metrics.controlEffort_TV
+).toFixed(1);
+
 export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessControlInputs>[] = [
   {
     id: 'pc-1-time-constant',
@@ -2094,34 +2160,14 @@ export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessContr
     experimentPrompt:
       'Load Preset 9 (Actuator Saturation & Integral Windup, Anti-Windup OFF) and inspect Tab 2 (Controller Output $u_{\\mathrm{cmd}}$ vs. $U_{\\mathrm{act}}$).',
     presetActionLabel: 'Apply Saturation with Anti-Windup OFF',
-    suggestedInputs: {
-      processGain_Kp: 1.5,
-      timeConstant_tau_s: 20.0,
-      deadTime_theta_s: 4.0,
-      initialOutput_Y0: 50.0,
-      simulationDuration_s: 150.0,
-      timeStep_dt_s: 0.2,
-      controllerMode: 'PI',
-      controllerGain_Kc: 2.4,
-      integralTime_Ti_s: 8.0,
-      derivativeTime_Td_s: 0.0,
-      derivativeFilterAlpha: 0.1,
-      actuatorMin_Umin: 0.0,
-      actuatorMax_Umax: 75.0,
-      antiWindupEnabled: false,
-      setpointTarget_Ysp: 80.0,
-      setpointStepTime_s: 5.0,
-      disturbanceMagnitude_d: 0.0,
-      disturbanceTime_s: 80.0,
-      openLoopStep_du: 10.0,
-    },
+    suggestedInputs: { ...PC_Q7_INPUTS },
     selfCheckPrompt:
       'In Preset 9, why does the actuator remain stuck at $U_{\\mathrm{act}} = 75\\%$ even after $Y(t)$ exceeds the $80\\%$ setpoint?',
     selfCheckOptions: [
       {
         id: 'pc7-a',
         label:
-          'Because the integral term continued accumulating error while the valve was clamped at 75%, driving u_cmd above 115%; Y(t) must overshoot above 80% (e < 0) for a long time just to unwind u_cmd back below 75%.',
+          `Because the integral term continued accumulating error while the valve was clamped at 75%, driving u_cmd to ${PC_Q7_MAX_UCMD}%; Y(t) must overshoot above 80% (e < 0) for an extended period just to unwind u_cmd back below 75%.`,
         isCorrect: true,
         feedback:
           'Correct! That gap between unconstrained controller demand u_cmd and physical actuator capability U_act is classic integral windup.',
@@ -2142,7 +2188,7 @@ export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessContr
       },
     ],
     keyObservation:
-      'Without anti-windup, u_cmd climbs to 118.4% while U_act is clamped at 75.0%, causing Y(t) to overshoot to 84.5% (15.0% overshoot) before the actuator finally comes off its upper stop.',
+      `Without anti-windup, u_cmd climbs to ${PC_Q7_MAX_UCMD}% while U_act stays clamped at 75.0% for ${PC_Q7_SAT_S} s, causing Y(t) to overshoot to ${PC_Q7_PEAK_Y}% (${PC_Q7_OS}% overshoot, IAE = ${PC_Q7_IAE} %·s, settling at ${PC_Q7_TS} s) before the actuator finally comes off its upper stop.`,
     engineeringExplanation:
       'When $u_{\\mathrm{cmd}}(t) > U_{\\max}$, the feedback loop is effectively broken because the plant receives a constant input $U_{\\max}$ regardless of further increases in $u_{\\mathrm{cmd}}$. Unchecked integration of $e(t)$ during saturation stores phantom error that delays desaturation.',
   },
@@ -2155,27 +2201,7 @@ export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessContr
     experimentPrompt:
       'After saving Preset 9 (Anti-Windup OFF), click below to load Preset 10 (Anti-Windup ON) and compare Peak Overshoot, Saturation Duration, and IAE.',
     presetActionLabel: 'Apply Saturation with Anti-Windup ON',
-    suggestedInputs: {
-      processGain_Kp: 1.5,
-      timeConstant_tau_s: 20.0,
-      deadTime_theta_s: 4.0,
-      initialOutput_Y0: 50.0,
-      simulationDuration_s: 150.0,
-      timeStep_dt_s: 0.2,
-      controllerMode: 'PI',
-      controllerGain_Kc: 2.4,
-      integralTime_Ti_s: 8.0,
-      derivativeTime_Td_s: 0.0,
-      derivativeFilterAlpha: 0.1,
-      actuatorMin_Umin: 0.0,
-      actuatorMax_Umax: 75.0,
-      antiWindupEnabled: true,
-      setpointTarget_Ysp: 80.0,
-      setpointStepTime_s: 5.0,
-      disturbanceMagnitude_d: 0.0,
-      disturbanceTime_s: 80.0,
-      openLoopStep_du: 10.0,
-    },
+    suggestedInputs: { ...PC_Q8_INPUTS },
     selfCheckPrompt:
       'What does conditional integration anti-windup do when $u_{\\mathrm{cmd}}(t) > U_{\\max}$ and $e(t) > 0$?',
     selfCheckOptions: [
@@ -2185,11 +2211,11 @@ export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessContr
           'It freezes (clamps) the integral accumulator while the actuator is saturated in the direction of the error, allowing u_cmd to drop below U_max as soon as Y(t) approaches the setpoint.',
         isCorrect: true,
         feedback:
-          'Correct! Clamping the integral state during saturation cuts peak overshoot from 15.0% down to ~1.5% and dramatically lowers IAE.',
+          `Correct! Clamping the integral state during saturation lowers peak u_cmd from ${PC_Q7_MAX_UCMD}% to ${PC_Q8_MAX_UCMD}%, slashes peak overshoot from ${PC_Q7_OS}% down to ${PC_Q8_OS}% (Peak Y = ${PC_Q8_PEAK_Y}%), and cuts IAE from ${PC_Q7_IAE} to ${PC_Q8_IAE} %·s.`,
       },
       {
         id: 'pc8-b',
-        label: 'It physically removes the 75% valve limit so the valve can open to 120%.',
+        label: 'It physically removes the 75% valve limit so the valve can open to 150%.',
         isCorrect: false,
         feedback:
           'A software algorithm cannot exceed physical hardware limits (U_act still never exceeds 75%); anti-windup prevents the controller’s internal integral state from winding up.',
@@ -2203,7 +2229,7 @@ export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessContr
       },
     ],
     keyObservation:
-      'Enabling anti-windup at U_max = 75% lowers peak u_cmd from 118.4% to 86.0%, slashes overshoot from 15.0% to 1.5%, and reduces IAE from 575 to 479 %·s.',
+      `Enabling anti-windup at U_max = 75% limits peak u_cmd to ${PC_Q8_MAX_UCMD}% (vs. ${PC_Q7_MAX_UCMD}% with windup), cuts saturation duration from ${PC_Q7_SAT_S} s to ${PC_Q8_SAT_S} s, reduces overshoot from ${PC_Q7_OS}% (${PC_Q7_PEAK_Y}%) to ${PC_Q8_OS}% (${PC_Q8_PEAK_Y}%), speeds settling from ${PC_Q7_TS} s to ${PC_Q8_TS} s, and drops IAE from ${PC_Q7_IAE} to ${PC_Q8_IAE} %·s.`,
     engineeringExplanation:
       'Real control valves, heaters, and pumps have hard physical bounds ($0\\text{–}100\\%$ or tighter). Modeling actuator saturation alongside anti-windup is essential because linear transfer-function analysis completely misses saturation windup.',
   },
@@ -2277,27 +2303,7 @@ export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessContr
     experimentPrompt:
       'Compare your saved scenarios in the Comparison Table or toggle between Conservative P, Balanced PI, Filtered PID, and Oscillatory Loop presets.',
     presetActionLabel: 'Compare Filtered PID Benchmark',
-    suggestedInputs: {
-      processGain_Kp: 1.5,
-      timeConstant_tau_s: 20.0,
-      deadTime_theta_s: 4.0,
-      initialOutput_Y0: 50.0,
-      simulationDuration_s: 120.0,
-      timeStep_dt_s: 0.2,
-      controllerMode: 'PID',
-      controllerGain_Kc: 2.2,
-      integralTime_Ti_s: 16.0,
-      derivativeTime_Td_s: 2.5,
-      derivativeFilterAlpha: 0.1,
-      actuatorMin_Umin: 0.0,
-      actuatorMax_Umax: 100.0,
-      antiWindupEnabled: true,
-      setpointTarget_Ysp: 65.0,
-      setpointStepTime_s: 5.0,
-      disturbanceMagnitude_d: 0.0,
-      disturbanceTime_s: 60.0,
-      openLoopStep_du: 10.0,
-    },
+    suggestedInputs: { ...PC_Q10_PID_INPUTS },
     selfCheckPrompt:
       'Why is minimizing Rise Time ($t_r$) alone a dangerous controller tuning objective?',
     selfCheckOptions: [
@@ -2325,7 +2331,7 @@ export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessContr
       },
     ],
     keyObservation:
-      'The oscillatory preset achieves a very fast 10%–90% rise time (5.8 s) but suffers 51% overshoot, fails to settle, and expends more than 3× the actuator travel (TV_u) of the balanced PID design.',
+      `The oscillatory preset achieves a fast 10%–90% rise time (${PC_Q10_OSC_TR} s) but suffers ${PC_Q10_OSC_OS}% overshoot, fails to settle, and expends ${PC_Q10_TV_RATIO}× the actuator travel (TV_u = ${PC_Q10_OSC_TV}% vs. ${PC_Q10_PID_TV}% for the balanced PID benchmark).`,
     engineeringExplanation:
       'Every feedback loop faces fundamental trade-offs: $\\mathrm{IAE} = \\int |e(t)|\\,dt$ penalizes total error area, $\\mathrm{ITAE} = \\int t|e(t)|\\,dt$ penalizes lingering oscillations, and Total Variation $\\mathrm{TV}_u = \\sum |\\Delta U_{\\mathrm{act}}|$ quantifies mechanical actuator wear.',
   },
