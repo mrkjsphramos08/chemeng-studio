@@ -7,6 +7,12 @@ import {
   OPERATING_PRESETS,
   calculateHeatExchanger,
 } from '@/lib/heat-exchanger';
+import {
+  DEFAULT_HEAT_EXCHANGER_TARGET,
+  HeatExchangerTargetSpec,
+  HeatExchangerTargetVariable,
+  evaluateHeatExchangerTarget,
+} from '@/lib/heat-exchanger-experiment';
 import { downloadSimulationCsv } from '@/lib/lab-download';
 import {
   LabAdditionalMetricsDisclosure,
@@ -18,6 +24,7 @@ import {
   LabWorkspaceHeader,
   MathInline,
 } from '@/components/lab-shared';
+import { HeatExchangerExperimentPanel } from './heat-exchanger-experiment-panel';
 import { HeatExchangerSchematic } from './heat-exchanger-schematic';
 import { HeatExchangerCharts, SavedScenario } from './heat-exchanger-charts';
 import { LearningPanel } from './learning-panel';
@@ -199,8 +206,15 @@ export function HeatExchangerLab() {
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>(() => [
     buildInitialScenario(),
   ]);
+  const [targetSpec, setTargetSpec] = useState<HeatExchangerTargetSpec>({
+    ...DEFAULT_HEAT_EXCHANGER_TARGET,
+  });
 
   const results = useMemo(() => calculateHeatExchanger(inputs), [inputs]);
+  const targetEvaluation = useMemo(
+    () => evaluateHeatExchangerTarget(inputs, results, targetSpec),
+    [inputs, results, targetSpec]
+  );
 
   const handleInputChange = (
     key: Extract<keyof HeatExchangerInputs, string>,
@@ -218,6 +232,31 @@ export function HeatExchangerLab() {
   const handleReset = () => {
     setSelectedPresetId('baseline-water');
     setInputs({ ...DEFAULT_HEAT_EXCHANGER_INPUTS });
+    setTargetSpec({ ...DEFAULT_HEAT_EXCHANGER_TARGET });
+  };
+
+  const handleChangeTargetVariable = (variable: HeatExchangerTargetVariable) => {
+    setTargetSpec((prev) => {
+      if (prev.variable === variable) return prev;
+      // Pick a physically meaningful default target when toggling variable
+      const defaultTemp =
+        variable === 'Tc_out'
+          ? Math.round(Math.min(inputs.Th_in - 10, inputs.Tc_in + (inputs.Th_in - inputs.Tc_in) * 0.74))
+          : Math.round(Math.max(inputs.Tc_in + 10, inputs.Th_in - (inputs.Th_in - inputs.Tc_in) * 0.58));
+      return {
+        ...prev,
+        variable,
+        targetTemp_C: Number.isFinite(defaultTemp) ? defaultTemp : prev.targetTemp_C,
+      };
+    });
+  };
+
+  const handleChangeTargetTemp = (nextTemp_C: number) => {
+    if (!Number.isFinite(nextTemp_C)) return;
+    setTargetSpec((prev) => ({
+      ...prev,
+      targetTemp_C: nextTemp_C,
+    }));
   };
 
   const handleSelectPreset = (presetId: string) => {
@@ -294,6 +333,25 @@ export function HeatExchangerLab() {
         ],
       },
       {
+        title: 'Engineering Target Evaluation',
+        headers: ['Metric', 'Value', 'Unit'],
+        rows: [
+          ['Target Variable', targetSpec.variable, ''],
+          ['Target Temperature', targetSpec.targetTemp_C.toFixed(2), 'degC'],
+          ['Calculated Temperature', targetEvaluation.calculatedTemp_C.toFixed(2), 'degC'],
+          ['Difference (Calc - Target)', targetEvaluation.difference_C.toFixed(2), 'degC'],
+          ['Status', targetEvaluation.statusLabel, ''],
+          ['Thermodynamic Limit', targetEvaluation.thermodynamicLimit_C.toFixed(2), 'degC'],
+          [
+            'Required Area (at fixed U, flows)',
+            targetEvaluation.requiredArea_m2 !== null
+              ? targetEvaluation.requiredArea_m2.toFixed(2)
+              : 'Unreachable',
+            targetEvaluation.requiredArea_m2 !== null ? 'm^2' : '',
+          ],
+        ],
+      },
+      {
         title: 'Saved Scenario Comparison Runs',
         headers: ['Label', 'A (m^2)', 'U (W/m^2K)', 'Q (kW)', 'eps (%)', 'NTU', 'Cr', 'Th,out (C)', 'Tc,out (C)'],
         rows: savedScenarios.map((s) => [
@@ -365,12 +423,22 @@ export function HeatExchangerLab() {
           }
         />
 
-        {/* RIGHT COLUMN: Primary Schematic -> Primary 4 KPIs -> Additional Metrics -> Secondary Charts */}
+        {/* RIGHT COLUMN: Engineering Objective -> Primary Schematic -> Primary 4 KPIs -> Additional Metrics -> Charts */}
         <div className="lg:col-span-8 min-w-0 space-y-5">
-          {/* 1. Primary Interactive Process Schematic */}
+          {/* 1. Engineering Experiment Objective & Live Target Evaluation */}
+          <HeatExchangerExperimentPanel
+            inputs={inputs}
+            results={results}
+            targetSpec={targetSpec}
+            evaluation={targetEvaluation}
+            onChangeTargetVariable={handleChangeTargetVariable}
+            onChangeTargetTemp={handleChangeTargetTemp}
+          />
+
+          {/* 2. Primary Interactive Process Schematic */}
           <HeatExchangerSchematic inputs={inputs} results={results} />
 
-          {/* 2. Primary 4 KPI Summary */}
+          {/* 3. Primary 4 KPI Summary */}
           <div
             className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3"
             data-testid="results-dashboard"
@@ -404,7 +472,7 @@ export function HeatExchangerLab() {
             />
           </div>
 
-          {/* 3. Secondary KPIs (Collapsible Additional Metrics) */}
+          {/* 4. Secondary KPIs (Collapsible Additional Metrics) */}
           <LabAdditionalMetricsDisclosure
             count={2}
             summary="$\\mathrm{NTU}$, Capacity Ratio ($C_r$), and Stream Heat Capacity Rates ($C_h / C_c$)"
@@ -430,11 +498,13 @@ export function HeatExchangerLab() {
             </div>
           </LabAdditionalMetricsDisclosure>
 
-          {/* 4. Secondary Interactive Charts & Scenario Comparisons */}
+          {/* 5. Secondary Interactive Charts & Scenario Comparisons */}
           <HeatExchangerCharts
             inputs={inputs}
             results={results}
             savedScenarios={savedScenarios}
+            targetSpec={targetSpec}
+            targetEvaluation={targetEvaluation}
             onSaveCurrentScenario={handleSaveCurrentScenario}
             onRemoveScenario={handleRemoveScenario}
             onLoadScenario={handleApplyGuidedInputs}

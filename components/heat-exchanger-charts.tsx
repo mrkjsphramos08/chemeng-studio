@@ -13,13 +13,21 @@ import {
   Tooltip,
   Legend,
   ReferenceDot,
+  ReferenceLine,
   Cell,
 } from 'recharts';
 import {
   HeatExchangerInputs,
   HeatExchangerResults,
-  generateSensitivitySeries,
 } from '@/lib/heat-exchanger';
+import {
+  DEFAULT_HEAT_EXCHANGER_TARGET,
+  HeatExchangerTargetEvaluation,
+  HeatExchangerTargetSpec,
+  evaluateHeatExchangerTarget,
+  evaluateScenarioComparisons,
+  generateTargetSensitivitySeries,
+} from '@/lib/heat-exchanger-experiment';
 import { MathInline } from '@/components/lab-shared';
 import { truncateScenarioTickLabel } from '@/lib/navigation';
 import { Plus, Trash2, RotateCcw } from 'lucide-react';
@@ -40,6 +48,8 @@ interface ChartsProps {
   inputs: HeatExchangerInputs;
   results: HeatExchangerResults;
   savedScenarios: SavedScenario[];
+  targetSpec?: HeatExchangerTargetSpec;
+  targetEvaluation?: HeatExchangerTargetEvaluation;
   onSaveCurrentScenario: (customLabel?: string) => void;
   onRemoveScenario: (id: string) => void;
   onLoadScenario: (inputs: HeatExchangerInputs) => void;
@@ -47,6 +57,7 @@ interface ChartsProps {
 }
 
 type SensitivityParam = 'A' | 'mh' | 'mc' | 'U';
+type SensitivityViewMode = 'target-temp' | 'duty-effectiveness';
 
 const PARAM_META: Record<
   SensitivityParam,
@@ -66,18 +77,78 @@ export function HeatExchangerCharts({
   inputs,
   results,
   savedScenarios,
+  targetSpec = DEFAULT_HEAT_EXCHANGER_TARGET,
+  targetEvaluation,
   onSaveCurrentScenario,
   onRemoveScenario,
   onLoadScenario,
   onClearScenarios,
 }: ChartsProps) {
   const [sensitivityParam, setSensitivityParam] = useState<SensitivityParam>('A');
+  const [sensitivityView, setSensitivityView] =
+    useState<SensitivityViewMode>('target-temp');
   const [customScenarioLabel, setCustomScenarioLabel] = useState<string>('');
 
+  const activeEvaluation = useMemo(
+    () =>
+      targetEvaluation ??
+      evaluateHeatExchangerTarget(inputs, results, targetSpec),
+    [inputs, results, targetSpec, targetEvaluation]
+  );
+
   const sensitivityData = useMemo(
-    () => generateSensitivitySeries(inputs, sensitivityParam, 24),
+    () => generateTargetSensitivitySeries(inputs, sensitivityParam, 28),
     [inputs, sensitivityParam]
   );
+
+  const scenarioComparison = useMemo(
+    () =>
+      evaluateScenarioComparisons(savedScenarios, inputs, results, targetSpec),
+    [savedScenarios, inputs, results, targetSpec]
+  );
+
+  const scenarioStatusMap = useMemo(() => {
+    const map = new Map<string, (typeof scenarioComparison.entries)[number]>();
+    for (const entry of scenarioComparison.entries) {
+      map.set(entry.id, entry);
+    }
+    return map;
+  }, [scenarioComparison]);
+
+  const tempSensitivityDomain = useMemo((): [number, number] => {
+    const temps: number[] = [inputs.Tc_in, inputs.Th_in, results.Tc_out, results.Th_out];
+    for (const pt of sensitivityData) {
+      temps.push(pt.Tc_out, pt.Th_out);
+    }
+    // Include target temperature in chart bounds if within a sensible window around inlet span
+    const span = Math.max(20, inputs.Th_in - inputs.Tc_in);
+    if (
+      Number.isFinite(targetSpec.targetTemp_C) &&
+      targetSpec.targetTemp_C >= inputs.Tc_in - span * 0.4 &&
+      targetSpec.targetTemp_C <= inputs.Th_in + span * 0.4
+    ) {
+      temps.push(targetSpec.targetTemp_C);
+    }
+    const minT = Math.min(...temps);
+    const maxT = Math.max(...temps);
+    return [Math.floor(minT - 5), Math.ceil(maxT + 8)];
+  }, [inputs.Tc_in, inputs.Th_in, results.Tc_out, results.Th_out, sensitivityData, targetSpec.targetTemp_C]);
+
+  const showRequiredAreaDot = useMemo(() => {
+    if (
+      sensitivityParam !== 'A' ||
+      activeEvaluation.requiredArea_m2 === null ||
+      sensitivityData.length < 2
+    ) {
+      return false;
+    }
+    const minX = sensitivityData[0].parameterValue;
+    const maxX = sensitivityData[sensitivityData.length - 1].parameterValue;
+    return (
+      activeEvaluation.requiredArea_m2 >= minX &&
+      activeEvaluation.requiredArea_m2 <= maxX
+    );
+  }, [sensitivityParam, activeEvaluation.requiredArea_m2, sensitivityData]);
 
   const inletOutletBarData = useMemo(() => {
     if (!results.isValid) return [];
@@ -298,148 +369,364 @@ export function HeatExchangerCharts({
         </div>
       </div>
 
-      {/* Row 2: Heat Duty Response to Changing Parameters (Parametric Sensitivity) */}
+      {/* Row 2: Parametric Engineering Sensitivity (Target Outlet Temps + Heat Duty & Effectiveness) */}
       <div className="bg-white border border-slate-200 rounded-xl p-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-100">
-          <div>
-            <h3 className="text-base font-semibold text-slate-900">
-              Heat Duty (<MathInline latex="Q" />) &amp; Effectiveness (<MathInline latex="\varepsilon" />) Response to Parameter Variation
-            </h3>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Explore how Heat Transfer Rate <MathInline latex="Q" /> (<MathInline latex="\mathrm{kW}" />) and Effectiveness <MathInline latex="\varepsilon" /> (%) respond under the ideal steady-state model while holding all other inputs constant.
-            </p>
-          </div>
+        <div className="flex flex-col gap-3 mb-4 pb-3 border-b border-slate-100">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">
+                {sensitivityView === 'target-temp' ? (
+                  <>
+                    Engineering Sensitivity: Outlet Temperatures (<MathInline latex="T_{c,\mathrm{out}}, T_{h,\mathrm{out}}" />) vs. Target
+                  </>
+                ) : (
+                  <>
+                    Heat Duty (<MathInline latex="Q" />) &amp; Effectiveness (<MathInline latex="\varepsilon" />) Response to Parameter Variation
+                  </>
+                )}
+              </h3>
+              <p className="text-xs text-slate-600 mt-0.5">
+                {sensitivityView === 'target-temp' ? (
+                  <>
+                    Sweeps <strong className="text-slate-800">{PARAM_META[sensitivityParam].label}</strong> using the authoritative <MathInline latex="\varepsilon\text{–}\mathrm{NTU}" /> solver to reveal target attainment, thermodynamic limits, and diminishing returns.
+                  </>
+                ) : (
+                  <>
+                    Explore how Heat Transfer Rate <MathInline latex="Q" /> (<MathInline latex="\mathrm{kW}" />) and Effectiveness <MathInline latex="\varepsilon" /> (%) respond under the ideal steady-state model while holding all other inputs constant.
+                  </>
+                )}
+              </p>
+            </div>
 
-          {/* Interactive segmented parameter selector */}
-          <div
-            className="flex flex-wrap items-center gap-1 p-1 bg-slate-100 rounded-lg"
-            role="group"
-            aria-label="Select sensitivity parameter"
-          >
-            {(['A', 'mh', 'mc', 'U'] as SensitivityParam[]).map((param) => (
+            {/* Plot Mode Switch */}
+            <div
+              className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-lg self-start md:self-auto"
+              role="group"
+              aria-label="Select sensitivity chart view"
+            >
               <button
-                key={param}
                 type="button"
-                onClick={() => setSensitivityParam(param)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
-                  sensitivityParam === param
+                onClick={() => setSensitivityView('target-temp')}
+                aria-pressed={sensitivityView === 'target-temp'}
+                data-testid="sensitivity-view-target"
+                className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+                  sensitivityView === 'target-temp'
                     ? 'bg-white text-slate-900 shadow-xs font-semibold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                {PARAM_META[param].shortLabel}
+                Outlet Temp. vs. Target (°C)
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => setSensitivityView('duty-effectiveness')}
+                aria-pressed={sensitivityView === 'duty-effectiveness'}
+                data-testid="sensitivity-view-duty"
+                className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+                  sensitivityView === 'duty-effectiveness'
+                    ? 'bg-white text-slate-900 shadow-xs font-semibold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Heat Duty Q &amp; ε
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive segmented parameter selector */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-medium text-slate-600">Sweep independent variable:</span>
+            <div
+              className="flex flex-wrap items-center gap-1 p-1 bg-slate-100 rounded-lg"
+              role="group"
+              aria-label="Select sensitivity parameter"
+            >
+              {(['A', 'U', 'mh', 'mc'] as SensitivityParam[]).map((param) => (
+                <button
+                  key={param}
+                  type="button"
+                  onClick={() => setSensitivityParam(param)}
+                  aria-pressed={sensitivityParam === param}
+                  data-testid={`sensitivity-param-${param}`}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 ${
+                    sensitivityParam === param
+                      ? 'bg-white text-slate-900 shadow-xs font-semibold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {PARAM_META[param].shortLabel}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="h-[260px] w-full" data-testid="sensitivity-chart">
+        <div className="h-[270px] w-full" data-testid="sensitivity-chart">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={sensitivityData}
-              margin={{ top: 12, right: 20, left: 12, bottom: 16 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-              <XAxis
-                dataKey="parameterValue"
-                type="number"
-                domain={['dataMin', 'dataMax']}
-                tick={{ fontSize: 11, fill: '#475569' }}
-                label={{
-                  value: `${PARAM_META[sensitivityParam].label} [${PARAM_META[sensitivityParam].unit}]`,
-                  position: 'insideBottom',
-                  offset: -6,
-                  fontSize: 11,
-                  fill: '#475569',
-                }}
-              />
-              <YAxis
-                yAxisId="left"
-                width={54}
-                tick={{ fontSize: 11, fill: '#0F172A' }}
-                label={{
-                  value: 'Heat Duty Q (kW)',
-                  angle: -90,
-                  position: 'insideLeft',
-                  offset: 4,
-                  fontSize: 11,
-                  fill: '#0F172A',
-                }}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                width={50}
-                domain={[0, 100]}
-                unit="%"
-                tick={{ fontSize: 11, fill: '#0D9488' }}
-                label={{
-                  value: 'Effectiveness ε (%)',
-                  angle: 90,
-                  position: 'insideRight',
-                  offset: 4,
-                  fontSize: 11,
-                  fill: '#0D9488',
-                }}
-              />
-              <Tooltip
-                labelFormatter={(val) =>
-                  `${PARAM_META[sensitivityParam].shortLabel}: ${val} ${PARAM_META[sensitivityParam].unit}`
-                }
-                contentStyle={{
-                  backgroundColor: '#FFFFFF',
-                  borderColor: '#E2E8F0',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="Q_kW"
-                name="Heat Duty Q (kW)"
-                stroke="#0F172A"
-                strokeWidth={2.5}
-                dot={false}
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="effectiveness_pct"
-                name="Effectiveness ε (%)"
-                stroke="#0D9488"
-                strokeWidth={2}
-                strokeDasharray="5 3"
-                dot={false}
-              />
-              <ReferenceDot
-                yAxisId="left"
-                x={currentParamValue}
-                y={Number(results.Q_kW.toFixed(2))}
-                r={6}
-                fill="#DC2626"
-                stroke="#FFFFFF"
-                strokeWidth={2}
-              />
-            </LineChart>
+            {sensitivityView === 'target-temp' ? (
+              <LineChart
+                data={sensitivityData}
+                margin={{ top: 16, right: 24, left: 12, bottom: 16 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis
+                  dataKey="parameterValue"
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  tick={{ fontSize: 11, fill: '#475569' }}
+                  label={{
+                    value: `${PARAM_META[sensitivityParam].label} [${PARAM_META[sensitivityParam].unit}]`,
+                    position: 'insideBottom',
+                    offset: -6,
+                    fontSize: 11,
+                    fill: '#475569',
+                  }}
+                />
+                <YAxis
+                  width={68}
+                  domain={tempSensitivityDomain}
+                  unit=" °C"
+                  tick={{ fontSize: 11, fill: '#0F172A' }}
+                  label={{
+                    value: 'Outlet Temp. (°C)',
+                    angle: -90,
+                    position: 'insideLeft',
+                    offset: -2,
+                    style: { textAnchor: 'middle' },
+                    fontSize: 11,
+                    fill: '#0F172A',
+                  }}
+                />
+                <Tooltip
+                  labelFormatter={(val) =>
+                    `${PARAM_META[sensitivityParam].shortLabel}: ${val} ${PARAM_META[sensitivityParam].unit}`
+                  }
+                  formatter={(value, name) => [`${Number(value ?? 0).toFixed(2)} °C`, String(name)]}
+                  contentStyle={{
+                    backgroundColor: '#FFFFFF',
+                    borderColor: '#E2E8F0',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+
+                {/* Selected Engineering Target Line */}
+                {Number.isFinite(targetSpec.targetTemp_C) &&
+                  targetSpec.targetTemp_C >= tempSensitivityDomain[0] &&
+                  targetSpec.targetTemp_C <= tempSensitivityDomain[1] && (
+                    <ReferenceLine
+                      y={targetSpec.targetTemp_C}
+                      stroke={activeEvaluation.status === 'unreachable' ? '#E11D48' : '#0D9488'}
+                      strokeWidth={2}
+                      strokeDasharray="6 3"
+                      label={{
+                        value: `Target ${targetSpec.variable === 'Tc_out' ? 'Tc,out' : 'Th,out'} = ${targetSpec.targetTemp_C.toFixed(1)} °C`,
+                        position: 'insideTopRight',
+                        fill: activeEvaluation.status === 'unreachable' ? '#BE123C' : '#0F766E',
+                        fontSize: 11,
+                        fontWeight: 600,
+                      }}
+                    />
+                  )}
+
+                {/* Thermodynamic Limit Reference Line (asymptote at A -> ∞) */}
+                {sensitivityParam !== 'mh' &&
+                  sensitivityParam !== 'mc' &&
+                  activeEvaluation.thermodynamicLimit_C >= tempSensitivityDomain[0] &&
+                  activeEvaluation.thermodynamicLimit_C <= tempSensitivityDomain[1] && (
+                    <ReferenceLine
+                      y={activeEvaluation.thermodynamicLimit_C}
+                      stroke="#64748B"
+                      strokeWidth={1.25}
+                      strokeDasharray="3 3"
+                      label={{
+                        value: `Thermo Limit ${activeEvaluation.thermodynamicLimit_C.toFixed(1)} °C`,
+                        position: 'insideBottomRight',
+                        fill: '#475569',
+                        fontSize: 10,
+                      }}
+                    />
+                  )}
+
+                <Line
+                  type="monotone"
+                  dataKey="Tc_out"
+                  name="Cold Outlet Tc,out (°C)"
+                  stroke="#0284C7"
+                  strokeWidth={targetSpec.variable === 'Tc_out' ? 2.75 : 1.75}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Th_out"
+                  name="Hot Outlet Th,out (°C)"
+                  stroke="#DC2626"
+                  strokeWidth={targetSpec.variable === 'Th_out' ? 2.75 : 1.75}
+                  strokeDasharray={targetSpec.variable === 'Th_out' ? undefined : '5 3'}
+                  dot={false}
+                />
+
+                {/* Required Area intersection marker when sweeping A */}
+                {showRequiredAreaDot && activeEvaluation.requiredArea_m2 !== null && (
+                  <ReferenceDot
+                    x={Number(activeEvaluation.requiredArea_m2.toFixed(2))}
+                    y={targetSpec.targetTemp_C}
+                    r={5.5}
+                    fill="#0D9488"
+                    stroke="#FFFFFF"
+                    strokeWidth={2}
+                  />
+                )}
+
+                {/* Active Operating Point Marker */}
+                <ReferenceDot
+                  x={currentParamValue}
+                  y={Number(activeEvaluation.calculatedTemp_C.toFixed(2))}
+                  r={6}
+                  fill="#0F172A"
+                  stroke="#FFFFFF"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            ) : (
+              <LineChart
+                data={sensitivityData}
+                margin={{ top: 12, right: 20, left: 12, bottom: 16 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis
+                  dataKey="parameterValue"
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  tick={{ fontSize: 11, fill: '#475569' }}
+                  label={{
+                    value: `${PARAM_META[sensitivityParam].label} [${PARAM_META[sensitivityParam].unit}]`,
+                    position: 'insideBottom',
+                    offset: -6,
+                    fontSize: 11,
+                    fill: '#475569',
+                  }}
+                />
+                <YAxis
+                  yAxisId="left"
+                  width={54}
+                  tick={{ fontSize: 11, fill: '#0F172A' }}
+                  label={{
+                    value: 'Heat Duty Q (kW)',
+                    angle: -90,
+                    position: 'insideLeft',
+                    offset: 4,
+                    fontSize: 11,
+                    fill: '#0F172A',
+                  }}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  width={50}
+                  domain={[0, 100]}
+                  unit="%"
+                  tick={{ fontSize: 11, fill: '#0D9488' }}
+                  label={{
+                    value: 'Effectiveness ε (%)',
+                    angle: 90,
+                    position: 'insideRight',
+                    offset: 4,
+                    fontSize: 11,
+                    fill: '#0D9488',
+                  }}
+                />
+                <Tooltip
+                  labelFormatter={(val) =>
+                    `${PARAM_META[sensitivityParam].shortLabel}: ${val} ${PARAM_META[sensitivityParam].unit}`
+                  }
+                  contentStyle={{
+                    backgroundColor: '#FFFFFF',
+                    borderColor: '#E2E8F0',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="Q_kW"
+                  name="Heat Duty Q (kW)"
+                  stroke="#0F172A"
+                  strokeWidth={2.5}
+                  dot={false}
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="effectiveness_pct"
+                  name="Effectiveness ε (%)"
+                  stroke="#0D9488"
+                  strokeWidth={2}
+                  strokeDasharray="5 3"
+                  dot={false}
+                />
+                <ReferenceDot
+                  yAxisId="left"
+                  x={currentParamValue}
+                  y={Number(results.Q_kW.toFixed(2))}
+                  r={6}
+                  fill="#DC2626"
+                  stroke="#FFFFFF"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            )}
           </ResponsiveContainer>
         </div>
 
         <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
-          <span>
-            Red marker indicates your active operating point:{' '}
-            <strong className="font-mono text-slate-900">
-              {sensitivityParam} = {currentParamValue} {PARAM_META[sensitivityParam].unit}
-            </strong>{' '}
-            →{' '}
-            <strong className="font-mono text-teal-800">
-              Q = {results.Q_kW.toFixed(2)} kW (ε = {results.effectiveness_pct.toFixed(1)}%)
-            </strong>
-          </span>
-          <span className="font-mono text-slate-600">
-            Thermodynamic Limit Qmax = {results.Qmax_kW.toFixed(1)} kW
-          </span>
+          {sensitivityView === 'target-temp' ? (
+            <>
+              <span>
+                Navy marker:{' '}
+                <strong className="font-mono text-slate-900">
+                  {sensitivityParam} = {currentParamValue} {PARAM_META[sensitivityParam].unit}
+                </strong>{' '}
+                →{' '}
+                <strong className="font-mono text-sky-800">
+                  {targetSpec.variable === 'Tc_out' ? 'Tc,out' : 'Th,out'} ={' '}
+                  {activeEvaluation.calculatedTemp_C.toFixed(2)} °C
+                </strong>
+                {showRequiredAreaDot && activeEvaluation.requiredArea_m2 !== null && (
+                  <>
+                    {' · '}Teal marker:{' '}
+                    <strong className="font-mono text-teal-800">
+                      Areq = {activeEvaluation.requiredArea_m2.toFixed(2)} m²
+                    </strong>
+                  </>
+                )}
+              </span>
+              <span className="font-mono text-slate-600">
+                {activeEvaluation.localAreaSensitivity_C_per_m2 !== null
+                  ? `Local Slope |dT/dA| = ${activeEvaluation.localAreaSensitivity_C_per_m2.toFixed(2)} °C/m²`
+                  : `Thermodynamic Limit = ${activeEvaluation.thermodynamicLimit_C.toFixed(1)} °C`}
+              </span>
+            </>
+          ) : (
+            <>
+              <span>
+                Red marker indicates your active operating point:{' '}
+                <strong className="font-mono text-slate-900">
+                  {sensitivityParam} = {currentParamValue} {PARAM_META[sensitivityParam].unit}
+                </strong>{' '}
+                →{' '}
+                <strong className="font-mono text-teal-800">
+                  Q = {results.Q_kW.toFixed(2)} kW (ε = {results.effectiveness_pct.toFixed(1)}%)
+                </strong>
+              </span>
+              <span className="font-mono text-slate-600">
+                Thermodynamic Limit Qmax = {results.Qmax_kW.toFixed(1)} kW
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -550,81 +837,125 @@ export function HeatExchangerCharts({
                   <th className="py-2 px-2 text-right whitespace-nowrap">ε (%)</th>
                   <th className="py-2 px-2 text-right whitespace-nowrap">Q (kW)</th>
                   <th className="py-2 px-2 text-right whitespace-nowrap">Th,out / Tc,out (°C)</th>
+                  <th className="py-2 px-2 text-center whitespace-nowrap">Target</th>
                   <th className="py-2 pl-2 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono tabular-nums">
-                {savedScenarios.map((scenario) => (
-                  <tr key={scenario.id} className="hover:bg-slate-50">
-                    <td className="py-2.5 pr-3 font-sans font-medium text-slate-900 whitespace-nowrap">
-                      {scenario.label}
-                    </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
-                      {scenario.inputs.A.toFixed(1)}
-                    </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
-                      {scenario.inputs.mh.toFixed(1)} / {scenario.inputs.mc.toFixed(1)}
-                    </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
-                      {scenario.NTU.toFixed(2)}
-                    </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
-                      {scenario.effectiveness_pct.toFixed(1)}%
-                    </td>
-                    <td className="py-2.5 px-2 text-right font-semibold text-slate-900 whitespace-nowrap">
-                      {scenario.Q_kW.toFixed(1)}
-                    </td>
-                    <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
-                      {scenario.Th_out.toFixed(1)} / {scenario.Tc_out.toFixed(1)}
-                    </td>
-                    <td className="py-2.5 pl-2 text-right font-sans">
-                      <div className="inline-flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => onLoadScenario(scenario.inputs)}
-                          className="text-teal-800 hover:text-teal-950 font-semibold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                {savedScenarios.map((scenario) => {
+                  const evalItem = scenarioStatusMap.get(scenario.id);
+                  const badgeClass =
+                    evalItem?.status === 'achieved'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : evalItem?.status === 'unreachable'
+                        ? 'bg-rose-50 text-rose-800 border-rose-200'
+                        : 'bg-amber-50 text-amber-800 border-amber-200';
+                  return (
+                    <tr key={scenario.id} className="hover:bg-slate-50">
+                      <td className="py-2.5 pr-3 font-sans font-medium text-slate-900 whitespace-nowrap">
+                        {scenario.label}
+                      </td>
+                      <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
+                        {scenario.inputs.A.toFixed(1)}
+                      </td>
+                      <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
+                        {scenario.inputs.mh.toFixed(1)} / {scenario.inputs.mc.toFixed(1)}
+                      </td>
+                      <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
+                        {scenario.NTU.toFixed(2)}
+                      </td>
+                      <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
+                        {scenario.effectiveness_pct.toFixed(1)}%
+                      </td>
+                      <td className="py-2.5 px-2 text-right font-semibold text-slate-900 whitespace-nowrap">
+                        {scenario.Q_kW.toFixed(1)}
+                      </td>
+                      <td className="py-2.5 px-2 text-right text-slate-700 whitespace-nowrap">
+                        {scenario.Th_out.toFixed(1)} / {scenario.Tc_out.toFixed(1)}
+                      </td>
+                      <td className="py-2.5 px-2 text-center font-sans whitespace-nowrap">
+                        <span
+                          className={`inline-block px-2 py-0.5 text-[11px] font-semibold border rounded ${badgeClass}`}
                         >
-                          Load
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onRemoveScenario(scenario.id)}
-                          aria-label={`Remove ${scenario.label}`}
-                          className="text-slate-500 hover:text-rose-700 p-1 rounded focus-visible:outline-2 focus-visible:outline-teal-700"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          {evalItem?.statusShortLabel ?? '—'}
+                        </span>
+                      </td>
+                      <td className="py-2.5 pl-2 text-right font-sans">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => onLoadScenario(scenario.inputs)}
+                            className="text-teal-800 hover:text-teal-950 font-semibold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+                          >
+                            Load
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onRemoveScenario(scenario.id)}
+                            aria-label={`Remove ${scenario.label}`}
+                            className="text-slate-500 hover:text-rose-700 p-1 rounded focus-visible:outline-2 focus-visible:outline-teal-700"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
 
                 {/* Active Live Row */}
-                <tr className="bg-teal-50/60 font-semibold text-teal-950">
-                  <td className="py-2.5 pr-3 font-sans font-semibold text-teal-900">
-                    Current Live Run
-                  </td>
-                  <td className="py-2.5 px-2 text-right">{inputs.A.toFixed(1)}</td>
-                  <td className="py-2.5 px-2 text-right">
-                    {inputs.mh.toFixed(1)} / {inputs.mc.toFixed(1)}
-                  </td>
-                  <td className="py-2.5 px-2 text-right">{results.NTU.toFixed(2)}</td>
-                  <td className="py-2.5 px-2 text-right">
-                    {results.effectiveness_pct.toFixed(1)}%
-                  </td>
-                  <td className="py-2.5 px-2 text-right text-teal-800">
-                    {results.Q_kW.toFixed(1)}
-                  </td>
-                  <td className="py-2.5 px-2 text-right">
-                    {results.Th_out.toFixed(1)} / {results.Tc_out.toFixed(1)}
-                  </td>
-                  <td className="py-2.5 pl-2 text-right font-sans text-xs text-teal-700">
-                    Active
-                  </td>
-                </tr>
+                {(() => {
+                  const liveEvalItem = scenarioStatusMap.get('__live__');
+                  const liveBadgeClass =
+                    liveEvalItem?.status === 'achieved'
+                      ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                      : liveEvalItem?.status === 'unreachable'
+                        ? 'bg-rose-100 text-rose-900 border-rose-300'
+                        : 'bg-amber-100 text-amber-900 border-amber-300';
+                  return (
+                    <tr className="bg-teal-50/60 font-semibold text-teal-950">
+                      <td className="py-2.5 pr-3 font-sans font-semibold text-teal-900">
+                        Current Live Run
+                      </td>
+                      <td className="py-2.5 px-2 text-right">{inputs.A.toFixed(1)}</td>
+                      <td className="py-2.5 px-2 text-right">
+                        {inputs.mh.toFixed(1)} / {inputs.mc.toFixed(1)}
+                      </td>
+                      <td className="py-2.5 px-2 text-right">{results.NTU.toFixed(2)}</td>
+                      <td className="py-2.5 px-2 text-right">
+                        {results.effectiveness_pct.toFixed(1)}%
+                      </td>
+                      <td className="py-2.5 px-2 text-right text-teal-800">
+                        {results.Q_kW.toFixed(1)}
+                      </td>
+                      <td className="py-2.5 px-2 text-right">
+                        {results.Th_out.toFixed(1)} / {results.Tc_out.toFixed(1)}
+                      </td>
+                      <td className="py-2.5 px-2 text-center font-sans whitespace-nowrap">
+                        <span
+                          className={`inline-block px-2 py-0.5 text-[11px] font-semibold border rounded ${liveBadgeClass}`}
+                        >
+                          {liveEvalItem?.statusShortLabel ?? '—'}
+                        </span>
+                      </td>
+                      <td className="py-2.5 pl-2 text-right font-sans text-xs text-teal-700">
+                        Active
+                      </td>
+                    </tr>
+                  );
+                })()}
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Dynamic Scenario Engineering Trade-Off Summary */}
+        <div
+          className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-700 bg-slate-50/80 border rounded-lg px-3.5 py-2.5"
+          data-testid="scenario-tradeoff-summary"
+        >
+          <span className="font-semibold text-slate-900">Comparison Trade-Off: </span>
+          {scenarioComparison.summaryText}
         </div>
       </div>
     </div>
