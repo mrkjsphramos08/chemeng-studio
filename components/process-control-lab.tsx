@@ -14,6 +14,7 @@ import { PROCESS_CONTROL_GUIDED_QUESTIONS } from '@/lib/labs-data';
 import { downloadSimulationCsv } from '@/lib/lab-download';
 import { formatSignedZero } from '@/lib/navigation';
 import {
+  LabAdditionalMetricsDisclosure,
   LabAssumptionsCard,
   LabGuidedInquiryCard,
   LabMetricCard,
@@ -236,6 +237,7 @@ export function ProcessControlLab() {
             id: p.id,
             name: p.name,
             description: p.description,
+            expectedObservation: p.expectedObservation,
           }))}
           selectedPresetId={activePresetId}
           onSelectPreset={handleApplyPreset}
@@ -309,12 +311,15 @@ export function ProcessControlLab() {
           warningTitle="Process Control & Closed-Loop Stability Advisories"
         />
 
-        {/* Main Two-Column Workspace: Left Controls (4 cols) + Right Dashboard, Schematic & Charts (8 cols) */}
+        {/* Main Two-Column Workspace: Left Controls (4 cols) + Right Charts, Primary KPIs, Schematic & Disclosure (8 cols) */}
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-          {/* LEFT COLUMN: Controls & Educational Presets */}
-          <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
+          {/* LEFT COLUMN: Controller, FOPDT Plant & Experiment Forcing Controls */}
+          <div
+            className="space-y-4 lg:col-span-4 lg:sticky lg:top-28 lg:self-start"
+            data-testid="process-control-left-col"
+          >
             {/* Panel 1: Controller Mode & Tuning Parameters */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs">
               <div className="mb-3 flex items-center gap-2">
                 <Sliders className="h-4 w-4 text-teal-700" />
                 <div>
@@ -612,7 +617,7 @@ export function ProcessControlLab() {
             </div>
 
             {/* Panel 2: FOPDT Process Dynamics */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs">
               <div className="mb-3 flex items-center gap-2">
                 <Activity className="h-4 w-4 text-teal-700" />
                 <div>
@@ -831,7 +836,7 @@ export function ProcessControlLab() {
             </div>
 
             {/* Panel 3: Setpoint, Disturbance & Open-Loop Step Inputs */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs">
               <div className="mb-3 flex items-center gap-2">
                 <ShieldAlert className="h-4 w-4 text-teal-700" />
                 <div>
@@ -988,137 +993,11 @@ export function ProcessControlLab() {
                 </div>
               </div>
             </div>
-
-            {/* Panel 4: 10 Verified Educational Presets */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
-              <div className="mb-3">
-                <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
-                  Benchmark Control Scenarios
-                </span>
-                <h2 className="text-sm font-bold text-slate-900">
-                  Load Verified Tuning &amp; Dynamic Preset
-                </h2>
-              </div>
-
-              <div className="space-y-2">
-                {PROCESS_CONTROL_PRESETS.map((preset) => {
-                  const isSelected = activePresetId === preset.id;
-                  return (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => handleApplyPreset(preset.id)}
-                      className={`w-full rounded-xl border p-3 text-left transition ${
-                        isSelected
-                          ? 'border-teal-600 bg-teal-50/70 shadow-2xs'
-                          : 'border-slate-200 bg-slate-50/50 hover:border-slate-300 hover:bg-white'
-                      }`}
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-1">
-                        <span className="text-xs font-bold text-slate-900">
-                          {preset.name}
-                        </span>
-                        <span className="rounded bg-slate-200/80 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
-                          {preset.tag}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
-                        <MathText text={preset.expectedObservation} />
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
 
-          {/* RIGHT COLUMN: KPI Dashboard, Block Schematic, and Interactive Charts */}
-          <div className="space-y-6 lg:col-span-8">
-            {/* 8 KPI Metric Cards */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <LabMetricCard
-                label="Controller & Loop Status"
-                value={
-                  inputs.controllerMode === 'open-loop'
-                    ? 'Open-Loop'
-                    : `${inputs.controllerMode} Control`
-                }
-                subtext={results.metrics.stabilityStatus}
-                valueClassName="text-xl text-teal-800"
-              />
-
-              <LabMetricCard
-                label="Peak Output & Overshoot"
-                value={
-                  results.metrics.overshootPercent !== null
-                    ? `${results.metrics.overshootPercent.toFixed(1)}% OS`
-                    : `${results.metrics.peakOutput_Y.toFixed(1)}% PV`
-                }
-                subtext={`Peak Y = ${results.metrics.peakOutput_Y.toFixed(2)}% @ ${results.metrics.peakTime_s.toFixed(1)} s`}
-              />
-
-              <LabMetricCard
-                label="10%–90% Rise Time ($t_r$)"
-                value={
-                  results.metrics.riseTime_10_90_s !== null
-                    ? `${results.metrics.riseTime_10_90_s.toFixed(2)} s`
-                    : 'Not Reached'
-                }
-                subtext={results.metrics.riseTimeStatus}
-              />
-
-              <LabMetricCard
-                label="Settling Time ($\pm 2\%$ Band)"
-                value={
-                  results.metrics.settlingTime_2pct_s !== null
-                    ? `${results.metrics.settlingTime_2pct_s.toFixed(1)} s`
-                    : 'Unsettled'
-                }
-                subtext={results.metrics.settlingStatus}
-                valueClassName={
-                  results.metrics.isSettledWithinWindow
-                    ? 'text-2xl text-slate-900'
-                    : 'text-xl text-amber-800'
-                }
-              />
-
-              <LabMetricCard
-                label="Steady-State Error ($e_{\mathrm{ss}}$)"
-                value={`${formatSignedZero(results.metrics.steadyStateError_ess, 2, { positivePrefix: true })}%`}
-                subtext={
-                  results.metrics.theoreticalProportionalOffset_ess !== null
-                    ? `Theoretical P offset: ${formatSignedZero(results.metrics.theoreticalProportionalOffset_ess, 2)}%`
-                    : `Final Y = ${results.metrics.finalOutput_Y.toFixed(2)}% (Target ${results.metrics.finalTarget_Y.toFixed(1)}%)`
-                }
-              />
-
-              <LabMetricCard
-                label="Integral Error ($\mathrm{IAE} / \mathrm{ITAE}$)"
-                value={`${results.metrics.iae.toFixed(1)} %·s`}
-                subtext={`ITAE = ${results.metrics.itae.toFixed(0)} %·s²`}
-              />
-
-              <LabMetricCard
-                label="Actuator Effort & Saturation"
-                value={
-                  results.metrics.saturationDuration_s > 0
-                    ? `Sat ${results.metrics.saturationDuration_s.toFixed(1)} s`
-                    : 'Unsaturated'
-                }
-                subtext={`Total travel $\\mathrm{TV}_u = ${results.metrics.controlEffort_TV.toFixed(1)}\\%$ MV`}
-              />
-
-              <LabMetricCard
-                label="Delay Ratio & Loop Gain"
-                value={`$\\theta / \\tau$ = ${results.controllabilityRatio_theta_over_tau.toFixed(2)}`}
-                subtext={`Loop gain $K_p K_c = ${results.loopGain_KpKc.toFixed(2)}$`}
-              />
-            </div>
-
-            {/* Interactive Feedback Block Diagram Schematic */}
-            <ProcessControlSchematic results={results} />
-
-            {/* 5-Tab Dynamic Charts & Scenario Comparison Table */}
+          {/* RIGHT COLUMN: Simulation-First Hierarchy (Charts -> 4 Primary KPIs -> Block Schematic -> Additional Metrics -> Saved Scenarios) */}
+          <div className="space-y-5 lg:col-span-8" data-testid="process-control-right-col">
+            {/* 1. Primary 5-Tab Dynamic Charts First */}
             <ProcessControlCharts
               results={results}
               modeComparison={modeComparison}
@@ -1136,6 +1015,125 @@ export function ProcessControlLab() {
                 setSavedScenarios((prev) => prev.filter((s) => s.id !== id))
               }
               onClearScenarios={() => setSavedScenarios([])}
+              renderSection="charts"
+            />
+
+            {/* 2. 4 Primary KPI Cards */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <LabMetricCard
+                label="Controller & Loop Status"
+                value={
+                  inputs.controllerMode === 'open-loop'
+                    ? 'Open-Loop'
+                    : `${inputs.controllerMode} Control`
+                }
+                subtext={results.metrics.stabilityStatus}
+                valueClassName="text-xl text-teal-800"
+                testId="kpi-pc-mode"
+              />
+
+              <LabMetricCard
+                label="Peak Output & Overshoot"
+                value={
+                  results.metrics.overshootPercent !== null
+                    ? `${results.metrics.overshootPercent.toFixed(1)}% OS`
+                    : `${results.metrics.peakOutput_Y.toFixed(1)}% PV`
+                }
+                subtext={`Peak Y = ${results.metrics.peakOutput_Y.toFixed(2)}% @ ${results.metrics.peakTime_s.toFixed(1)} s`}
+                testId="kpi-pc-overshoot"
+              />
+
+              <LabMetricCard
+                label="Settling Time ($\pm 2\%$ Band)"
+                value={
+                  results.metrics.settlingTime_2pct_s !== null
+                    ? `${results.metrics.settlingTime_2pct_s.toFixed(1)} s`
+                    : 'Unsettled'
+                }
+                subtext={results.metrics.settlingStatus}
+                valueClassName={
+                  results.metrics.isSettledWithinWindow
+                    ? 'text-2xl text-slate-900'
+                    : 'text-xl text-amber-800'
+                }
+                testId="kpi-pc-settling"
+              />
+
+              <LabMetricCard
+                label="Steady-State Error ($e_{\mathrm{ss}}$)"
+                value={`${formatSignedZero(results.metrics.steadyStateError_ess, 2, { positivePrefix: true })}%`}
+                subtext={
+                  results.metrics.theoreticalProportionalOffset_ess !== null
+                    ? `Theoretical P offset: ${formatSignedZero(results.metrics.theoreticalProportionalOffset_ess, 2)}%`
+                    : `Final Y = ${results.metrics.finalOutput_Y.toFixed(2)}% (Target ${results.metrics.finalTarget_Y.toFixed(1)}%)`
+                }
+                testId="kpi-pc-ess"
+              />
+            </div>
+
+            {/* 3. Interactive Feedback Block Diagram Schematic */}
+            <ProcessControlSchematic results={results} />
+
+            {/* 4. Additional Metrics Disclosure (4 secondary KPIs) */}
+            <LabAdditionalMetricsDisclosure
+              count={4}
+              summary="Rise time ($t_r$), integral error ($\mathrm{IAE}/\mathrm{ITAE}$), actuator saturation, & $\theta/\tau$ loop gain"
+              testId="process-control-additional-metrics"
+            >
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 pt-2">
+                <LabMetricCard
+                  label="10%–90% Rise Time ($t_r$)"
+                  value={
+                    results.metrics.riseTime_10_90_s !== null
+                      ? `${results.metrics.riseTime_10_90_s.toFixed(2)} s`
+                      : 'Not Reached'
+                  }
+                  subtext={results.metrics.riseTimeStatus}
+                />
+
+                <LabMetricCard
+                  label="Integral Error ($\mathrm{IAE} / \mathrm{ITAE}$)"
+                  value={`${results.metrics.iae.toFixed(1)} %·s`}
+                  subtext={`ITAE = ${results.metrics.itae.toFixed(0)} %·s²`}
+                />
+
+                <LabMetricCard
+                  label="Actuator Effort & Saturation"
+                  value={
+                    results.metrics.saturationDuration_s > 0
+                      ? `Sat ${results.metrics.saturationDuration_s.toFixed(1)} s`
+                      : 'Unsaturated'
+                  }
+                  subtext={`Total travel $\\mathrm{TV}_u = ${results.metrics.controlEffort_TV.toFixed(1)}\\%$ MV`}
+                />
+
+                <LabMetricCard
+                  label="Delay Ratio & Loop Gain"
+                  value={`$\\theta / \\tau$ = ${results.controllabilityRatio_theta_over_tau.toFixed(2)}`}
+                  subtext={`Loop gain $K_p K_c = ${results.loopGain_KpKc.toFixed(2)}$`}
+                />
+              </div>
+            </LabAdditionalMetricsDisclosure>
+
+            {/* 5. Saved Scenarios Comparison Table (shown when scenarios > 0) */}
+            <ProcessControlCharts
+              results={results}
+              modeComparison={modeComparison}
+              sensitivityParameter={sensitivityParameter}
+              onSelectSensitivityParameter={setSensitivityParameter}
+              sensitivitySweep={sensitivitySweep}
+              showAnalyticalReference={showAnalyticalReference}
+              onToggleAnalyticalReference={setShowAnalyticalReference}
+              savedScenarios={savedScenarios}
+              onLoadScenario={(sc) => {
+                setInputs({ ...sc.inputs });
+                setActivePresetId('custom');
+              }}
+              onRemoveScenario={(id) =>
+                setSavedScenarios((prev) => prev.filter((s) => s.id !== id))
+              }
+              onClearScenarios={() => setSavedScenarios([])}
+              renderSection="saved"
             />
           </div>
         </div>

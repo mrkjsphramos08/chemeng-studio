@@ -252,8 +252,16 @@ import { OPERATING_PRESETS } from './heat-exchanger';
 import { FLUID_MECHANICS_PRESETS } from './fluid-mechanics';
 import { REACTION_ENGINEERING_PRESETS } from './reaction-engineering';
 import { DISTILLATION_PRESETS } from './distillation';
-import { THERMO_PVT_PRESETS, THERMO_VLE_PRESETS } from './thermodynamics';
-import { PROCESS_CONTROL_PRESETS } from './process-control';
+import {
+  THERMO_PVT_PRESETS,
+  THERMO_VLE_PRESETS,
+  calculatePureFluidPVT,
+  calculateBinaryVLE,
+} from './thermodynamics';
+import {
+  PROCESS_CONTROL_PRESETS,
+  simulateProcessControl,
+} from './process-control';
 
 test('Batch 3 — All 6 laboratory scenario preset lists have unique IDs, non-empty labels/descriptions, and clean custom-state fallback resolution', () => {
   const catalogEntries = [
@@ -320,6 +328,33 @@ test('Batch 3 — All 6 laboratory scenario preset lists have unique IDs, non-em
     assert.equal(resolveSelectValue('custom'), 'custom');
   }
 });
+
+test('Batch 4 — Thermodynamics (PVT + VLE) and Process Control presets preserve expectedObservation notes and solve cleanly across all presets', () => {
+  assert.equal(THERMO_PVT_PRESETS.length, 5);
+  for (const preset of THERMO_PVT_PRESETS) {
+    assert.ok(preset.expectedObservation.trim().length > 10, `Missing expectedObservation on PVT preset ${preset.id}`);
+    const res = calculatePureFluidPVT(preset.inputs);
+    assert.equal(res.isValid, true, `PVT preset ${preset.id} should evaluate cleanly`);
+    assert.ok(Number.isFinite(res.compressibilityFactor_Z));
+  }
+
+  assert.equal(THERMO_VLE_PRESETS.length, 5);
+  for (const preset of THERMO_VLE_PRESETS) {
+    assert.ok(preset.expectedObservation.trim().length > 10, `Missing expectedObservation on VLE preset ${preset.id}`);
+    const res = calculateBinaryVLE(preset.inputs);
+    assert.equal(res.isValid, true, `VLE preset ${preset.id} should evaluate cleanly`);
+    assert.ok(Number.isFinite(res.bubblePressure_kPa));
+  }
+
+  assert.equal(PROCESS_CONTROL_PRESETS.length, 10);
+  for (const preset of PROCESS_CONTROL_PRESETS) {
+    assert.ok(preset.expectedObservation.trim().length > 10, `Missing expectedObservation on Control preset ${preset.id}`);
+    const res = simulateProcessControl(preset.inputs);
+    assert.equal(res.isValid, true, `Control preset ${preset.id} should simulate cleanly`);
+    assert.ok(res.timeSeries.length > 10);
+  }
+});
+
 
 
 

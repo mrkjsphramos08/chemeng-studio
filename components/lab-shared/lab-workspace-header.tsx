@@ -21,6 +21,7 @@ export interface LabPresetItem {
   id: string;
   name: string;
   description: string;
+  expectedObservation?: string;
 }
 
 export interface LabObjectiveItem {
@@ -49,6 +50,8 @@ export interface LabWorkspaceHeaderProps {
   learningObjectives: LabObjectiveItem[];
   workflowSteps: LabWorkflowStep[];
   presetTestIdPrefix?: string;
+  /** Optional compact control row rendered cleanly between the title row and Scenario row (e.g., module switcher). */
+  headerSlot?: React.ReactNode;
 }
 
 export function LabWorkspaceHeader({
@@ -67,6 +70,7 @@ export function LabWorkspaceHeader({
   learningObjectives,
   workflowSteps,
   presetTestIdPrefix = 'preset-btn',
+  headerSlot,
 }: LabWorkspaceHeaderProps) {
   const [showOrientation, setShowOrientation] = useState(false);
   const [showScenarioNotes, setShowScenarioNotes] = useState(false);
@@ -137,6 +141,10 @@ export function LabWorkspaceHeader({
           </button>
         </div>
       </div>
+
+      {headerSlot && (
+        <div className="pt-2.5 border-t border-slate-100">{headerSlot}</div>
+      )}
 
       {/* Compact Single-Row Scenario Selector & Progressive Guide Controls */}
       <div className="pt-2.5 border-t border-slate-100 space-y-2.5">
@@ -224,13 +232,21 @@ export function LabWorkspaceHeader({
         </div>
 
         {showScenarioNotes && selectedPreset && (
-          <p
-            className="text-xs text-slate-600 bg-slate-50/90 border border-slate-200/70 rounded-lg px-3 py-2 leading-relaxed"
+          <div
+            className="text-xs text-slate-600 bg-slate-50/90 border border-slate-200/70 rounded-lg px-3 py-2 leading-relaxed space-y-1"
             data-testid="scenario-notes-panel"
           >
-            <span className="font-semibold text-slate-800">{selectedPreset.name}: </span>
-            <MathText text={selectedPreset.description} />
-          </p>
+            <p>
+              <span className="font-semibold text-slate-800">{selectedPreset.name}: </span>
+              <MathText text={selectedPreset.description} />
+            </p>
+            {selectedPreset.expectedObservation && (
+              <p className="text-[11px] text-slate-600 border-t border-slate-200/70 pt-1">
+                <span className="font-semibold text-teal-800">Expected Observation: </span>
+                <MathText text={selectedPreset.expectedObservation} />
+              </p>
+            )}
+          </div>
         )}
 
         {showOrientation && (

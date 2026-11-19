@@ -42,6 +42,7 @@ interface ProcessControlChartsProps {
   onLoadScenario: (scenario: SavedControlScenario) => void;
   onRemoveScenario: (id: string) => void;
   onClearScenarios: () => void;
+  renderSection?: 'all' | 'charts' | 'saved';
 }
 
 type ControlChartTab =
@@ -63,6 +64,7 @@ export function ProcessControlCharts({
   onLoadScenario,
   onRemoveScenario,
   onClearScenarios,
+  renderSection = 'all',
 }: ProcessControlChartsProps) {
   const [activeTab, setActiveTab] = useState<ControlChartTab>('response');
   const { inputs, timeSeries, metrics } = results;
@@ -107,11 +109,22 @@ export function ProcessControlCharts({
     { key: 'deadTime_theta_s', label: 'Process Dead Time', latex: '\\theta' },
   ];
 
+  const showCharts = renderSection === 'all' || renderSection === 'charts';
+  const showSaved = renderSection === 'all' || renderSection === 'saved';
+
+  if (renderSection === 'saved' && savedScenarios.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Main Chart Card */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
-        <div className="mb-4 flex flex-col justify-between gap-3 border-b border-slate-100 pb-4 lg:flex-row lg:items-center">
+      {showCharts && (
+        <div
+          className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs"
+          data-testid="process-control-charts-card"
+        >
+          <div className="mb-3 flex flex-col justify-between gap-3 border-b border-slate-100 pb-3 lg:flex-row lg:items-center">
           <div>
             <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
               Dynamic Time-Domain Diagnostics
@@ -712,11 +725,15 @@ export function ProcessControlCharts({
             </div>
           </div>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Saved Scenarios Comparison Table */}
-      {savedScenarios.length > 0 && (
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
+      {showSaved && savedScenarios.length > 0 && (
+        <div
+          className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs"
+          data-testid="process-control-saved-table"
+        >
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
               <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">

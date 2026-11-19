@@ -1,15 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { PureFluidPVTResults, BinaryVLEResults } from '@/lib/thermodynamics';
 import { MathInline } from '@/components/lab-shared/math';
+import {
+  formatThermoPVTMobileLabels,
+  formatThermoVLEMobileLabels,
+} from '@/lib/schematic-formatting';
 
 interface PureFluidPVTSchematicProps {
   results: PureFluidPVTResults;
 }
 
 export function PureFluidPVTSchematic({ results }: PureFluidPVTSchematicProps) {
+  const [showDesktopOnMobile, setShowDesktopOnMobile] = useState(false);
   const z = results.compressibilityFactor_Z;
+  const labels = formatThermoPVTMobileLabels(results);
   // Normalize piston height visual ratio based on Z around 1.0 (clamped between 0.22 and 1.35)
   const idealFillRatio = 0.62;
   const prFillRatio = Math.max(0.2, Math.min(0.88, idealFillRatio * Math.min(1.4, Math.max(0.32, z))));
@@ -17,13 +24,17 @@ export function PureFluidPVTSchematic({ results }: PureFluidPVTSchematicProps) {
   const idealPistonY = 175 - idealFillRatio * 115;
   const prPistonY = 175 - prFillRatio * 115;
 
+  // Compact mobile cylinder vertical scale (chamber bottom y=114, height=78)
+  const mobileIdealPistonY = 114 - idealFillRatio * 68;
+  const mobilePrPistonY = 114 - prFillRatio * 68;
+
   const isAttractive = z < 0.985;
   const isRepulsive = z > 1.015;
 
   return (
-    <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
+    <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div>
+        <div className="min-w-0">
           <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
             Interactive State Schematic · Module A
           </span>
@@ -56,7 +67,182 @@ export function PureFluidPVTSchematic({ results }: PureFluidPVTSchematicProps) {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-950 p-3">
+      {/* Mobile Real-Gas Compression Cell Schematic (< 640px) — Zero Horizontal Scrolling */}
+      <div
+        className="sm:hidden rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-100 space-y-2.5"
+        data-testid="thermo-pvt-mobile-schematic"
+        role="region"
+        aria-label={`Pure-fluid PVT mobile schematic for ${results.fluid.name} at ${results.temperature_K.toFixed(1)} K and ${results.pressure_bar.toFixed(1)} bar: Ideal molar volume ${labels.vIdealLabel}, Peng-Robinson molar volume ${labels.vPrLabel}, compressibility Z = ${labels.zLabel}, ${labels.rootsLabel}.`}
+      >
+        {/* Compact Side-by-Side Compression Cell SVG */}
+        <svg
+          viewBox="0 0 320 144"
+          className="w-full h-auto select-none"
+          role="img"
+          aria-label={`Conceptual piston comparison showing Ideal Gas Z = 1.000 (${labels.vIdealLabel}) versus Peng-Robinson EOS Z = ${labels.zLabel} (${labels.vPrLabel})`}
+        >
+          <defs>
+            <linearGradient id="idealGasGradMobile" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#0284c7" stopOpacity="0.14" />
+            </linearGradient>
+            <linearGradient id="prGasGradMobile" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#0f766e" stopOpacity="0.2" />
+            </linearGradient>
+          </defs>
+
+          {/* Left Cylinder: Ideal Gas (Z = 1) */}
+          <g>
+            <text x="82" y="14" textAnchor="middle" fill="#bae6fd" fontSize="9.5" fontWeight="700">
+              IDEAL GAS (Z = 1.000)
+            </text>
+            <text x="82" y="25" textAnchor="middle" fill="#94a3b8" fontSize="7.6">
+              a = 0, b = 0 (Point Mass)
+            </text>
+            <rect x="34" y="34" width="96" height="80" rx="5" fill="#0f172a" stroke="#475569" strokeWidth="1.6" />
+            <rect
+              x="36"
+              y={mobileIdealPistonY}
+              width="92"
+              height={Math.max(10, 114 - mobileIdealPistonY)}
+              fill="url(#idealGasGradMobile)"
+            />
+            <rect x="36" y={mobileIdealPistonY - 7} width="92" height="7" rx="1.5" fill="#64748b" stroke="#cbd5e1" strokeWidth="0.8" />
+            <rect x="78" y="28" width="8" height={Math.max(3, mobileIdealPistonY - 35)} fill="#94a3b8" />
+            {[
+              [54, mobileIdealPistonY + 14],
+              [82, mobileIdealPistonY + 24],
+              [108, mobileIdealPistonY + 15],
+              [66, Math.min(107, mobileIdealPistonY + 38)],
+              [100, Math.min(107, mobileIdealPistonY + 40)],
+            ].map(([cx, cy], i) => (
+              <circle key={i} cx={cx} cy={Math.min(108, cy)} r="2.5" fill="#38bdf8" opacity="0.9" />
+            ))}
+            <text x="82" y="131" textAnchor="middle" fill="#e2e8f0" fontSize="9" fontWeight="700" fontFamily="monospace">
+              v_id = {labels.vIdealLabel}
+            </text>
+          </g>
+
+          {/* Vertical Divider */}
+          <line x1="160" y1="10" x2="160" y2="134" stroke="#1e293b" strokeWidth="1" strokeDasharray="3 3" />
+
+          {/* Right Cylinder: Peng-Robinson Real Fluid */}
+          <g>
+            <text x="238" y="14" textAnchor="middle" fill="#5eead4" fontSize="9.5" fontWeight="700">
+              PR EOS (Z = {labels.zLabel})
+            </text>
+            <text x="238" y="25" textAnchor="middle" fill="#94a3b8" fontSize="7.6">
+              b = {results.b_cm3_mol.toFixed(1)} cm³/mol · aα
+            </text>
+            <rect x="190" y="34" width="96" height="80" rx="5" fill="#0f172a" stroke="#14b8a6" strokeWidth="1.8" />
+            {/* Covolume floor band */}
+            <rect x="192" y="107" width="92" height="7" fill="#334155" opacity="0.75" />
+            <rect
+              x="192"
+              y={mobilePrPistonY}
+              width="92"
+              height={Math.max(10, 114 - mobilePrPistonY)}
+              fill="url(#prGasGradMobile)"
+            />
+            <rect x="192" y={mobilePrPistonY - 7} width="92" height="7" rx="1.5" fill="#0d9488" stroke="#99f6e4" strokeWidth="0.8" />
+            <rect x="234" y="28" width="8" height={Math.max(3, mobilePrPistonY - 35)} fill="#2dd4bf" />
+            {[
+              [210, mobilePrPistonY + 12],
+              [238, mobilePrPistonY + 20],
+              [264, mobilePrPistonY + 13],
+              [222, Math.min(101, mobilePrPistonY + 32)],
+              [254, Math.min(101, mobilePrPistonY + 34)],
+            ].map(([cx, cy], i) => (
+              <g key={i}>
+                <circle cx={cx} cy={Math.min(102, cy)} r="6" fill="none" stroke="#2dd4bf" strokeOpacity="0.35" strokeDasharray="2 2" />
+                <circle cx={cx} cy={Math.min(102, cy)} r="3.2" fill="#2dd4bf" />
+              </g>
+            ))}
+            <text x="238" y="131" textAnchor="middle" fill="#5eead4" fontSize="9" fontWeight="700" fontFamily="monospace">
+              v_PR = {labels.vPrLabel}
+            </text>
+          </g>
+        </svg>
+
+        <p className="text-[10px] text-slate-400 text-center leading-snug">
+          Conceptual molar-volume comparison (molecular dots illustrate covolume b &amp; attraction aα, not simulated coordinates).
+        </p>
+
+        {/* Molecular Interaction Balance Readout Card */}
+        <div className="rounded-lg border border-slate-800 bg-slate-900/90 p-2.5 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-1 border-b border-slate-800 pb-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-300">
+              Molecular Interaction Balance
+            </span>
+            <span className="font-mono text-[11px] font-semibold text-white">
+              {labels.stateSummary}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 min-[350px]:grid-cols-2 gap-x-3 gap-y-1.5 font-mono text-[11px]">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-slate-400">Repulsive P_rep</span>
+              <span className="font-bold text-sky-300">{labels.repulsiveBarLabel}</span>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-slate-400">Attractive P_att</span>
+              <span className="font-bold text-rose-400">{labels.attractiveBarLabel}</span>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-slate-400">Covolume (v/b)</span>
+              <span className="font-bold text-slate-100">{labels.covolumeRatioLabel}</span>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-slate-400">Vol. Deviation</span>
+              <span
+                className={`font-bold ${
+                  results.volumeDeviationPercent < 0 ? 'text-teal-300' : 'text-amber-300'
+                }`}
+              >
+                {labels.deviationLabel}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-2 min-[350px]:col-span-2 pt-1 border-t border-slate-800">
+              <span className="text-slate-400">Cubic Z Roots</span>
+              <span
+                className={`font-bold ${
+                  results.rootDiagnosis.hasMultipleValidRoots ? 'text-purple-300' : 'text-emerald-300'
+                }`}
+              >
+                {labels.rootsLabel}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Optional Toggle for Full Desktop Schematic */}
+        <button
+          type="button"
+          onClick={() => setShowDesktopOnMobile((prev) => !prev)}
+          aria-expanded={showDesktopOnMobile}
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+        >
+          <span>
+            {showDesktopOnMobile
+              ? 'Hide Detailed Desktop Cell'
+              : 'Inspect Detailed Desktop Cell (Scrollable)'}
+          </span>
+          {showDesktopOnMobile ? (
+            <ChevronUp className="w-3.5 h-3.5 text-teal-400" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-teal-400" />
+          )}
+        </button>
+      </div>
+
+      {/* Tablet & Desktop Full Compression Cell SVG (>= 640px, or expanded on mobile) */}
+      <div
+        className={
+          showDesktopOnMobile
+            ? 'mt-3 sm:mt-0 overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-950 p-3'
+            : 'hidden sm:block overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-950 p-3'
+        }
+      >
         <svg
           viewBox="0 0 760 235"
           className="h-auto w-full min-w-[580px]"
@@ -357,15 +543,15 @@ interface BinaryVLESchematicProps {
 }
 
 export function BinaryVLESchematic({ results }: BinaryVLESchematicProps) {
-  const isTwoPhase =
-    results.phaseStateAtSystemPressure === 'Two-Phase Vapor–Liquid Equilibrium';
-  const isLiquidOnly =
-    results.phaseStateAtSystemPressure === 'Compressed (Subcooled) Liquid';
+  const [showDesktopOnMobile, setShowDesktopOnMobile] = useState(false);
+  const labels = formatThermoVLEMobileLabels(results);
+  const isTwoPhase = labels.isTwoPhase;
+  const isLiquidOnly = labels.isLiquidOnly;
 
   return (
-    <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
+    <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div>
+        <div className="min-w-0">
           <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
             Interactive Equilibrium Cell · Module B
           </span>
@@ -393,7 +579,161 @@ export function BinaryVLESchematic({ results }: BinaryVLESchematicProps) {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-950 p-3">
+      {/* Mobile Isothermal Binary VLE Equilibrium Cell (< 640px) — Zero Horizontal Scrolling */}
+      <div
+        className="sm:hidden rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-100 space-y-2.5"
+        data-testid="thermo-vle-mobile-schematic"
+        role="region"
+        aria-label={`Binary VLE mobile equilibrium cell at ${results.systemPressure_kPa.toFixed(1)} kPa: ${labels.phaseFooterLabel}, liquid x_A = ${results.xA.toFixed(3)}, bubble vapor y_A = ${results.equilibriumVapor_yA.toFixed(3)}, bubble pressure ${results.bubblePressure_kPa.toFixed(1)} kPa, dew pressure ${results.dewPressureAtComposition_kPa.toFixed(1)} kPa.`}
+      >
+        {/* Compact Equilibrium Cell SVG */}
+        <svg
+          viewBox="0 0 320 144"
+          className="w-full h-auto select-none"
+          role="img"
+          aria-label={`Isothermal binary VLE cell at ${results.systemPressure_kPa.toFixed(1)} kPa showing ${labels.vaporCellLabel} above ${labels.liquidCellLabel}`}
+        >
+          <text x="160" y="13" textAnchor="middle" fill="#e2e8f0" fontSize="9.5" fontWeight="700">
+            ISOTHERMAL VLE CELL · P_sys = {results.systemPressure_kPa.toFixed(1)} kPa
+          </text>
+
+          {/* Equilibrium Vessel */}
+          <rect x="64" y="21" width="192" height="102" rx="18" fill="#0f172a" stroke="#475569" strokeWidth="2" />
+
+          {/* Vapor Headspace */}
+          <path
+            d="M 66 39 Q 66 23 82 23 L 238 23 Q 254 23 254 39 L 254 72 L 66 72 Z"
+            fill={isLiquidOnly ? '#0284c7' : '#f59e0b'}
+            fillOpacity={isLiquidOnly ? '0.28' : '0.2'}
+          />
+
+          {/* Liquid Pool */}
+          <path
+            d="M 66 72 L 254 72 L 254 105 Q 254 121 238 121 L 82 121 Q 66 121 66 105 Z"
+            fill={labels.isVaporOnly ? '#f59e0b' : '#0d9488'}
+            fillOpacity={labels.isVaporOnly ? '0.16' : '0.38'}
+          />
+
+          {/* Phase Interface Meniscus */}
+          <line
+            x1="66"
+            y1="72"
+            x2="254"
+            y2="72"
+            stroke={isTwoPhase ? '#2dd4bf' : '#64748b'}
+            strokeWidth="1.8"
+            strokeDasharray={isTwoPhase ? 'none' : '4 3'}
+          />
+
+          {/* Vapor Phase Labels */}
+          <text x="160" y="45" textAnchor="middle" fill="#fde68a" fontSize="9.5" fontWeight="700">
+            {labels.vaporCellLabel}
+          </text>
+          <text x="160" y="59" textAnchor="middle" fill="#cbd5e1" fontSize="8.2" fontFamily="monospace">
+            y_A* (bubble) = {results.equilibriumVapor_yA.toFixed(3)}
+          </text>
+
+          {/* Liquid Phase Labels */}
+          <text x="160" y="92" textAnchor="middle" fill="#99f6e4" fontSize="9.5" fontWeight="700">
+            {labels.liquidCellLabel}
+          </text>
+          <text x="160" y="106" textAnchor="middle" fill="#cbd5e1" fontSize="8.2" fontFamily="monospace">
+            Overall x_A = {results.xA.toFixed(3)} · x_B = {results.xB.toFixed(3)}
+          </text>
+
+          {/* Phase Footer */}
+          <text x="160" y="137" textAnchor="middle" fill="#5eead4" fontSize="9" fontWeight="700">
+            {labels.phaseFooterLabel}
+          </text>
+        </svg>
+
+        {/* Raoult & Dalton Readout Cards */}
+        <div className="grid grid-cols-1 min-[350px]:grid-cols-2 gap-2 text-[11px]">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/90 p-2.5 space-y-1">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-sky-400">
+              Raoult&apos;s Law Pressures
+            </div>
+            <div className="flex justify-between gap-2 font-mono">
+              <span className="text-slate-400">P_A^sat / P_B^sat</span>
+              <span className="text-slate-100 font-semibold">
+                {results.psatA_kPa.toFixed(0)} / {results.psatB_kPa.toFixed(0)} kPa
+              </span>
+            </div>
+            <div className="flex justify-between gap-2 font-mono">
+              <span className="text-teal-300">Partial p_A</span>
+              <span className="text-teal-300 font-bold">{results.partialPressureA_kPa.toFixed(2)} kPa</span>
+            </div>
+            <div className="flex justify-between gap-2 font-mono">
+              <span className="text-sky-300">Partial p_B</span>
+              <span className="text-sky-300 font-bold">{results.partialPressureB_kPa.toFixed(2)} kPa</span>
+            </div>
+            <div className="flex justify-between gap-2 font-mono border-t border-slate-800 pt-1">
+              <span className="text-slate-300">P_bub / P_dew</span>
+              <span className="text-amber-300 font-bold">
+                {results.bubblePressure_kPa.toFixed(1)} / {results.dewPressureAtComposition_kPa.toFixed(1)}
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-800 bg-slate-900/90 p-2.5 space-y-1">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-amber-300">
+              Dalton Enrichment
+            </div>
+            <div className="flex justify-between gap-2 font-mono">
+              <span className="text-slate-400">Liquid x_A/x_B</span>
+              <span className="text-slate-100 font-semibold">
+                {results.xA.toFixed(3)} / {results.xB.toFixed(3)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-2 font-mono">
+              <span className="text-teal-300">Vapor y_A/y_B</span>
+              <span className="text-teal-300 font-bold">
+                {results.equilibriumVapor_yA.toFixed(3)} / {results.equilibriumVapor_yB.toFixed(3)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-2 font-mono">
+              <span className="text-amber-200">Dew Liq x_A</span>
+              <span className="text-amber-200 font-semibold">
+                {results.equilibriumLiquidAtDew_xA.toFixed(3)}
+              </span>
+            </div>
+            <div className="flex justify-between gap-2 font-mono border-t border-slate-800 pt-1">
+              <span className="text-slate-300">y_A/x_A · Vol.</span>
+              <span className="text-emerald-300 font-bold">
+                {labels.enrichmentLabel} ({results.moreVolatileComponent})
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Optional Toggle for Full Desktop Schematic */}
+        <button
+          type="button"
+          onClick={() => setShowDesktopOnMobile((prev) => !prev)}
+          aria-expanded={showDesktopOnMobile}
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+        >
+          <span>
+            {showDesktopOnMobile
+              ? 'Hide Detailed Desktop Cell'
+              : 'Inspect Detailed Desktop Cell (Scrollable)'}
+          </span>
+          {showDesktopOnMobile ? (
+            <ChevronUp className="w-3.5 h-3.5 text-teal-400" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-teal-400" />
+          )}
+        </button>
+      </div>
+
+      {/* Tablet & Desktop Full VLE Equilibrium Cell SVG (>= 640px, or expanded on mobile) */}
+      <div
+        className={
+          showDesktopOnMobile
+            ? 'mt-3 sm:mt-0 overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-950 p-3'
+            : 'hidden sm:block overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-950 p-3'
+        }
+      >
         <svg
           viewBox="0 0 760 225"
           className="h-auto w-full min-w-[580px]"

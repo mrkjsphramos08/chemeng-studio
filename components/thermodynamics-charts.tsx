@@ -50,6 +50,7 @@ interface PureFluidPVTChartsProps {
   savedScenarios: SavedPVTScenario[];
   onRemoveScenario: (id: string) => void;
   onClearScenarios: () => void;
+  renderSection?: 'all' | 'charts' | 'saved';
 }
 
 type PVTChartTab = 'z-vs-p' | 'volume-comparison' | 'pv-isotherms' | 'deviation';
@@ -61,13 +62,20 @@ export function PureFluidPVTCharts({
   savedScenarios,
   onRemoveScenario,
   onClearScenarios,
+  renderSection = 'all',
 }: PureFluidPVTChartsProps) {
   const [activeTab, setActiveTab] = useState<PVTChartTab>('z-vs-p');
+  const showCharts = renderSection === 'all' || renderSection === 'charts';
+  const showSaved = renderSection === 'all' || renderSection === 'saved';
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
-        <div className="mb-4 flex flex-col justify-between gap-3 border-b border-slate-100 pb-4 lg:flex-row lg:items-center">
+      {showCharts && (
+        <div
+          className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs"
+          data-testid="thermo-pvt-charts-card"
+        >
+          <div className="mb-3 flex flex-col justify-between gap-3 border-b border-slate-100 pb-3 lg:flex-row lg:items-center">
           <div>
             <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
               Real-Gas PVT Diagnostics · {results.fluid.name} ({results.fluid.formula})
@@ -147,7 +155,7 @@ export function PureFluidPVTCharts({
         {/* Chart 1: Z vs Pressure */}
         {activeTab === 'z-vs-p' && (
           <div>
-            <div className="h-[340px] w-full">
+            <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={pressureSweepSeries}
@@ -489,38 +497,43 @@ export function PureFluidPVTCharts({
             </p>
           </div>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Saved PVT Scenarios Comparison Table */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-              Scenario Comparison Workspace
-            </span>
-            <h4 className="text-sm font-bold text-slate-900">
-              Saved Pure-Fluid PVT States ({savedScenarios.length})
-            </h4>
+      {showSaved && (
+        <div
+          className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs"
+          data-testid="thermo-pvt-saved-table"
+        >
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                Scenario Comparison Workspace
+              </span>
+              <h4 className="text-sm font-bold text-slate-900">
+                Saved Pure-Fluid PVT States ({savedScenarios.length})
+              </h4>
+            </div>
+            {savedScenarios.length > 0 && (
+              <button
+                type="button"
+                onClick={onClearScenarios}
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Clear Saved States
+              </button>
+            )}
           </div>
-          {savedScenarios.length > 0 && (
-            <button
-              type="button"
-              onClick={onClearScenarios}
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Clear Saved States
-            </button>
-          )}
-        </div>
 
-        {savedScenarios.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-4 text-xs text-slate-600">
-            Click <strong>Save Current PVT State</strong> in the parameter toolbar to compare
-            compressibility factors <MathInline latex="Z" />, ideal vs. Peng–Robinson molar volumes,
-            and percent deviations across fluids, temperatures, and pressures.
-          </p>
-        ) : (
+          {savedScenarios.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-4 text-xs text-slate-600">
+              Click <strong>Save Run</strong> in the workspace header to snapshot and compare
+              compressibility factors <MathInline latex="Z" />, ideal vs. Peng–Robinson molar volumes,
+              and percent deviations across fluids, temperatures, and pressures.
+            </p>
+          ) : (
           <div
             className="overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
             role="region"
@@ -601,7 +614,8 @@ export function PureFluidPVTCharts({
             </table>
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -629,6 +643,7 @@ interface BinaryVLEChartsProps {
   savedScenarios: SavedVLEScenario[];
   onRemoveScenario: (id: string) => void;
   onClearScenarios: () => void;
+  renderSection?: 'all' | 'charts' | 'saved';
 }
 
 type VLEChartTab = 'pxy-diagram' | 'yx-diagram' | 'partial-pressures';
@@ -639,16 +654,23 @@ export function BinaryVLECharts({
   savedScenarios,
   onRemoveScenario,
   onClearScenarios,
+  renderSection = 'all',
 }: BinaryVLEChartsProps) {
   const [activeTab, setActiveTab] = useState<VLEChartTab>('pxy-diagram');
+  const showCharts = renderSection === 'all' || renderSection === 'charts';
+  const showSaved = renderSection === 'all' || renderSection === 'saved';
 
   const isTwoPhase =
     results.phaseStateAtSystemPressure === 'Two-Phase Vapor–Liquid Equilibrium';
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
-        <div className="mb-4 flex flex-col justify-between gap-3 border-b border-slate-100 pb-4 lg:flex-row lg:items-center">
+      {showCharts && (
+        <div
+          className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs"
+          data-testid="thermo-vle-charts-card"
+        >
+          <div className="mb-3 flex flex-col justify-between gap-3 border-b border-slate-100 pb-3 lg:flex-row lg:items-center">
           <div>
             <span className="text-[11px] font-bold tracking-wider text-teal-700 uppercase">
               Ideal Binary Phase Equilibrium · Raoult&apos;s &amp; Dalton&apos;s Laws
@@ -713,7 +735,7 @@ export function BinaryVLECharts({
         {/* Tab 1: Centerpiece P-x-y Diagram */}
         {activeTab === 'pxy-diagram' && (
           <div>
-            <div className="h-[350px] w-full">
+            <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={pxySeries}
@@ -1027,38 +1049,43 @@ export function BinaryVLECharts({
             </p>
           </div>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Saved VLE Scenarios Table */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-              Scenario Comparison Workspace
-            </span>
-            <h4 className="text-sm font-bold text-slate-900">
-              Saved Binary VLE States ({savedScenarios.length})
-            </h4>
+      {showSaved && (
+        <div
+          className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs"
+          data-testid="thermo-vle-saved-table"
+        >
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                Scenario Comparison Workspace
+              </span>
+              <h4 className="text-sm font-bold text-slate-900">
+                Saved Binary VLE States ({savedScenarios.length})
+              </h4>
+            </div>
+            {savedScenarios.length > 0 && (
+              <button
+                type="button"
+                onClick={onClearScenarios}
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Clear Saved States
+              </button>
+            )}
           </div>
-          {savedScenarios.length > 0 && (
-            <button
-              type="button"
-              onClick={onClearScenarios}
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Clear Saved States
-            </button>
-          )}
-        </div>
 
-        {savedScenarios.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-4 text-xs text-slate-600">
-            Click <strong>Save Current VLE State</strong> in the parameter toolbar to compare
-            relative volatility <MathInline latex="\alpha_{AB}" />, bubble/dew pressures, and vapor
-            enrichment across mixtures.
-          </p>
-        ) : (
+          {savedScenarios.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-4 text-xs text-slate-600">
+              Click <strong>Save Run</strong> in the workspace header to snapshot and compare
+              relative volatility <MathInline latex="\alpha_{AB}" />, bubble/dew pressures, and vapor
+              enrichment across mixtures.
+            </p>
+          ) : (
           <div
             className="overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
             role="region"
@@ -1138,7 +1165,8 @@ export function BinaryVLECharts({
             </table>
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

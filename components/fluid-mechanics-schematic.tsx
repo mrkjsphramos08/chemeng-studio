@@ -1,10 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import {
   FluidMechanicsInputs,
   FluidMechanicsResults,
 } from '@/lib/fluid-mechanics';
+import { formatFluidMechanicsMobileLabels } from '@/lib/schematic-formatting';
 
 interface SchematicProps {
   inputs: FluidMechanicsInputs;
@@ -12,8 +14,10 @@ interface SchematicProps {
 }
 
 export function FluidMechanicsSchematic({ inputs, results }: SchematicProps) {
-  const hasElevation = inputs.elevationDiff_m > 0;
-  const isZeroFlow = results.isValid && results.flowRegime === 'Zero Flow';
+  const [showDesktopOnMobile, setShowDesktopOnMobile] = useState(false);
+  const labels = formatFluidMechanicsMobileLabels(inputs, results);
+  const hasElevation = labels.hasElevation;
+  const isZeroFlow = labels.isZeroFlow;
 
   const regimeBadgeColor =
     results.flowRegime === 'Turbulent'
@@ -25,9 +29,9 @@ export function FluidMechanicsSchematic({ inputs, results }: SchematicProps) {
       : 'text-slate-600';
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-4 mb-3 pb-3 border-b border-slate-100">
-        <div>
+    <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 sm:gap-4 mb-3 pb-3 border-b border-slate-100">
+        <div className="min-w-0">
           <h3 className="text-base font-semibold text-slate-900">
             Incompressible Pipe Flow &amp; Pumping Hydraulics Schematic
           </h3>
@@ -35,18 +39,12 @@ export function FluidMechanicsSchematic({ inputs, results }: SchematicProps) {
             Source reservoir → pump head addition → straight pipe (major loss hf) &amp; fittings (minor loss hm) → discharge
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-700 font-mono tabular-nums">
-          <span>
-            v = {results.isValid ? `${results.velocity_m_s.toFixed(2)} m/s` : '—'}
-          </span>
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-700 font-mono tabular-nums">
+          <span>v = {labels.velocityLabel}</span>
           <span aria-hidden="true">·</span>
-          <span>
-            Re = {results.isValid ? Math.round(results.reynoldsNumber).toLocaleString() : '—'}
-          </span>
+          <span>Re = {labels.reynoldsLabel}</span>
           <span aria-hidden="true">·</span>
-          <span className={`font-semibold ${regimeBadgeColor}`}>
-            {results.isValid ? results.flowRegime : 'Invalid'}
-          </span>
+          <span className={`font-semibold ${regimeBadgeColor}`}>{labels.regimeLabel}</span>
         </div>
       </div>
 
@@ -58,8 +56,234 @@ export function FluidMechanicsSchematic({ inputs, results }: SchematicProps) {
         NPSH cavitation margins are outside Phase 1.2 scope.
       </div>
 
-      {/* SVG Piping Schematic */}
-      <div className="w-full overflow-x-auto" data-testid="fluid-mechanics-schematic">
+      {/* Mobile Piping & Pumping Schematic (< 640px) — Zero Horizontal Scrolling */}
+      <div
+        className="sm:hidden rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-3"
+        data-testid="fluid-mechanics-mobile-schematic"
+        role="region"
+        aria-label={`Fluid mechanics piping schematic: flow rate ${inputs.flowRate_L_s.toFixed(1)} L/s, regime ${labels.regimeLabel}, required pump head ${labels.pumpHeadLabel}, frictional pressure loss ${labels.pressureLossLabel}, elevation rise ${labels.elevationLabel}.`}
+      >
+        {/* Compact Responsive Hydraulic Vector Diagram */}
+        <svg
+          viewBox="0 0 320 132"
+          className="w-full h-auto select-none"
+          role="img"
+          aria-label="Piping and pumping schematic showing source tank, centrifugal pump, valve fittings, pipe run, optional elevation rise, and discharge"
+        >
+          <defs>
+            <linearGradient id="pipeFluidGradMobile" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#0284C7" />
+              <stop offset="100%" stopColor="#0D9488" />
+            </linearGradient>
+            <marker
+              id="flowArrowMobile"
+              viewBox="0 0 10 10"
+              refX="6"
+              refY="5"
+              markerWidth="5.5"
+              markerHeight="5.5"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#FFFFFF" />
+            </marker>
+          </defs>
+
+          <rect x="0" y="0" width="320" height="132" rx="8" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1" />
+
+          {/* Datum Line z1 = 0 */}
+          <line x1="10" y1="104" x2="310" y2="104" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="4 3" />
+          <text x="12" y="120" fontSize="8.5" fontFamily="monospace" fill="#64748B">
+            Datum z₁ = 0 m · P₁ = P₂ (gauge)
+          </text>
+
+          {/* Source Tank */}
+          <rect x="12" y="56" width="42" height="48" rx="3" fill="#E0F2FE" stroke="#0284C7" strokeWidth="1.6" />
+          <rect x="14" y="68" width="38" height="34" fill="#BAE6FD" opacity="0.75" />
+          <text x="33" y="49" textAnchor="middle" fontSize="8" fontWeight="700" fill="#334155">
+            SOURCE
+          </text>
+          <text x="33" y="88" textAnchor="middle" fontSize="8" fontFamily="monospace" fontWeight="700" fill="#0F172A">
+            {inputs.flowRate_L_s.toFixed(1)} L/s
+          </text>
+
+          {/* Suction Pipe */}
+          <rect x="54" y="83" width="24" height="12" fill="url(#pipeFluidGradMobile)" stroke="#0F172A" strokeWidth="1.2" />
+
+          {/* Centrifugal Pump */}
+          <circle cx="94" cy="89" r="16" fill="#0F172A" stroke="#0D9488" strokeWidth="2.4" />
+          <polygon points="89,82 103,89 89,96" fill="#14B8A6" />
+          <text x="94" y="67" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0F172A">
+            PUMP
+          </text>
+
+          {/* Main Horizontal Pipe */}
+          <rect
+            x="110"
+            y="82"
+            width={hasElevation ? 132 : 176}
+            height="14"
+            fill="url(#pipeFluidGradMobile)"
+            stroke="#0F172A"
+            strokeWidth="1.2"
+          />
+
+          {/* Flow Arrow inside Pipe */}
+          {!isZeroFlow && (
+            <line
+              x1="120"
+              y1="89"
+              x2="148"
+              y2="89"
+              stroke="#FFFFFF"
+              strokeWidth="1.8"
+              markerEnd="url(#flowArrowMobile)"
+            />
+          )}
+
+          {/* Gate / Control Valve Fitting */}
+          <g transform="translate(166, 77)">
+            <polygon points="0,0 11,12 0,24" fill="#FFFFFF" stroke="#0F172A" strokeWidth="1.4" />
+            <polygon points="22,0 11,12 22,24" fill="#FFFFFF" stroke="#0F172A" strokeWidth="1.4" />
+            <line x1="11" y1="12" x2="11" y2="-7" stroke="#0F172A" strokeWidth="1.6" />
+            <line x1="4" y1="-7" x2="18" y2="-7" stroke="#0F172A" strokeWidth="2" />
+            <text x="11" y="-12" textAnchor="middle" fontSize="8" fontWeight="600" fill="#334155">
+              ΣK={inputs.minorLossK.toFixed(1)}
+            </text>
+          </g>
+
+          {/* Elevation Riser OR Horizontal Discharge */}
+          {hasElevation ? (
+            <>
+              <rect x="230" y="34" width="14" height="62" fill="url(#pipeFluidGradMobile)" stroke="#0F172A" strokeWidth="1.2" />
+              <rect x="230" y="34" width="56" height="14" fill="url(#pipeFluidGradMobile)" stroke="#0F172A" strokeWidth="1.2" />
+              <rect x="231" y="83" width="12" height="12" fill="#0D9488" />
+              <rect x="231" y="35" width="12" height="12" fill="#0D9488" />
+              {!isZeroFlow && (
+                <>
+                  <line x1="237" y1="78" x2="237" y2="54" stroke="#FFFFFF" strokeWidth="1.6" markerEnd="url(#flowArrowMobile)" />
+                  <line x1="248" y1="41" x2="276" y2="41" stroke="#FFFFFF" strokeWidth="1.6" markerEnd="url(#flowArrowMobile)" />
+                </>
+              )}
+              <line x1="280" y1="48" x2="280" y2="104" stroke="#0F172A" strokeWidth="1" strokeDasharray="3 2" />
+              <rect x="250" y="66" width="60" height="16" rx="3" fill="#FFFFFF" stroke="#CBD5E1" />
+              <text x="280" y="77" textAnchor="middle" fontSize="8.2" fontFamily="monospace" fontWeight="700" fill="#0F172A">
+                Δz={labels.elevationLabel}
+              </text>
+              <text x="286" y="27" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0F766E">
+                DISCHARGE
+              </text>
+            </>
+          ) : (
+            <>
+              {!isZeroFlow && (
+                <line x1="212" y1="89" x2="262" y2="89" stroke="#FFFFFF" strokeWidth="1.8" markerEnd="url(#flowArrowMobile)" />
+              )}
+              <text x="286" y="74" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0F766E">
+                DISCHARGE
+              </text>
+              <text x="286" y="120" textAnchor="end" fontSize="8.5" fontFamily="monospace" fill="#475569">
+                Δz = 0.0 m
+              </text>
+            </>
+          )}
+
+          {/* Pipe Geometry Header */}
+          <rect x="64" y="8" width="192" height="18" rx="4" fill="#F8FAFC" stroke="#E2E8F0" />
+          <text x="160" y="20" textAnchor="middle" fontSize="8.5" fontFamily="monospace" fontWeight="600" fill="#0F172A">
+            D={inputs.diameter_m.toFixed(3)}m · L={inputs.length_m.toFixed(0)}m · ε={inputs.roughness_mm.toFixed(3)}mm
+          </text>
+        </svg>
+
+        {/* Structured Hydraulic Readouts */}
+        <div className="grid grid-cols-1 min-[350px]:grid-cols-2 gap-2 text-xs">
+          {/* 1. Required Pump Head & Power */}
+          <div className="rounded-lg border border-slate-200 bg-white p-2.5 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-600">
+              1. Required Pump Head (H)
+            </div>
+            <div className="mt-0.5 font-mono text-base font-bold text-slate-900 tabular-nums">
+              {labels.pumpHeadLabel}
+            </div>
+            <div className="mt-1 font-mono text-[11px] text-teal-800 tabular-nums">
+              Ps = {labels.shaftPowerLabel} (η = {inputs.pumpEfficiency_pct}%)
+            </div>
+          </div>
+
+          {/* 2. Frictional Pressure Loss */}
+          <div className="rounded-lg border border-rose-200/80 bg-white p-2.5 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-600">
+              2. Hydraulic Losses
+            </div>
+            <div className="mt-0.5 font-mono text-base font-bold text-rose-700 tabular-nums">
+              ΔP = {labels.pressureLossLabel}
+            </div>
+            <div className="mt-1 font-mono text-[11px] text-slate-700 tabular-nums">
+              hf = {labels.majorLossLabel} · hm = {labels.minorLossLabel}
+            </div>
+          </div>
+
+          {/* 3. Flow Regime & Darcy Friction */}
+          <div className="rounded-lg border border-slate-200 bg-white p-2.5 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-600">
+              3. Pipe-Flow Conditions
+            </div>
+            <div className={`mt-0.5 text-sm font-bold ${regimeBadgeColor}`}>
+              {labels.regimeLabel}
+            </div>
+            <div className="mt-1 font-mono text-[11px] text-slate-700 tabular-nums">
+              v = {labels.velocityLabel} · f_D = {labels.frictionFactorLabel}
+            </div>
+            <div className="font-mono text-[10px] text-slate-600 tabular-nums">
+              Re = {labels.reynoldsLabel} · ΣK = {inputs.minorLossK.toFixed(1)}
+            </div>
+          </div>
+
+          {/* 4. Fluid Properties & Elevation */}
+          <div className="rounded-lg border border-slate-200 bg-white p-2.5 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-600">
+              4. Fluid &amp; Elevation
+            </div>
+            <div className="mt-0.5 font-mono text-[11px] font-semibold text-slate-900 tabular-nums">
+              Δz = {labels.elevationLabel}
+            </div>
+            <div className="mt-1 font-mono text-[10px] text-slate-700 tabular-nums">
+              Static ΔP_z = {labels.elevationPressureLabel}
+            </div>
+            <div className="font-mono text-[10px] text-slate-600 tabular-nums">
+              ρ = {inputs.density_kg_m3.toFixed(0)} kg/m³ · μ = {inputs.viscosity_Pa_s.toFixed(4)} Pa·s
+            </div>
+          </div>
+        </div>
+
+        {/* Optional Toggle for Detailed Desktop Schematic */}
+        <button
+          type="button"
+          onClick={() => setShowDesktopOnMobile((prev) => !prev)}
+          aria-expanded={showDesktopOnMobile}
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+        >
+          <span>
+            {showDesktopOnMobile
+              ? 'Hide Detailed Desktop Blueprint'
+              : 'Inspect Detailed Desktop Blueprint (Scrollable)'}
+          </span>
+          {showDesktopOnMobile ? (
+            <ChevronUp className="w-3.5 h-3.5 text-teal-700" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-teal-700" />
+          )}
+        </button>
+      </div>
+
+      {/* Tablet & Desktop Full SVG Piping Schematic (>= 640px, or expanded on mobile) */}
+      <div
+        className={
+          showDesktopOnMobile
+            ? 'mt-3 sm:mt-0 w-full overflow-x-auto'
+            : 'hidden sm:block w-full overflow-x-auto'
+        }
+        data-testid="fluid-mechanics-schematic"
+      >
         <svg
           viewBox="0 0 880 330"
           className="w-full h-auto min-w-[660px] select-none"

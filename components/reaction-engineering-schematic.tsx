@@ -1,10 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import {
   ReactionEngineeringInputs,
   ReactionEngineeringResults,
 } from '@/lib/reaction-engineering';
+import { formatReactionMobileLabels } from '@/lib/schematic-formatting';
 
 interface ReactionSchematicProps {
   inputs: ReactionEngineeringInputs;
@@ -15,9 +17,11 @@ export function ReactionEngineeringSchematic({
   inputs,
   results,
 }: ReactionSchematicProps) {
+  const [showDesktopOnMobile, setShowDesktopOnMobile] = useState(false);
   const active = results.activeReactor;
   const isValid = results.isValid;
   const reactorType = inputs.reactorType;
+  const labels = formatReactionMobileLabels(inputs, results);
 
   const titleByReactor =
     reactorType === 'batch'
@@ -36,25 +40,18 @@ export function ReactionEngineeringSchematic({
   const conversionFraction = isValid ? Math.min(1, Math.max(0, active.conversion)) : 0;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-4 mb-3 pb-3 border-b border-slate-100">
-        <div>
+    <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 sm:gap-4 mb-3 pb-3 border-b border-slate-100">
+        <div className="min-w-0">
           <h3 className="text-base font-semibold text-slate-900">{titleByReactor}</h3>
           <p className="text-xs text-slate-600 mt-0.5">{subtitleByReactor}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-700 font-mono tabular-nums">
-          <span>
-            {active.timeSymbol} ={' '}
-            {isValid ? `${active.characteristicTime_s.toFixed(1)} s` : '—'}
-          </span>
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-700 font-mono tabular-nums">
+          <span>{labels.characteristicTimeLabel}</span>
           <span aria-hidden="true">·</span>
-          <span>
-            Da = {isValid ? active.damkohlerNumber.toFixed(2) : '—'}
-          </span>
+          <span>Da = {labels.damkohlerLabel}</span>
           <span aria-hidden="true">·</span>
-          <span className="font-semibold text-teal-800">
-            X = {isValid ? `${active.conversion_pct.toFixed(2)}%` : '—'}
-          </span>
+          <span className="font-semibold text-teal-800">X = {labels.conversionLabel}</span>
         </div>
       </div>
 
@@ -71,9 +68,287 @@ export function ReactionEngineeringSchematic({
           : 'Ideal plug flow assumes flat radial velocity and zero axial dispersion across volume V.'}
       </div>
 
-      {/* Dynamic SVG Schematic */}
+      {/* Mobile Reactor-Specific Schematic (< 640px) — Dynamically Switches Between Batch, CSTR, and PFR */}
       <div
-        className="w-full overflow-x-auto"
+        className="sm:hidden rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-3"
+        data-testid="reaction-engineering-mobile-schematic"
+        data-reactor-type={reactorType}
+        role="region"
+        aria-label={`${titleByReactor}: ${labels.modeTag}, conversion X = ${labels.conversionLabel}, ${labels.characteristicTimeLabel}, Damkohler number Da = ${labels.damkohlerLabel}.`}
+      >
+        {/* Compact Responsive Vector Diagram per Reactor Mode */}
+        <svg
+          viewBox="0 0 320 134"
+          className="w-full h-auto select-none"
+          role="img"
+          aria-label={titleByReactor}
+        >
+          <defs>
+            <linearGradient id="pfrAxialGradMobile" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#0284C7" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#0D9488" stopOpacity="0.94" />
+            </linearGradient>
+            <marker
+              id="rxnFlowArrowMobile"
+              viewBox="0 0 10 10"
+              refX="7"
+              refY="5"
+              markerWidth="5.5"
+              markerHeight="5.5"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0F172A" />
+            </marker>
+            <marker
+              id="rxnWhiteArrowMobile"
+              viewBox="0 0 10 10"
+              refX="7"
+              refY="5"
+              markerWidth="5.5"
+              markerHeight="5.5"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#FFFFFF" />
+            </marker>
+          </defs>
+
+          <rect x="0" y="0" width="320" height="134" rx="8" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1" />
+
+          {reactorType === 'batch' && (
+            <>
+              {/* Closed Batch Vessel — Explicitly NO Inlet/Outlet Pipes */}
+              <rect x="108" y="24" width="104" height="88" rx="12" fill="#FFFFFF" stroke="#0F172A" strokeWidth="2" />
+              <rect
+                x="111"
+                y="48"
+                width="98"
+                height="61"
+                rx="9"
+                fill={conversionFraction > 0.5 ? '#CCFBF1' : '#E0F2FE'}
+                stroke={conversionFraction > 0.5 ? '#0D9488' : '#0284C7'}
+                strokeWidth="1.2"
+              />
+              {/* Sealed Closure Cap */}
+              <rect x="142" y="15" width="36" height="9" rx="3" fill="#0F172A" />
+              {/* Impeller Shaft & Blades */}
+              <line x1="160" y1="15" x2="160" y2="92" stroke="#334155" strokeWidth="2.2" />
+              <rect x="138" y="86" width="44" height="6" rx="2.5" fill="#0F172A" />
+              <rect x="144" y="68" width="32" height="5" rx="2" fill="#334155" />
+              <rect x="120" y="29" width="80" height="13" rx="3" fill="#FFFFFF" fillOpacity="0.95" />
+              <text x="160" y="39" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#0F172A">
+                CLOSED BATCH
+              </text>
+              <rect
+                x="122"
+                y="51"
+                width="76"
+                height="13"
+                rx="3"
+                fill={conversionFraction > 0.5 ? '#CCFBF1' : '#E0F2FE'}
+                fillOpacity="0.96"
+              />
+              <text x="160" y="61" textAnchor="middle" fontSize="8.5" fontFamily="monospace" fontWeight="700" fill="#0F172A">
+                t = {inputs.batchTime_s.toFixed(1)} s
+              </text>
+
+              {/* Left Sealed-System Callout */}
+              <text x="54" y="54" textAnchor="middle" fontSize="8.2" fontWeight="700" fill="#475569">
+                NO FLOW
+              </text>
+              <text x="54" y="68" textAnchor="middle" fontSize="8.5" fontFamily="monospace" fill="#0F766E">
+                q = 0 m³/s
+              </text>
+              <text x="54" y="82" textAnchor="middle" fontSize="8" fill="#64748B">
+                Closed Charge
+              </text>
+
+              {/* Right Conversion Readout */}
+              <text x="266" y="54" textAnchor="middle" fontSize="8.2" fontWeight="700" fill="#475569">
+                REACTION A → B
+              </text>
+              <text x="266" y="70" textAnchor="middle" fontSize="10.5" fontFamily="monospace" fontWeight="700" fill="#0F766E">
+                X = {labels.conversionLabel}
+              </text>
+              <text x="266" y="84" textAnchor="middle" fontSize="8" fontFamily="monospace" fill="#334155">
+                Da = {labels.damkohlerLabel}
+              </text>
+
+              <text x="160" y="125" textAnchor="middle" fontSize="8.2" fill="#64748B">
+                Uniform agitated batch · CA(t) = CA0·exp(−k·t)
+              </text>
+            </>
+          )}
+
+          {reactorType === 'cstr' && (
+            <>
+              {/* Feed Pipe Entering Left */}
+              <rect x="14" y="54" width="88" height="12" fill="#BAE6FD" stroke="#0F172A" strokeWidth="1.2" />
+              <line x1="24" y1="60" x2="90" y2="60" stroke="#0F172A" strokeWidth="1.6" markerEnd="url(#rxnFlowArrowMobile)" />
+              <text x="54" y="46" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0369A1">
+                FEED CA0, q
+              </text>
+
+              {/* Mixed Tank */}
+              <rect x="102" y="24" width="116" height="86" rx="10" fill="#FFFFFF" stroke="#0F172A" strokeWidth="2" />
+              <rect x="105" y="44" width="110" height="63" rx="7" fill="#CCFBF1" stroke="#0D9488" strokeWidth="1.2" />
+              {/* Agitator */}
+              <rect x="144" y="15" width="32" height="9" rx="3" fill="#0F172A" />
+              <line x1="160" y1="15" x2="160" y2="92" stroke="#334155" strokeWidth="2.2" />
+              <rect x="136" y="86" width="48" height="6" rx="2.5" fill="#0F172A" />
+              <rect x="142" y="67" width="36" height="5" rx="2" fill="#334155" />
+
+              <rect x="124" y="28" width="72" height="13" rx="3" fill="#FFFFFF" fillOpacity="0.95" />
+              <text x="160" y="38" textAnchor="middle" fontSize="8.2" fontWeight="700" fill="#0F172A">
+                IDEAL CSTR
+              </text>
+              <rect x="122" y="48" width="76" height="13" rx="3" fill="#CCFBF1" fillOpacity="0.96" />
+              <text x="160" y="58" textAnchor="middle" fontSize="8" fontFamily="monospace" fontWeight="700" fill="#0F766E">
+                CA = CA,out
+              </text>
+
+              {/* Effluent Pipe Exiting Right */}
+              <rect x="218" y="82" width="88" height="12" fill="#99F6E4" stroke="#0F172A" strokeWidth="1.2" />
+              <line x1="228" y1="88" x2="296" y2="88" stroke="#0F172A" strokeWidth="1.6" markerEnd="url(#rxnFlowArrowMobile)" />
+              <text x="266" y="74" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0F766E">
+                EFFLUENT
+              </text>
+              <text x="266" y="106" textAnchor="middle" fontSize="8.5" fontFamily="monospace" fontWeight="700" fill="#0F766E">
+                X = {labels.conversionLabel}
+              </text>
+
+              <text x="160" y="125" textAnchor="middle" fontSize="8.2" fontFamily="monospace" fill="#334155">
+                V = {inputs.reactorVolume_m3.toFixed(2)} m³ · {labels.characteristicTimeLabel} · Instant Backmixing
+              </text>
+            </>
+          )}
+
+          {reactorType === 'pfr' && (
+            <>
+              {/* Feed Pipe */}
+              <rect x="12" y="61" width="54" height="12" fill="#BAE6FD" stroke="#0F172A" strokeWidth="1.2" />
+              <line x1="18" y1="67" x2="58" y2="67" stroke="#0F172A" strokeWidth="1.6" markerEnd="url(#rxnFlowArrowMobile)" />
+              <text x="38" y="53" textAnchor="middle" fontSize="7.6" fontWeight="700" fill="#0369A1">
+                INLET (V=0)
+              </text>
+
+              {/* Tubular PFR Body */}
+              <rect x="66" y="42" width="188" height="50" rx="8" fill="url(#pfrAxialGradMobile)" stroke="#0F172A" strokeWidth="2" />
+              {[112, 160, 208].map((xPos) => (
+                <line
+                  key={xPos}
+                  x1={xPos}
+                  y1="45"
+                  x2={xPos}
+                  y2="89"
+                  stroke="#FFFFFF"
+                  strokeOpacity="0.45"
+                  strokeWidth="1.3"
+                  strokeDasharray="3 3"
+                />
+              ))}
+              <line x1="78" y1="67" x2="122" y2="67" stroke="#FFFFFF" strokeWidth="1.8" markerEnd="url(#rxnWhiteArrowMobile)" />
+              <line x1="138" y1="67" x2="182" y2="67" stroke="#FFFFFF" strokeWidth="1.8" markerEnd="url(#rxnWhiteArrowMobile)" />
+              <line x1="198" y1="67" x2="242" y2="67" stroke="#FFFFFF" strokeWidth="1.8" markerEnd="url(#rxnWhiteArrowMobile)" />
+
+              <text x="160" y="33" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#0F172A">
+                PLUG FLOW TUBE · CA0 → CA(V) AXIAL DECAY
+              </text>
+
+              {/* Outlet Pipe */}
+              <rect x="254" y="61" width="54" height="12" fill="#99F6E4" stroke="#0F172A" strokeWidth="1.2" />
+              <line x1="260" y1="67" x2="300" y2="67" stroke="#0F172A" strokeWidth="1.6" markerEnd="url(#rxnFlowArrowMobile)" />
+              <text x="282" y="53" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0F766E">
+                OUTLET
+              </text>
+              <text x="282" y="86" textAnchor="middle" fontSize="8.5" fontFamily="monospace" fontWeight="700" fill="#0F766E">
+                X={labels.conversionLabel}
+              </text>
+
+              <text x="160" y="114" textAnchor="middle" fontSize="8.2" fontFamily="monospace" fill="#334155">
+                V = {inputs.reactorVolume_m3.toFixed(2)} m³ · {labels.characteristicTimeLabel} · k = {inputs.rateConstant_per_s.toFixed(4)} s⁻¹
+              </text>
+              <text x="160" y="126" textAnchor="middle" fontSize="8" fill="#64748B">
+                Zero axial dispersion · CA(V) = CA0·exp(−k·V/q)
+              </text>
+            </>
+          )}
+        </svg>
+
+        {/* Reactor State Readout Cards */}
+        <div className="grid grid-cols-1 min-[350px]:grid-cols-2 gap-2 text-xs">
+          {/* Card 1: Feed / Initial Charge */}
+          <div className="rounded-lg border border-slate-200 bg-white p-2.5 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-600">
+              {reactorType === 'batch'
+                ? 'Initial Charge (t = 0 s)'
+                : reactorType === 'cstr'
+                  ? 'Continuous Feed Inlet'
+                  : 'PFR Inlet (V = 0 m³)'}
+            </div>
+            <div className="mt-1 font-mono text-[11px] font-bold text-sky-800 tabular-nums">
+              CA0 = {inputs.initialConcentration_mol_m3.toFixed(1)} mol/m³
+            </div>
+            <div className="mt-0.5 font-mono text-[11px] text-slate-700 tabular-nums">
+              {reactorType === 'batch'
+                ? `V = ${inputs.reactorVolume_m3.toFixed(2)} m³ · q = 0`
+                : `q = ${inputs.volumetricFlowRate_m3_s.toFixed(4)} m³/s · V = ${inputs.reactorVolume_m3.toFixed(2)} m³`}
+            </div>
+            <div className="font-mono text-[10px] text-slate-600 tabular-nums">
+              k = {inputs.rateConstant_per_s.toFixed(4)} s⁻¹ · {labels.characteristicTimeLabel}
+            </div>
+          </div>
+
+          {/* Card 2: Reaction Output / State */}
+          <div className="rounded-lg border border-teal-200 bg-white p-2.5 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-600">
+              {reactorType === 'batch'
+                ? `Batch State (t = ${inputs.batchTime_s.toFixed(1)} s)`
+                : reactorType === 'cstr'
+                  ? 'Steady CSTR Effluent'
+                  : `PFR Outlet (V = ${inputs.reactorVolume_m3.toFixed(2)} m³)`}
+            </div>
+            <div className="mt-0.5 font-mono text-base font-bold text-teal-800 tabular-nums">
+              X = {labels.conversionLabel}
+            </div>
+            <div className="mt-0.5 font-mono text-[11px] font-semibold text-slate-900 tabular-nums">
+              CA = {labels.outletConcLabel}
+            </div>
+            <div className="font-mono text-[10px] text-slate-700 tabular-nums">
+              −rA = {labels.rateLabel}
+            </div>
+            <div className="font-mono text-[10px] text-slate-600 tabular-nums">
+              {reactorType === 'batch' ? 'Moles Conv.' : 'ΔFA'} = {labels.convertedAmountLabel}
+            </div>
+          </div>
+        </div>
+
+        {/* Optional Detailed Desktop Blueprint Toggle */}
+        <button
+          type="button"
+          onClick={() => setShowDesktopOnMobile((prev) => !prev)}
+          aria-expanded={showDesktopOnMobile}
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+        >
+          <span>
+            {showDesktopOnMobile
+              ? 'Hide Detailed Desktop Blueprint'
+              : 'Inspect Detailed Desktop Blueprint (Scrollable)'}
+          </span>
+          {showDesktopOnMobile ? (
+            <ChevronUp className="w-3.5 h-3.5 text-teal-700" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-teal-700" />
+          )}
+        </button>
+      </div>
+
+      {/* Tablet & Desktop Full SVG Schematic (>= 640px, or expanded on mobile) */}
+      <div
+        className={
+          showDesktopOnMobile
+            ? 'mt-3 sm:mt-0 w-full overflow-x-auto'
+            : 'hidden sm:block w-full overflow-x-auto'
+        }
         data-testid="reaction-engineering-schematic"
       >
         <svg

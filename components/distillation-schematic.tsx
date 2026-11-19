@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { DistillationInputs, DistillationResults } from '@/lib/distillation';
+import { formatDistillationMobileLabels } from '@/lib/schematic-formatting';
 
 interface DistillationSchematicProps {
   inputs: DistillationInputs;
@@ -9,8 +11,10 @@ interface DistillationSchematicProps {
 }
 
 export function DistillationSchematic({ inputs, results }: DistillationSchematicProps) {
+  const [showDesktopOnMobile, setShowDesktopOnMobile] = useState(false);
   const { isValid, materialBalance, internalFlows, operatingLines, minimumReflux, stageCalculation } =
     results;
+  const labels = formatDistillationMobileLabels(inputs, results);
 
   const F = inputs.feedFlow_kmol_h;
   const zF = inputs.feedComposition_zF;
@@ -35,11 +39,11 @@ export function DistillationSchematic({ inputs, results }: DistillationSchematic
 
   return (
     <div
-      className="bg-white border border-slate-200 rounded-xl p-6 space-y-4"
+      className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 space-y-4"
       data-testid="distillation-schematic"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-        <div>
+        <div className="min-w-0">
           <h3 className="text-base font-bold text-slate-900">
             Binary Fractional Distillation Column Schematic
           </h3>
@@ -48,7 +52,7 @@ export function DistillationSchematic({ inputs, results }: DistillationSchematic
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs font-mono tabular-nums text-slate-700">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono tabular-nums text-slate-700">
           <span>α = {alpha.toFixed(2)}</span>
           <span aria-hidden="true">·</span>
           <span>R = {R.toFixed(2)}</span>
@@ -56,7 +60,7 @@ export function DistillationSchematic({ inputs, results }: DistillationSchematic
           <span className="font-semibold text-teal-800">
             {stageCalculation.converged && totalStages !== null
               ? `N = ${totalStages} stages (NF = ${feedStage})`
-              : results.feasibilityStatus === 'below_minimum_reflux'
+              : labels.isPinched
               ? 'Pinched (R ≤ Rmin)'
               : 'Unconverged'}
           </span>
@@ -71,8 +75,299 @@ export function DistillationSchematic({ inputs, results }: DistillationSchematic
         hydraulics are not modeled in this McCabe–Thiele solver.
       </div>
 
-      {/* SVG Process Flow Diagram */}
-      <div className="w-full overflow-x-auto">
+      {/* Mobile Compact Vertical Column Schematic (< 640px) — Zero Horizontal Scrolling */}
+      <div
+        className="sm:hidden rounded-xl border border-slate-200 bg-slate-50/70 p-3 space-y-3"
+        data-testid="distillation-mobile-schematic"
+        role="region"
+        aria-label={`Binary distillation column mobile schematic: Feed F = ${F.toFixed(1)} kmol/h at zF = ${zF.toFixed(3)}, Distillate D = ${D.toFixed(2)} kmol/h at xD = ${xD.toFixed(3)}, Bottoms B = ${B.toFixed(2)} kmol/h at xB = ${xB.toFixed(3)}, ${labels.stageHeadline}.`}
+      >
+        {/* Compact Vertical Column SVG Diagram */}
+        <svg
+          viewBox="0 0 320 264"
+          className="w-full h-auto select-none"
+          role="img"
+          aria-label="Vertical distillation column schematic showing feed entry, rectifying and stripping sections, total condenser with reflux and distillate, and partial reboiler with boilup and bottoms"
+        >
+          <defs>
+            <linearGradient id="columnGradientMobile" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#CCFBF1" />
+              <stop offset="50%" stopColor="#E2E8F0" />
+              <stop offset="100%" stopColor="#F1F5F9" />
+            </linearGradient>
+            <marker
+              id="arrowTealMobile"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="5.5"
+              markerHeight="5.5"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0F766E" />
+            </marker>
+            <marker
+              id="arrowSlateMobile"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="5.5"
+              markerHeight="5.5"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155" />
+            </marker>
+            <marker
+              id="arrowBlueMobile"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="5.5"
+              markerHeight="5.5"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7" />
+            </marker>
+          </defs>
+
+          <rect x="0" y="0" width="320" height="264" rx="8" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1" />
+
+          {/* FEED STREAM ENTRY (LEFT) */}
+          <rect x="8" y="102" width="76" height="58" rx="6" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1.2" />
+          <text x="14" y="116" fontSize="8" fontWeight="700" fill="#0F172A">
+            FEED (F)
+          </text>
+          <text x="14" y="129" fontSize="8.2" fontFamily="monospace" fontWeight="700" fill="#0F766E">
+            {F.toFixed(1)} kmol/h
+          </text>
+          <text x="14" y="142" fontSize="8" fontFamily="monospace" fill="#334155">
+            zF = {zF.toFixed(3)}
+          </text>
+          <text x="14" y="153" fontSize="7.6" fontFamily="monospace" fill="#475569">
+            q = {q.toFixed(2)}
+          </text>
+          <line x1="84" y1="132" x2="108" y2="132" stroke="#0F766E" strokeWidth="2.2" markerEnd="url(#arrowTealMobile)" />
+
+          {/* DISTILLATION COLUMN SHELL (CENTER) */}
+          <rect
+            x="110"
+            y="26"
+            width="86"
+            height="214"
+            rx="18"
+            fill="url(#columnGradientMobile)"
+            stroke="#0F172A"
+            strokeWidth="2"
+          />
+
+          {/* Rectifying Section */}
+          <text x="153" y="45" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#134E4A">
+            RECTIFYING
+          </text>
+          <text x="153" y="56" textAnchor="middle" fontSize="7.2" fontFamily="monospace" fill="#334155">
+            L={L.toFixed(0)} · V={V.toFixed(0)}
+          </text>
+          <line x1="118" y1="70" x2="188" y2="70" stroke="#475569" strokeWidth="1.2" strokeDasharray="4 3" />
+          <line x1="118" y1="92" x2="188" y2="92" stroke="#475569" strokeWidth="1.2" strokeDasharray="4 3" />
+
+          {/* Feed Stage Plate */}
+          <rect x="113" y="121" width="80" height="20" rx="4" fill="#0F766E" fillOpacity="0.16" stroke="#0F766E" strokeWidth="1.2" />
+          <text x="153" y="134" textAnchor="middle" fontSize="7.5" fontFamily="monospace" fontWeight="700" fill="#134E4A">
+            {feedStage !== null ? `FEED NF = ${feedStage}` : 'FEED ZONE'}
+          </text>
+
+          {/* Stripping Section */}
+          <line x1="118" y1="162" x2="188" y2="162" stroke="#475569" strokeWidth="1.2" strokeDasharray="4 3" />
+          <line x1="118" y1="184" x2="188" y2="184" stroke="#475569" strokeWidth="1.2" strokeDasharray="4 3" />
+          <text x="153" y="206" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#0F172A">
+            STRIPPING
+          </text>
+          <text x="153" y="218" textAnchor="middle" fontSize="7.2" fontFamily="monospace" fill="#334155">
+            L̄={Lbar.toFixed(0)} · V̄={Vbar.toFixed(0)}
+          </text>
+
+          {/* OVERHEAD VAPOR & TOTAL CONDENSER (TOP RIGHT) */}
+          <polyline
+            points="153,26 153,12 260,12 260,28"
+            fill="none"
+            stroke="#0284C7"
+            strokeWidth="2"
+            markerEnd="url(#arrowBlueMobile)"
+          />
+          <text x="208" y="9" textAnchor="middle" fontSize="7.2" fontFamily="monospace" fill="#0369A1">
+            Vapor V = {V.toFixed(1)}
+          </text>
+
+          <rect x="220" y="30" width="84" height="36" rx="6" fill="#F0FDFA" stroke="#0F766E" strokeWidth="1.6" />
+          <text x="262" y="45" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#134E4A">
+            CONDENSER
+          </text>
+          <text x="262" y="57" textAnchor="middle" fontSize="7" fontFamily="monospace" fill="#0F766E">
+            Total · 0 Stages
+          </text>
+
+          {/* Reflux Line back to Column */}
+          <line x1="220" y1="48" x2="198" y2="48" stroke="#0F766E" strokeWidth="2" markerEnd="url(#arrowTealMobile)" />
+          <text x="209" y="42" textAnchor="middle" fontSize="7" fontFamily="monospace" fill="#0F766E">
+            L
+          </text>
+
+          {/* Distillate Tag below Condenser */}
+          <line x1="262" y1="66" x2="262" y2="82" stroke="#0F766E" strokeWidth="2" markerEnd="url(#arrowTealMobile)" />
+          <rect x="212" y="84" width="100" height="38" rx="6" fill="#FFFFFF" stroke="#0F766E" strokeWidth="1.4" />
+          <text x="262" y="96" textAnchor="middle" fontSize="7.4" fontWeight="700" fill="#134E4A">
+            DISTILLATE (D)
+          </text>
+          <text x="262" y="107" textAnchor="middle" fontSize="8" fontFamily="monospace" fontWeight="700" fill="#0F766E">
+            D={D.toFixed(1)} · xD={xD.toFixed(3)}
+          </text>
+          <text x="262" y="117" textAnchor="middle" fontSize="7" fontFamily="monospace" fill="#475569">
+            L/D = {R.toFixed(2)}
+          </text>
+
+          {/* PARTIAL REBOILER & BOTTOMS (BOTTOM RIGHT) */}
+          <line x1="196" y1="222" x2="218" y2="222" stroke="#334155" strokeWidth="2" markerEnd="url(#arrowSlateMobile)" />
+          <rect x="220" y="202" width="84" height="38" rx="6" fill="#FFFBEB" stroke="#B45309" strokeWidth="1.6" />
+          <text x="262" y="217" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#78350F">
+            REBOILER
+          </text>
+          <text x="262" y="229" textAnchor="middle" fontSize="7" fontFamily="monospace" fill="#92400E">
+            Partial · Stage N
+          </text>
+
+          {/* Boilup Vapor returning to Column */}
+          <polyline
+            points="262,202 262,188 198,188"
+            fill="none"
+            stroke="#0284C7"
+            strokeWidth="2"
+            markerEnd="url(#arrowBlueMobile)"
+          />
+          <text x="234" y="183" textAnchor="middle" fontSize="7.2" fontFamily="monospace" fill="#0369A1">
+            Boilup V̄ = {Vbar.toFixed(1)}
+          </text>
+
+          {/* Bottoms Summary Box */}
+          <rect x="212" y="138" width="100" height="36" rx="6" fill="#FFFFFF" stroke="#334155" strokeWidth="1.4" />
+          <text x="262" y="150" textAnchor="middle" fontSize="7.4" fontWeight="700" fill="#0F172A">
+            BOTTOMS (B)
+          </text>
+          <text x="262" y="161" textAnchor="middle" fontSize="8" fontFamily="monospace" fontWeight="700" fill="#0F172A">
+            B={B.toFixed(1)} · xB={xB.toFixed(3)}
+          </text>
+          <text x="262" y="170" textAnchor="middle" fontSize="7" fontFamily="monospace" fill="#475569">
+            V̄/B = {internalFlows.boilupRatio_Vb.toFixed(2)}
+          </text>
+
+          {/* Bottom Caption inside SVG */}
+          <text x="160" y="255" textAnchor="middle" fontSize="8" fontFamily="monospace" fontWeight="600" fill="#334155">
+            {labels.stageHeadline}
+          </text>
+        </svg>
+
+        {/* Solver-Linked Stage Summary Strip */}
+        <div
+          className={`rounded-lg border px-3 py-2 text-xs ${
+            labels.isPinched
+              ? 'border-amber-300 bg-amber-50 text-amber-950'
+              : 'border-teal-200 bg-teal-50/70 text-slate-900'
+          }`}
+        >
+          <div className="font-mono font-bold text-[11px]">{labels.stageHeadline}</div>
+          <div className="font-mono text-[11px] text-teal-900 mt-0.5">{labels.fractionalDetail}</div>
+        </div>
+
+        {/* Stream & Operating Envelope Readout Grid */}
+        <div className="grid grid-cols-1 min-[350px]:grid-cols-2 gap-2 text-xs">
+          <div className="rounded-lg border border-teal-200 bg-white p-2.5 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-teal-950">
+              Distillate Product (D)
+            </div>
+            <div className="mt-0.5 font-mono text-sm font-bold text-teal-800 tabular-nums">
+              {D.toFixed(2)} kmol/h
+            </div>
+            <div className="font-mono text-[11px] text-slate-800 tabular-nums">
+              xD = {xD.toFixed(3)} mol/mol A
+            </div>
+            <div className="font-mono text-[10px] text-slate-600 tabular-nums">
+              L/D = {R.toFixed(2)} · Rec: {materialBalance.lightRecoveryInDistillate_pct.toFixed(1)}%
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-2.5 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-800">
+              Feed Stream (F)
+            </div>
+            <div className="mt-0.5 font-mono text-sm font-bold text-slate-900 tabular-nums">
+              {F.toFixed(1)} kmol/h
+            </div>
+            <div className="font-mono text-[11px] text-slate-800 tabular-nums">
+              zF = {zF.toFixed(3)} · q = {q.toFixed(2)}
+            </div>
+            <div className="font-mono text-[10px] text-slate-600 tabular-nums">
+              {labels.feedQualityLabel} · {feedStage !== null ? `NF = ${feedStage}` : 'Pinched'}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-2.5 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-800">
+              Bottoms Product (B)
+            </div>
+            <div className="mt-0.5 font-mono text-sm font-bold text-slate-900 tabular-nums">
+              {B.toFixed(2)} kmol/h
+            </div>
+            <div className="font-mono text-[11px] text-slate-800 tabular-nums">
+              xB = {xB.toFixed(3)} mol/mol A
+            </div>
+            <div className="font-mono text-[10px] text-slate-600 tabular-nums">
+              V̄/B = {internalFlows.boilupRatio_Vb.toFixed(2)} · 1−xB = {(1 - xB).toFixed(3)}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-2.5 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-800">
+              Operating Envelope
+            </div>
+            <div className="mt-0.5 font-mono text-[11px] font-semibold text-teal-800 tabular-nums">
+              R / Rmin = {labels.refluxRatioMultipleLabel}
+            </div>
+            <div className="font-mono text-[10px] text-slate-700 tabular-nums">
+              Rmin = {labels.rMinLabel} · Nmin = {labels.fenskeLabel}
+            </div>
+            <div className="font-mono text-[10px] text-slate-600 tabular-nums">
+              Int: ({operatingLines.intersection_x.toFixed(3)}, {operatingLines.intersection_y.toFixed(3)})
+            </div>
+          </div>
+        </div>
+
+        {/* Optional Toggle for Full Desktop Schematic */}
+        <button
+          type="button"
+          onClick={() => setShowDesktopOnMobile((prev) => !prev)}
+          aria-expanded={showDesktopOnMobile}
+          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+        >
+          <span>
+            {showDesktopOnMobile
+              ? 'Hide Detailed Desktop Blueprint'
+              : 'Inspect Detailed Desktop Blueprint (Scrollable)'}
+          </span>
+          {showDesktopOnMobile ? (
+            <ChevronUp className="w-3.5 h-3.5 text-teal-700" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-teal-700" />
+          )}
+        </button>
+      </div>
+
+      {/* Tablet & Desktop Full SVG Process Flow Diagram (>= 640px, or expanded on mobile) */}
+      <div
+        className={
+          showDesktopOnMobile
+            ? 'mt-3 sm:mt-0 w-full overflow-x-auto'
+            : 'hidden sm:block w-full overflow-x-auto'
+        }
+      >
         <svg
           viewBox="0 0 820 410"
           className="w-full h-auto min-w-[640px]"
