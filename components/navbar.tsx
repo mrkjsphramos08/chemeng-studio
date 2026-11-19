@@ -92,6 +92,7 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const stripContainerRef = useRef<HTMLDivElement | null>(null);
   const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const mobileToggleRef = useRef<HTMLButtonElement | null>(null);
 
   const isLabActive = LAB_SWITCHER_ITEMS.some((lab) => lab.id === activeView);
 
@@ -112,6 +113,20 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
       container.scrollTo({ left: targetScroll, behavior: 'smooth' });
     }
   }, [activeView]);
+
+  // Dismiss mobile/tablet drawer on Escape and return focus to toggle button
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setMobileMenuOpen(false);
+        mobileToggleRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
 
   const handleNav = (view: ActiveView, sectionId?: string) => {
     setMobileMenuOpen(false);
@@ -223,11 +238,13 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           </button>
 
           <button
+            ref={mobileToggleRef}
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             className="lg:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:bg-slate-100 border border-slate-200 cursor-pointer"
             aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={mobileMenuOpen}
+            aria-controls="nav-mobile-drawer"
             data-testid="nav-mobile-toggle"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -241,9 +258,9 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
           ref={stripContainerRef}
           role="navigation"
           aria-label="Virtual Laboratories Switcher"
-          className="max-w-[1360px] mx-auto px-4 sm:px-6 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar"
+          className="max-w-[1360px] mx-auto px-4 sm:px-6 py-1.5 flex items-center gap-1 xl:gap-1.5 overflow-x-auto no-scrollbar"
         >
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 whitespace-nowrap mr-1.5 hidden lg:inline">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 whitespace-nowrap mr-1.5 hidden xl:inline">
             Virtual Labs:
           </span>
           {LAB_SWITCHER_ITEMS.map((item) => {
@@ -257,9 +274,16 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
                 }}
                 type="button"
                 onClick={() => handleNav(item.id)}
+                onFocus={(e) =>
+                  e.currentTarget.scrollIntoView({
+                    block: 'nearest',
+                    inline: 'nearest',
+                    behavior: 'smooth',
+                  })
+                }
                 data-testid={item.testId}
                 aria-current={isSelected ? 'page' : undefined}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-2 xl:px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer ${
                   isSelected
                     ? 'bg-teal-700 text-white font-semibold shadow-2xs'
                     : 'text-slate-700 hover:text-slate-900 hover:bg-slate-200/70'
@@ -290,11 +314,16 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
       </div>
 
       {/* Mobile & Tablet Navigation Drawer */}
-      {mobileMenuOpen && (
-        <div
-          className="lg:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-4 shadow-lg"
-          data-testid="nav-mobile-drawer"
-        >
+      <div
+        id="nav-mobile-drawer"
+        hidden={!mobileMenuOpen}
+        className={
+          mobileMenuOpen
+            ? 'lg:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-4 shadow-lg'
+            : 'hidden'
+        }
+        data-testid="nav-mobile-drawer"
+      >
           <div className="space-y-1">
             <div className="px-2 pb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
               <EntrolumeLogo variant="icon-only" size="xs" decorative />
@@ -382,7 +411,6 @@ export function Navbar({ activeView, onSelectView }: NavbarProps) {
             </div>
           </div>
         </div>
-      )}
     </header>
   );
 }

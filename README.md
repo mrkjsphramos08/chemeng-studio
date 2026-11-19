@@ -6,16 +6,16 @@ Designed for university chemical engineering curricula, Entrolume follows a **si
 
 ---
 
-## Implemented Capabilities (Phases 1 through 2.5.2)
+## Implemented Capabilities (Phases 1 through 2.5.3)
 
 - **Entrolume Official Brand Identity & Vector Asset Suite (`components/branding/entrolume-logo.tsx`, `public/branding/*.svg`, `public/favicon.svg`, `app/icon.svg`)**:
   - Approved geometric E-shaped symbol (three horizontal elements with Midnight Navy `#0F172A` upper/lower bars, refined Teal `#0D9488` middle bar, and smooth streamlined negative space) paired with the clean lowercase `entrolume` geometric wordmark.
   - Coordinated production SVG assets (`entrolume-logo.svg`, `entrolume-logo-dark.svg`, `entrolume-icon.svg`, `entrolume-monochrome.svg`, and `favicon.svg`) and centralized `<EntrolumeLogo />` component supporting `primary`, `dark`, `icon-only`, and `monochrome` variants.
   - Semantic design tokens (`--entrolume-navy`, `--entrolume-teal`, `--entrolume-bg`), WCAG 2.2 AA contrast, visible keyboard focus rings, standardized `--entrolume-teal` form control accents, and tabular numeral typography.
 - **Streamlined 3-Zone Navigation, URL History Sync & Subject-Categorized Directory (`components/navbar.tsx`, `lib/navigation.ts`, `components/landing-sections.tsx`, `components/labs-directory.tsx`)**:
-  - 3-zone top bar paired with a 1-click 6-laboratory quick-switcher strip (with active-chip auto-scroll and `aria-current="page"`) and mobile navigation drawer.
+  - 3-zone top bar paired with a 1-click 6-laboratory quick-switcher strip (with active-chip auto-scroll, keyboard scroll-into-view, and `aria-current="page"`) and Escape-dismissible mobile/tablet navigation drawer returning focus to the toggle button.
   - Full URL query synchronization (`/?view=...`, `pushState`, and `popstate` browser Back/Forward support) and `scroll-mt-32` anchor offset alignment.
-  - Interactive 6-laboratory scientific preview card in the Landing Hero, 4-step pedagogical workflow (*Configure, Simulate, Analyze, Reflect*), dedicated *For Students* and *For Educators* sections, and discipline-filtered Virtual Laboratories Directory.
+  - Solver-derived 6-laboratory interactive preview card (`lib/hero-preview.ts`) in the Landing Hero, 4-step pedagogical workflow (*Configure, Simulate, Analyze, Reflect*), compact laboratory directory cards, and collapsible release history.
 - **Centralized KaTeX Mathematical Typography & Accessibility (`lib/katex-render.ts` & `components/lab-shared/math/*`)**:
   - Textbook-quality mathematical equation rendering across all laboratories, parameter group headers, chart footers, directory cards, and guided derivations using KaTeX `output: 'htmlAndMathml'` (`trust: false`, `throwOnError: false`), providing both semantic `<math>` MathML for assistive technologies and `.katex-html` (`aria-hidden="true"`) for visual typography.
 - **Standardized Virtual Laboratory Framework (`components/lab-shared/*` & `lib/lab-download.ts`)**:
@@ -140,8 +140,11 @@ Models a **single-input, single-output (SISO) linear time-invariant First-Order-
 ## Verification Commands
 
 ```bash
-# Run automated engineering calculation, KaTeX MathML, navigation, and brand asset regression tests (85 tests)
-npx --yes tsx --test lib/heat-exchanger.test.ts lib/fluid-mechanics.test.ts lib/reaction-engineering.test.ts lib/distillation.test.ts lib/katex-render.test.ts lib/thermodynamics.test.ts lib/process-control.test.ts lib/navigation.test.ts
+# Run all automated scientific calculation, KaTeX MathML, navigation, and UI regression test suites
+npx --yes tsx --test lib/*.test.ts
+
+# Verify TypeScript types without emitting build artifacts
+npx tsc --noEmit
 
 # Lint TypeScript & Next.js rules
 npm run lint
@@ -164,11 +167,18 @@ npm run build
 8. **Phase 2.4 — Process Dynamics & Control Virtual Laboratory** *(Implemented)*
 9. **Phase 2.5 — Entrolume Rebranding & Platform-wide UI/UX Overhaul** *(Implemented)*
 10. **Phase 2.5.1 — Post-Deployment QA & Responsive Refinement** *(Implemented)*
-11. **Phase 2.5.2 — Official Logo Integration & Brand Asset Implementation** *(Current Phase)*
-    - Reconstructed the approved Entrolume geometric E-mark and lowercase wordmark into production vector SVG assets (`public/branding/*.svg`, `public/favicon.svg`, `app/icon.svg`) and integrated the centralized `<EntrolumeLogo />` component across desktop/mobile navigation, dark pedagogical section, footer, and browser metadata.
-12. **Phase 3 — Gemini AI Engineering Tutor** *(Planned — Next Phase)*
+11. **Phase 2.5.2 — Official Logo Integration & Brand Asset Implementation** *(Implemented)*
+12. **Phase 2.5.3 — Content Simplification, Visual Hierarchy & Learning Experience Refinement** *(Implemented — Batches 1–5B, Hotfix A & Hotfix B; pending final independent re-verification)*
+    - **Batch 1**: Distillation guided inquiry alignment, collapsed default equation disclosures, responsive numeric input draft precision, and Heat Exchanger/Distillation mobile layout fixes.
+    - **Batch 2**: Landing hero and directory card simplification, compact 6-lab launcher, and collapsible engineering release history.
+    - **Batch 3**: Shared workspace refinement (`LabWorkspaceHeader`, `LabAdditionalMetricsDisclosure`) and simulation-first visual hierarchy across Labs 01–04.
+    - **Batch 4**: Thermodynamics (PVT + VLE) and Process Control simulation-first chart/KPI prioritization and accessibility polish.
+    - **Batches 5A–5B**: Mobile-dedicated responsive schematic architectures across all six laboratories and full-suite regression verification.
+    - **Hotfix A**: Solver-derived Landing Hero preview metrics (`lib/hero-preview.ts`), guided inquiry numerical parity fixes, and Heat Exchanger desktop SVG label padding.
+    - **Hotfix B**: Process Control `NumericDraftInput` migration (`#exp-tstep`, `#exp-tdist`), mobile nav Escape/focus restoration & `1024px` lab strip fit, Thermodynamics PVT/VLE Load/Live Run scenario parity, repository hygiene, and documentation updates.
+13. **Phase 3 — Gemini AI Engineering Tutor** *(Planned — Next Phase)*
     - Context-aware AI tutoring grounded directly in verified simulation states and calculation engines.
-13. **Phase 4 — Machine Learning Workspace** *(Planned)*
+14. **Phase 4 — Machine Learning Workspace** *(Planned)*
     - Engineering dataset upload, regression modeling, evaluation, and comparison with first-principles conservation models.
-14. **Phase 5 — Academic SaaS Features** *(Planned)*
+15. **Phase 5 — Academic SaaS Features** *(Planned)*
     - Student accounts, instructor dashboards, course assignments, experiment submissions, and institutional subscriptions.

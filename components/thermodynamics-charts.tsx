@@ -14,19 +14,22 @@ import {
   ReferenceDot,
 } from 'recharts';
 import {
+  PureFluidPVTInputs,
   PureFluidPVTResults,
   ZvsPressurePoint,
   PVIsothermPoint,
+  BinaryVLEInputs,
   BinaryVLEResults,
   BinaryPxyPoint,
 } from '@/lib/thermodynamics';
 import { MathInline } from '@/components/lab-shared/math';
 import { getNextTabIndex } from '@/lib/numeric-input';
-import { Trash2 } from 'lucide-react';
+import { RotateCcw, Trash2 } from 'lucide-react';
 
 export interface SavedPVTScenario {
   id: string;
   label: string;
+  inputs: PureFluidPVTInputs;
   fluidCode: string;
   temperature_K: number;
   pressure_bar: number;
@@ -49,6 +52,7 @@ interface PureFluidPVTChartsProps {
     };
   };
   savedScenarios: SavedPVTScenario[];
+  onLoadScenario?: (inputs: PureFluidPVTInputs) => void;
   onRemoveScenario: (id: string) => void;
   onClearScenarios: () => void;
   renderSection?: 'all' | 'charts' | 'saved';
@@ -61,6 +65,7 @@ export function PureFluidPVTCharts({
   pressureSweepSeries,
   isothermData,
   savedScenarios,
+  onLoadScenario,
   onRemoveScenario,
   onClearScenarios,
   renderSection = 'all',
@@ -524,20 +529,20 @@ export function PureFluidPVTCharts({
             )}
           </div>
 
-          {savedScenarios.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-4 text-xs text-slate-600">
-              Click <strong>Save Run</strong> in the workspace header to snapshot and compare
-              compressibility factors <MathInline latex="Z" />, ideal vs. Peng–Robinson molar volumes,
-              and percent deviations across fluids, temperatures, and pressures.
+          {savedScenarios.length === 0 && (
+            <p className="mb-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-xs text-slate-600">
+              Click <strong>Save Run</strong> in the workspace header to snapshot states and compare
+              compressibility factors <MathInline latex="Z" />, molar volumes, and ideal-gas
+              deviations against the <strong>Current Live Run</strong> below.
             </p>
-          ) : (
+          )}
           <div
             className="overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
             role="region"
             aria-label="Thermodynamics Pure-Fluid PVT Scenario Comparison Table"
             tabIndex={0}
           >
-            <table className="w-full min-w-[640px] border-collapse text-left text-xs">
+            <table className="w-full min-w-[680px] border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold tracking-tight text-slate-700">
                   <th className="px-3 py-2 whitespace-nowrap">Scenario</th>
@@ -559,7 +564,7 @@ export function PureFluidPVTCharts({
                   </th>
                   <th className="px-3 py-2 whitespace-nowrap">Deviation (%)</th>
                   <th className="px-3 py-2 whitespace-nowrap">Regime</th>
-                  <th className="px-2 py-2 text-right whitespace-nowrap">Action</th>
+                  <th className="px-2 py-2 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -596,21 +601,69 @@ export function PureFluidPVTCharts({
                     </td>
                     <td className="px-3 py-2 text-slate-600 whitespace-nowrap">{sc.regime}</td>
                     <td className="px-2 py-2 text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => onRemoveScenario(sc.id)}
-                        className="text-slate-400 hover:text-rose-600"
-                        aria-label={`Remove scenario ${sc.label}`}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="inline-flex items-center gap-1.5">
+                        {onLoadScenario && (
+                          <button
+                            type="button"
+                            onClick={() => onLoadScenario(sc.inputs)}
+                            aria-label={`Load scenario ${sc.label}`}
+                            className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-teal-800 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-teal-700 cursor-pointer"
+                          >
+                            <RotateCcw className="h-3 w-3" />
+                            Load
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => onRemoveScenario(sc.id)}
+                          className="rounded border border-slate-200 bg-white p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-2 focus-visible:outline-teal-700 cursor-pointer"
+                          aria-label={`Remove scenario ${sc.label}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
+
+                {/* Current Live Run */}
+                <tr
+                  className="bg-teal-50/60 font-semibold text-teal-950"
+                  data-testid="thermo-pvt-live-row"
+                >
+                  <td className="px-3 py-2 font-semibold text-teal-900 whitespace-nowrap">
+                    Current Live Run
+                  </td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {results.fluid.formula}
+                  </td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {results.temperature_K.toFixed(1)}
+                  </td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {results.pressure_bar.toFixed(1)}
+                  </td>
+                  <td className="px-3 py-2 font-mono font-bold text-teal-800 whitespace-nowrap">
+                    {results.compressibilityFactor_Z.toFixed(4)}
+                  </td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {results.idealMolarVolume_L_mol.toFixed(4)}
+                  </td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {results.prMolarVolume_L_mol.toFixed(4)}
+                  </td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {results.volumeDeviationPercent >= 0 ? '+' : ''}
+                    {results.volumeDeviationPercent.toFixed(2)}%
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">{results.regime}</td>
+                  <td className="px-2 py-2 text-right text-xs text-teal-700 whitespace-nowrap">
+                    Active
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
-        )}
         </div>
       )}
     </div>
@@ -624,6 +677,7 @@ export function PureFluidPVTCharts({
 export interface SavedVLEScenario {
   id: string;
   label: string;
+  inputs: BinaryVLEInputs;
   xA: number;
   psatA_kPa: number;
   psatB_kPa: number;
@@ -638,6 +692,7 @@ interface BinaryVLEChartsProps {
   results: BinaryVLEResults;
   pxySeries: BinaryPxyPoint[];
   savedScenarios: SavedVLEScenario[];
+  onLoadScenario?: (inputs: BinaryVLEInputs) => void;
   onRemoveScenario: (id: string) => void;
   onClearScenarios: () => void;
   renderSection?: 'all' | 'charts' | 'saved';
@@ -649,6 +704,7 @@ export function BinaryVLECharts({
   results,
   pxySeries,
   savedScenarios,
+  onLoadScenario,
   onRemoveScenario,
   onClearScenarios,
   renderSection = 'all',
@@ -1113,20 +1169,20 @@ export function BinaryVLECharts({
             )}
           </div>
 
-          {savedScenarios.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-4 text-xs text-slate-600">
-              Click <strong>Save Run</strong> in the workspace header to snapshot and compare
+          {savedScenarios.length === 0 && (
+            <p className="mb-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-xs text-slate-600">
+              Click <strong>Save Run</strong> in the workspace header to snapshot states and compare
               relative volatility <MathInline latex="\alpha_{AB}" />, bubble/dew pressures, and vapor
-              enrichment across mixtures.
+              enrichment against the <strong>Current Live Run</strong> below.
             </p>
-          ) : (
+          )}
           <div
             className="overflow-x-auto rounded-lg focus-visible:outline-2 focus-visible:outline-teal-700"
             role="region"
             aria-label="Thermodynamics Binary VLE Scenario Comparison Table"
             tabIndex={0}
           >
-            <table className="w-full min-w-[640px] border-collapse text-left text-xs">
+            <table className="w-full min-w-[680px] border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold tracking-tight text-slate-700">
                   <th className="px-3 py-2 whitespace-nowrap">Scenario</th>
@@ -1154,7 +1210,7 @@ export function BinaryVLECharts({
                   <th className="px-3 py-2 whitespace-nowrap">
                     Phase State @ <MathInline latex="P_{\mathrm{sys}}" />
                   </th>
-                  <th className="px-2 py-2 text-right whitespace-nowrap">Action</th>
+                  <th className="px-2 py-2 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1184,21 +1240,68 @@ export function BinaryVLECharts({
                     </td>
                     <td className="px-3 py-2 text-slate-600 whitespace-nowrap">{sc.phaseState}</td>
                     <td className="px-2 py-2 text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => onRemoveScenario(sc.id)}
-                        className="text-slate-400 hover:text-rose-600"
-                        aria-label={`Remove scenario ${sc.label}`}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="inline-flex items-center gap-1.5">
+                        {onLoadScenario && (
+                          <button
+                            type="button"
+                            onClick={() => onLoadScenario(sc.inputs)}
+                            aria-label={`Load scenario ${sc.label}`}
+                            className="inline-flex items-center gap-1 rounded border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-teal-800 hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-teal-700 cursor-pointer"
+                          >
+                            <RotateCcw className="h-3 w-3" />
+                            Load
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => onRemoveScenario(sc.id)}
+                          className="rounded border border-slate-200 bg-white p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-2 focus-visible:outline-teal-700 cursor-pointer"
+                          aria-label={`Remove scenario ${sc.label}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
+
+                {/* Current Live Run */}
+                <tr
+                  className="bg-teal-50/60 font-semibold text-teal-950"
+                  data-testid="thermo-vle-live-row"
+                >
+                  <td className="px-3 py-2 font-semibold text-teal-900 whitespace-nowrap">
+                    Current Live Run
+                  </td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">{results.xA.toFixed(3)}</td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {results.psatA_kPa.toFixed(1)}
+                  </td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {results.psatB_kPa.toFixed(1)}
+                  </td>
+                  <td className="px-3 py-2 font-mono font-bold text-teal-800 whitespace-nowrap">
+                    {results.relativeVolatility_alphaAB.toFixed(2)}
+                  </td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {results.bubblePressure_kPa.toFixed(2)}
+                  </td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {results.dewPressureAtComposition_kPa.toFixed(2)}
+                  </td>
+                  <td className="px-3 py-2 font-mono font-bold whitespace-nowrap">
+                    {results.equilibriumVapor_yA.toFixed(4)}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {results.phaseStateAtSystemPressure}
+                  </td>
+                  <td className="px-2 py-2 text-right text-xs text-teal-700 whitespace-nowrap">
+                    Active
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
-        )}
         </div>
       )}
     </div>

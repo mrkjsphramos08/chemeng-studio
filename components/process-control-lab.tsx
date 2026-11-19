@@ -924,21 +924,15 @@ export function ProcessControlLab() {
                     >
                       Setpoint Step <MathInline latex="t_{\mathrm{step}}" /> (s)
                     </label>
-                    <input
+                    <NumericDraftInput
                       id="exp-tstep"
-                      type="number"
                       aria-label="Setpoint Step Time (t_step, s)"
                       min={0}
                       max={200}
                       step={1}
                       value={inputs.setpointStepTime_s}
-                      onChange={(e) =>
-                        updateInput(
-                          'setpointStepTime_s',
-                          Number(e.target.value)
-                        )
-                      }
-                      className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('setpointStepTime_s', val)}
+                      className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900 tabular-nums focus:outline-none focus:ring-2 focus:ring-teal-600"
                     />
                   </div>
                   <div>
@@ -948,18 +942,15 @@ export function ProcessControlLab() {
                     >
                       Disturbance <MathInline latex="t_{\mathrm{dist}}" /> (s)
                     </label>
-                    <input
+                    <NumericDraftInput
                       id="exp-tdist"
-                      type="number"
                       aria-label="Load Disturbance Step Time (t_dist, s)"
                       min={0}
                       max={400}
                       step={5}
                       value={inputs.disturbanceTime_s}
-                      onChange={(e) =>
-                        updateInput('disturbanceTime_s', Number(e.target.value))
-                      }
-                      className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900"
+                      onCommit={(val) => updateInput('disturbanceTime_s', val)}
+                      className="mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 font-mono text-xs text-slate-900 tabular-nums focus:outline-none focus:ring-2 focus:ring-teal-600"
                     />
                   </div>
                 </div>

@@ -613,7 +613,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
           </div>
         </div>
 
-        {/* Collapsible Historical Engineering Milestones (Phases 1 through 2.5.2 + 2.5.3 In Progress) */}
+        {/* Collapsible Historical Engineering Milestones (Phases 1 through 2.5.3 Implemented · Pending Re-Audit) */}
         <details
           className="group rounded-xl border border-slate-200/90 bg-slate-50/70 overflow-hidden"
           data-testid="roadmap-release-history"
@@ -622,7 +622,7 @@ export function LandingSections({ onOpenLab, onOpenDirectory }: LandingSectionsP
             <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
               <span>Engineering Release History</span>
               <span className="text-xs font-mono font-normal text-slate-500">
-                (Phases 1 – 2.5.2 Completed · Phase 2.5.3 In Progress)
+                (Phases 1 – 2.5.3 Implemented · Pending Re-Verification)
               </span>
             </div>
             <span className="text-xs font-mono text-teal-700 group-open:rotate-180 transition-transform shrink-0">

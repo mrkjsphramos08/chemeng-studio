@@ -178,6 +178,7 @@ export function ThermodynamicsLab() {
     const newScenario: SavedPVTScenario = {
       id: `pvt-${Date.now()}`,
       label: `${pvtResults.fluid.formula} @ ${pvtResults.temperature_K.toFixed(0)} K, ${pvtResults.pressure_bar.toFixed(1)} bar`,
+      inputs: { ...pvtInputs },
       fluidCode: pvtResults.fluid.formula,
       temperature_K: pvtResults.temperature_K,
       pressure_bar: pvtResults.pressure_bar,
@@ -203,6 +204,7 @@ export function ThermodynamicsLab() {
     const newScenario: SavedVLEScenario = {
       id: `vle-${Date.now()}`,
       label: `x_A = ${vleResults.xA.toFixed(2)} (α = ${vleResults.relativeVolatility_alphaAB.toFixed(2)})`,
+      inputs: { ...vleInputs },
       xA: vleResults.xA,
       psatA_kPa: vleResults.psatA_kPa,
       psatB_kPa: vleResults.psatB_kPa,
@@ -923,6 +925,10 @@ export function ThermodynamicsLab() {
                   pressureSweepSeries={pressureSweepSeries}
                   isothermData={isothermData}
                   savedScenarios={savedPvtScenarios}
+                  onLoadScenario={(loadedInputs) => {
+                    setPvtInputs({ ...loadedInputs });
+                    setActivePvtPresetId('custom');
+                  }}
                   onRemoveScenario={(id) =>
                     setSavedPvtScenarios((prev) => prev.filter((s) => s.id !== id))
                   }
@@ -1458,6 +1464,10 @@ export function ThermodynamicsLab() {
                   results={vleResults}
                   pxySeries={pxySeries}
                   savedScenarios={savedVleScenarios}
+                  onLoadScenario={(loadedInputs) => {
+                    setVleInputs({ ...loadedInputs });
+                    setActiveVlePresetId('custom');
+                  }}
                   onRemoveScenario={(id) =>
                     setSavedVleScenarios((prev) => prev.filter((s) => s.id !== id))
                   }

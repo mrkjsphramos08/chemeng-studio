@@ -1103,8 +1103,8 @@ export function DistillationCharts({
               type="text"
               value={customScenarioLabel}
               onChange={(e) => setCustomScenarioLabel(e.target.value)}
-              placeholder="Optional run label..."
-              aria-label="Optional scenario label"
+              placeholder="Optional custom label..."
+              aria-label="Optional custom scenario label"
               className="px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-teal-700 w-44"
             />
             <button
@@ -1116,7 +1116,7 @@ export function DistillationCharts({
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-teal-700 rounded-lg hover:bg-teal-800 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
             >
               <Plus className="w-3.5 h-3.5" />
-              Snapshot Current Scenario
+              Save Labeled Run
             </button>
             {savedScenarios.length > 1 && (
               <button

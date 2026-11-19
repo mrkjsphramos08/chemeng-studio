@@ -241,7 +241,7 @@ test('Batch 2 — LABORATORY_MODULES provide concise student descriptions, 3 top
   );
   assert.ok(historicalPhases.some((s) => s.phase === 'Phase 1' && s.status === 'Implemented'));
   assert.ok(historicalPhases.some((s) => s.phase === 'Phase 2.5.2' && s.status === 'Implemented'));
-  assert.ok(historicalPhases.some((s) => s.phase === 'Phase 2.5.3' && s.status === 'Current Phase'));
+  assert.ok(historicalPhases.some((s) => s.phase === 'Phase 2.5.3' && s.status === 'Implemented'));
   assert.equal(
     historicalPhases.some((s) => ['Phase 3', 'Phase 4', 'Phase 5'].includes(s.phase)),
     false

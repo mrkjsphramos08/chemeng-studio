@@ -224,6 +224,22 @@ export interface GuidedQuestion {
   engineeringExplanation: string;
 }
 
+const HX_Q2_INPUTS: HeatExchangerInputs = {
+  Th_in: 120,
+  Tc_in: 25,
+  mh: 2.0,
+  mc: 2.0,
+  Cph_kJ: 4.18,
+  Cpc_kJ: 4.18,
+  U: 850,
+  A: 12.0,
+};
+const HX_Q2_RESULT = calculateHeatExchanger(HX_Q2_INPUTS);
+const HX_Q2_NTU = HX_Q2_RESULT.NTU.toFixed(3);
+const HX_Q2_EFF = HX_Q2_RESULT.effectiveness_pct.toFixed(2);
+const HX_Q2_Q_KW = HX_Q2_RESULT.Q_kW.toFixed(2);
+const HX_Q2_DT = HX_Q2_RESULT.approachTempHotEnd.toFixed(2);
+
 const HX_Q3_INPUTS: HeatExchangerInputs = {
   Th_in: 130,
   Tc_in: 20,
@@ -300,42 +316,29 @@ export const GUIDED_EXPLORATION_QUESTIONS: GuidedQuestion[] = [
     experimentPrompt:
       '1) Set mh = 2.0 kg/s and mc = 2.0 kg/s with Cp = 4.18 kJ/(kg·K) (or click the test button). 2) Inspect the Axial Temperature Profile chart and compare ΔT1 vs. ΔT2.',
     presetActionLabel: 'Apply Balanced Flow (Cr = 1.0)',
-    suggestedInputs: {
-      Th_in: 120,
-      Tc_in: 25,
-      mh: 2.0,
-      mc: 2.0,
-      Cph_kJ: 4.18,
-      Cpc_kJ: 4.18,
-      U: 850,
-      A: 12.0,
-    },
+    suggestedInputs: { ...HX_Q2_INPUTS },
     selfCheckPrompt: 'What do you observe in the axial temperature profile when Cr = 1.000?',
     selfCheckOptions: [
       {
         id: 'q2-opt-a',
         label: 'Hot and cold profiles become parallel straight lines with a uniform local ΔT(x) across the entire length.',
         isCorrect: true,
-        feedback:
-          'Correct! When Ch = Cc, both streams change temperature at equal rates per unit heat transferred (dTh/dx = dTc/dx), keeping ΔT(x) = 42.79 °C constant from x/L = 0 to 1.',
+        feedback: `Correct! When Ch = Cc, both streams change temperature at equal rates per unit heat transferred (dTh/dx = dTc/dx), keeping ΔT(x) = ${HX_Q2_DT} °C constant from x/L = 0 to 1.`,
       },
       {
         id: 'q2-opt-b',
         label: 'The hot and cold temperatures cross and become equal in the middle of the exchanger.',
         isCorrect: false,
-        feedback:
-          'Look at the axial profile chart: Th(x) remains strictly above Tc(x) everywhere by a constant 42.79 °C.',
+        feedback: `Look at the axial profile chart: Th(x) remains strictly above Tc(x) everywhere by a constant ${HX_Q2_DT} °C.`,
       },
       {
         id: 'q2-opt-c',
         label: 'Effectiveness reaches 100% regardless of NTU whenever Ch = Cc.',
         isCorrect: false,
-        feedback:
-          'At Cr = 1, effectiveness is ε = NTU / (1 + NTU). For NTU = 1.220, ε = 54.96%—never 100% for finite area.',
+        feedback: `At Cr = 1, effectiveness is ε = NTU / (1 + NTU). For NTU = ${HX_Q2_NTU}, ε = ${HX_Q2_EFF}%—never 100% for finite area.`,
       },
     ],
-    keyObservation:
-      'At Cr = 1.000 (NTU = 1.220, ε = 54.96%, Q = 436.46 kW), the hot and cold axial temperature curves become parallel straight lines with a constant local driving force ΔT(x) = 42.79 °C.',
+    keyObservation: `At Cr = 1.000 (NTU = ${HX_Q2_NTU}, ε = ${HX_Q2_EFF}%, Q = ${HX_Q2_Q_KW} kW), the hot and cold axial temperature curves become parallel straight lines with a constant local driving force ΔT(x) = ${HX_Q2_DT} °C.`,
     engineeringExplanation:
       'From the differential energy balances dTh/dx = −(UA/Ch)ΔT and dTc/dx = −(UA/Cc)ΔT, setting Ch = Cc forces dTh/dx = dTc/dx everywhere. Therefore d(Th − Tc)/dx = 0, meaning ΔT is uniform across the exchanger (ΔT1 = ΔT2 = LMTD) and effectiveness simplifies to ε = NTU / (1 + NTU).',
   },
@@ -1784,6 +1787,35 @@ const PC_Q10_TV_RATIO = (
   PC_Q10_PID_RESULT.metrics.controlEffort_TV
 ).toFixed(1);
 
+const PC_Q1_INPUTS: ProcessControlInputs = {
+  processGain_Kp: 1.5,
+  timeConstant_tau_s: 20.0,
+  deadTime_theta_s: 0.0,
+  initialOutput_Y0: 50.0,
+  simulationDuration_s: 120.0,
+  timeStep_dt_s: 0.2,
+  controllerMode: 'open-loop',
+  controllerGain_Kc: 2.0,
+  integralTime_Ti_s: 20.0,
+  derivativeTime_Td_s: 0.0,
+  derivativeFilterAlpha: 0.1,
+  actuatorMin_Umin: 0.0,
+  actuatorMax_Umax: 100.0,
+  antiWindupEnabled: true,
+  setpointTarget_Ysp: 65.0,
+  setpointStepTime_s: 5.0,
+  disturbanceMagnitude_d: 0.0,
+  disturbanceTime_s: 60.0,
+  openLoopStep_du: 10.0,
+};
+const PC_Q1_RESULT = simulateProcessControl(PC_Q1_INPUTS);
+const PC_Q1_FINAL_Y =
+  PC_Q1_RESULT.timeSeries[PC_Q1_RESULT.timeSeries.length - 1].processOutput_Y.toFixed(2);
+const PC_Q1_RESIDUAL = Math.abs(
+  65.0 - PC_Q1_RESULT.timeSeries[PC_Q1_RESULT.timeSeries.length - 1].processOutput_Y
+).toFixed(2);
+const PC_Q1_RISE_TIME = (PC_Q1_RESULT.metrics.riseTime_10_90_s ?? 43.94).toFixed(1);
+
 export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessControlInputs>[] = [
   {
     id: 'pc-1-time-constant',
@@ -1794,27 +1826,7 @@ export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessContr
     experimentPrompt:
       'Apply the First-Order Open-Loop Step preset ($K_p = 1.5, \\tau = 20\\,\\mathrm{s}, \\theta = 0\\,\\mathrm{s}$), save the run, then apply the Slow Process preset ($\\tau = 50\\,\\mathrm{s}$) or double $\\tau$.',
     presetActionLabel: 'Apply Open-Loop First-Order Step (τ = 20 s)',
-    suggestedInputs: {
-      processGain_Kp: 1.5,
-      timeConstant_tau_s: 20.0,
-      deadTime_theta_s: 0.0,
-      initialOutput_Y0: 50.0,
-      simulationDuration_s: 120.0,
-      timeStep_dt_s: 0.2,
-      controllerMode: 'open-loop',
-      controllerGain_Kc: 2.0,
-      integralTime_Ti_s: 20.0,
-      derivativeTime_Td_s: 0.0,
-      derivativeFilterAlpha: 0.1,
-      actuatorMin_Umin: 0.0,
-      actuatorMax_Umax: 100.0,
-      antiWindupEnabled: true,
-      setpointTarget_Ysp: 65.0,
-      setpointStepTime_s: 5.0,
-      disturbanceMagnitude_d: 0.0,
-      disturbanceTime_s: 60.0,
-      openLoopStep_du: 10.0,
-    },
+    suggestedInputs: { ...PC_Q1_INPUTS },
     selfCheckPrompt:
       'For $\\tau \\frac{dy}{dt} + y = K_p \\Delta u$, what fraction of the total steady-state change $K_p \\Delta u$ is reached at $t = t_{\\mathrm{step}} + \\tau$, and does changing $\\tau$ alter the final steady-state value?',
     selfCheckOptions: [
@@ -1823,8 +1835,7 @@ export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessContr
         label:
           'At t = t_step + τ, the output reaches 1 − exp(−1) = 63.2% of Kp·Δu; increasing τ slows the rise time (t_r ≈ 2.20τ) without changing the final steady-state gain Kp·Δu.',
         isCorrect: true,
-        feedback:
-          'Correct! For Kp = 1.5 and Δu = +10%, ΔY_ss = +15.0% (final Y = 65.0%) regardless of τ, while 63.2% of that rise (59.48%) occurs one time constant τ after the step.',
+        feedback: `Correct! For Kp = 1.5 and Δu = +10%, the analytical open-loop infinite-horizon asymptote is ΔY_ss = +15.0% (Y(∞) = 65.00% as t → ∞) regardless of τ, while 63.2% of that rise (59.48%) occurs one time constant τ after the step. Over this finite 120 s (5.75τ) open-loop window, the simulated response reaches Y(120 s) = ${PC_Q1_FINAL_Y}% (leaving a ${PC_Q1_RESIDUAL}% terminal residual).`,
       },
       {
         id: 'pc1-b',
@@ -1841,8 +1852,7 @@ export const PROCESS_CONTROL_GUIDED_QUESTIONS: SharedGuidedQuestion<ProcessContr
           'The initial tangent slope hits 100% at t = t_step + τ, but the exponential curve 1 − exp(−t/τ) is at 63.2% at t = τ and ~98.2% at t = 4τ.',
       },
     ],
-    keyObservation:
-      'For Kp = 1.5, Δu = +10%, and τ = 20 s, Y(t) reaches 59.48% (63.2% of the +15% step) at t = 25.0 s with a 10%–90% rise time of 43.9 s (2.197τ).',
+    keyObservation: `For Kp = 1.5, Δu = +10%, and τ = 20 s, Y(t) reaches 59.48% (63.2% of the +15.0% asymptotic step to Y(∞) = 65.00%) at t = 25.0 s with a 10%–90% rise time of ${PC_Q1_RISE_TIME} s (2.197τ), reaching Y(120 s) = ${PC_Q1_FINAL_Y}% within the finite 120 s (5.75τ) open-loop simulation window (${PC_Q1_RESIDUAL}% residual).`,
     engineeringExplanation:
       'Solving $\\tau \\frac{dy}{dt} + y = K_p \\Delta u$ from $y(0) = 0$ yields $y(t) = K_p \\Delta u \\left(1 - e^{-t/\\tau}\\right)$. At $t = \\tau$, $1 - e^{-1} = 0.6321$, and the $10\\%\\text{–}90\\%$ rise time is $\\tau \\ln(9) \\approx 2.197\\tau$.',
   },
@@ -2481,12 +2491,13 @@ export const DEVELOPMENT_ROADMAP: RoadmapPhaseItem[] = [
   {
     phase: 'Phase 2.5.3',
     title: 'Content Simplification, Visual Hierarchy & Learning Experience Refinement',
-    status: 'Current Phase',
+    status: 'Implemented',
     summary:
-      'In progress: incremental refinement of scientific consistency, progressive disclosure, landing page clarity, and laboratory directory scannability.',
+      'Phase 2.5.3 implementation complete (Batches 1–5B, Hotfixes A–B); final independent re-verification pending before Phase 3.',
     items: [
-      'Batch 1: Distillation guided inquiry alignment, collapsed default equation tables, and responsive input/schematic fixes',
-      'Batch 2: Streamlined landing hero, compact 6-lab launcher, concise directory cards, and collapsible release history',
+      'Batches 1–2: Scientific inquiry alignment, collapsed default equations, landing hero & directory simplification',
+      'Batches 3–5B: Simulation-first chart/KPI ordering across all 6 labs, mobile responsive schematics, and verification',
+      'Hotfixes A–B: Solver-derived Hero preview metrics, inquiry consistency, keyboard Escape nav, 1024px strip fit, and repo hygiene',
     ],
   },
   {
